@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { TABLES, MENU, STATUS_CONFIG, FOOD_SUBCATEGORIES } from "./data/constants";
+import { TABLES, MENU, STATUS_CONFIG, FOOD_SUBCATEGORIES, DRINKS_SUBCATEGORIES, WINES_SUBCATEGORIES } from "./data/constants";
 import { getTableStatus, expandItems, copyToClipboard, formatTicketText, formatOrderText } from "./utils/helpers";
 import { S } from "./styles/appStyles";
 
@@ -171,10 +171,10 @@ export default function App() {
     setView("ticket");
   };
 
-  const initiateClose = () => {
-    const items = orders[ticketTable] || [];
+  const initiateClose = (tableId = ticketTable) => {
+    const items = orders[tableId] || [];
     const total = items.reduce((s, o) => s + o.price * o.qty, 0);
-    setClosedReceipt({ tableId: ticketTable, items, total, time: new Date() });
+    setClosedReceipt({ tableId, items, total, time: new Date() });
     setView("close");
   };
 
@@ -477,11 +477,17 @@ export default function App() {
                     }));
                   }
 
-                  // For Food category without search, group by subcategory
-                  if (activeCategory === "Food" && !searchQuery) {
+                  // Get subcategory config based on active category
+                  let subcategoryConfig = null;
+                  if (activeCategory === "Food") subcategoryConfig = FOOD_SUBCATEGORIES;
+                  else if (activeCategory === "Drinks🍷") subcategoryConfig = DRINKS_SUBCATEGORIES;
+                  else if (activeCategory === "Wines 🍾") subcategoryConfig = WINES_SUBCATEGORIES;
+
+                  // Group by subcategory if config exists and no search
+                  if (subcategoryConfig && !searchQuery) {
                     // Group items by subcategory
                     const groupedItems = {};
-                    FOOD_SUBCATEGORIES.forEach(({ id }) => {
+                    subcategoryConfig.forEach(({ id }) => {
                       groupedItems[id] = [];
                     });
 
@@ -492,7 +498,7 @@ export default function App() {
                     });
 
                     // Render with separators
-                    return FOOD_SUBCATEGORIES.map(({ id, label }) => {
+                    return subcategoryConfig.map(({ id, label }) => {
                       const items = groupedItems[id] || [];
                       if (items.length === 0) return null;
 
@@ -704,7 +710,7 @@ export default function App() {
                 ) : (
                   <button style={S.closeBtn} onClick={() => {
                     setTicketTable(activeTable);
-                    initiateClose();
+                    initiateClose(activeTable);
                   }}>
                     Close table
                   </button>
