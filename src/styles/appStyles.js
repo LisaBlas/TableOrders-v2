@@ -834,10 +834,39 @@ export const S = {
     position: "relative",
     padding: "12px 16px",
     background: "#fff",
-    borderBottom: "1px solid #ebe9e3"
+    borderBottom: "1px solid #ebe9e3",
+    display: "flex",
+    gap: 8,
+    alignItems: "center"
+  },
+  customAddBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 10,
+    border: "1.5px solid #1a1a1a",
+    background: "#1a1a1a",
+    color: "#fff",
+    fontSize: 22,
+    fontWeight: 400,
+    cursor: "pointer",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    flexShrink: 0,
+    lineHeight: 1
   },
   searchInput: {
     width: "100%",
+    padding: "10px 38px 10px 14px",
+    fontSize: 15,
+    border: "1.5px solid #ddd",
+    borderRadius: 10,
+    background: "#fafaf8",
+    outline: "none",
+    fontFamily: "inherit"
+  },
+  searchInputWithBtn: {
+    flex: 1,
     padding: "10px 38px 10px 14px",
     fontSize: 15,
     border: "1.5px solid #ddd",
@@ -1074,5 +1103,43 @@ export const S = {
     fontSize: 15,
     color: "#999",
     lineHeight: 1.5
+  },
+
+  // Custom item modal styles
+  customModalForm: {
+    display: "flex",
+    flexDirection: "column",
+    gap: 14,
+    marginBottom: 20
+  },
+  customModalField: {
+    display: "flex",
+    flexDirection: "column",
+    gap: 6,
+    flex: 1
+  },
+  customModalFieldSmall: {
+    display: "flex",
+    flexDirection: "column",
+    gap: 6,
+    width: 90
+  },
+  customModalRow: {
+    display: "flex",
+    gap: 10
+  },
+  customModalLabel: {
+    fontSize: 13,
+    fontWeight: 600,
+    color: "#555"
+  },
+  customModalInput: {
+    padding: "10px 12px",
+    fontSize: 15,
+    border: "1.5px solid #ddd",
+    borderRadius: 8,
+    background: "#fafaf8",
+    outline: "none",
+    fontFamily: "inherit"
   },
 };

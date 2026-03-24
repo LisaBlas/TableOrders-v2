@@ -34,6 +34,12 @@ export default function App() {
   const [searchQuery, setSearchQuery] = useState("");
   const [seatConfirmTable, setSeatConfirmTable] = useState(null);
 
+  // Custom item state
+  const [customName, setCustomName] = useState("");
+  const [customPrice, setCustomPrice] = useState("");
+  const [customQty, setCustomQty] = useState("1");
+  const [showCustomModal, setShowCustomModal] = useState(false);
+
   // Split state
   const [splitRemaining, setSplitRemaining] = useState([]);
   const [splitSelected, setSplitSelected] = useState(new Set());
@@ -103,6 +109,9 @@ export default function App() {
     setActiveTab("order");
     setShowSplitOptions(false);
     setSearchQuery("");
+    setCustomName("");
+    setCustomPrice("");
+    setCustomQty("1");
     setView("order");
   };
 
@@ -121,6 +130,49 @@ export default function App() {
       return { ...prev, [activeTable]: [...current, { ...item, qty: 1, sent: false }] };
     });
     showToast(`+ ${item.name}`);
+  };
+
+  const addCustomItem = () => {
+    const name = customName.trim();
+    const price = parseFloat(customPrice);
+    const qty = parseInt(customQty);
+
+    // Validation
+    if (!name) {
+      showToast("⚠ Item name required");
+      return;
+    }
+    if (isNaN(price) || price <= 0) {
+      showToast("⚠ Valid price required");
+      return;
+    }
+    if (isNaN(qty) || qty < 1) {
+      showToast("⚠ Valid quantity required");
+      return;
+    }
+
+    // Create custom item with unique ID
+    const customItem = {
+      id: `custom-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      name,
+      price,
+      qty: 0, // Will be set by addItem logic
+      sent: false
+    };
+
+    // Add to order using existing logic
+    setOrders((prev) => {
+      const current = prev[activeTable] || [];
+      return { ...prev, [activeTable]: [...current, { ...customItem, qty }] };
+    });
+
+    showToast(`+ ${name} (${qty}×)`);
+
+    // Reset form and close modal
+    setCustomName("");
+    setCustomPrice("");
+    setCustomQty("1");
+    setShowCustomModal(false);
   };
 
   const removeItem = (itemId) => {
@@ -415,14 +467,21 @@ export default function App() {
           {/* Order Tab Content */}
           {activeTab === "order" && (
             <>
-              {/* Search Bar */}
+              {/* Search Bar with Add Custom Button */}
               <div style={S.searchBar}>
+                <button
+                  style={S.customAddBtn}
+                  onClick={() => setShowCustomModal(true)}
+                  title="Add custom item"
+                >
+                  +
+                </button>
                 <input
                   type="text"
                   placeholder="Search menu items..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  style={S.searchInput}
+                  style={S.searchInputWithBtn}
                 />
                 {searchQuery && (
                   <button
@@ -1133,6 +1192,67 @@ export default function App() {
               </button>
             </>
           )}
+        </div>
+      )}
+
+      {/* ── CUSTOM ITEM MODAL ── */}
+      {showCustomModal && (
+        <div style={S.modalOverlay} onClick={() => setShowCustomModal(false)}>
+          <div style={S.modalCard} onClick={(e) => e.stopPropagation()}>
+            <div style={S.modalTitle}>Add Custom Item</div>
+            <div style={S.customModalForm}>
+              <div style={S.customModalField}>
+                <label style={S.customModalLabel}>Item name</label>
+                <input
+                  type="text"
+                  placeholder="e.g., Special request"
+                  value={customName}
+                  onChange={(e) => setCustomName(e.target.value)}
+                  style={S.customModalInput}
+                  autoFocus
+                />
+              </div>
+              <div style={S.customModalRow}>
+                <div style={S.customModalField}>
+                  <label style={S.customModalLabel}>Price (€)</label>
+                  <input
+                    type="number"
+                    placeholder="0.00"
+                    value={customPrice}
+                    onChange={(e) => setCustomPrice(e.target.value)}
+                    step="0.01"
+                    min="0"
+                    style={S.customModalInput}
+                  />
+                </div>
+                <div style={S.customModalFieldSmall}>
+                  <label style={S.customModalLabel}>Quantity</label>
+                  <input
+                    type="number"
+                    placeholder="1"
+                    value={customQty}
+                    onChange={(e) => setCustomQty(e.target.value)}
+                    min="1"
+                    style={S.customModalInput}
+                  />
+                </div>
+              </div>
+            </div>
+            <div style={S.modalActions}>
+              <button
+                style={S.modalCancelBtn}
+                onClick={() => setShowCustomModal(false)}
+              >
+                Cancel
+              </button>
+              <button
+                style={S.modalConfirmBtn}
+                onClick={addCustomItem}
+              >
+                Add to order
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
