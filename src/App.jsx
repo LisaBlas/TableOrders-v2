@@ -1252,8 +1252,8 @@ export default function App() {
                 });
 
                 aggregatedItems.forEach(item => {
-                  const cat = item.category || "Other";
-                  const subcat = item.subcategory || "other";
+                  const cat = item.category || "Ad-hoc Items";
+                  const subcat = item.subcategory || "custom";
 
                   if (!categorizedItems[cat]) categorizedItems[cat] = {};
                   if (!categorizedItems[cat][subcat]) categorizedItems[cat][subcat] = [];
@@ -1277,6 +1277,7 @@ export default function App() {
 
                 return (
                   <div style={S.billsList}>
+                    {/* Render menu categories first */}
                     {Object.keys(MENU).map(category => {
                       const categoryItems = categorizedItems[category];
                       const subcatConfig = subcatConfigs[category];
@@ -1331,6 +1332,29 @@ export default function App() {
                         );
                       }
                     })}
+
+                    {/* Render ad-hoc/custom items at the end */}
+                    {categorizedItems["Ad-hoc Items"] && (() => {
+                      const customItems = Object.values(categorizedItems["Ad-hoc Items"]).flat();
+                      if (customItems.length === 0) return null;
+
+                      return (
+                        <div key="ad-hoc">
+                          <div style={S.subcategorySeparator}>Ad-hoc Items</div>
+                          {customItems.map((item, idx) => (
+                            <div key={idx} style={S.billCard}>
+                              <div style={S.billCardHeader}>
+                                <span style={S.billTableNum}>{item.name}</span>
+                                <span style={S.billTotal}>{item.qty} unit{item.qty > 1 ? "s" : ""}</span>
+                              </div>
+                              <div style={S.billMeta}>
+                                {item.revenue.toFixed(2)}€ total · {(item.revenue / item.qty).toFixed(2)}€ each
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      );
+                    })()}
                   </div>
                 );
               })()}
