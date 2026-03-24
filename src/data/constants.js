@@ -64,31 +64,62 @@ export const MENU = {
     // Wines by Glass - Other
     { id: "wg12", name: "Yellow Muskat", price: 9, subcategory: "wine" },
     { id: "wg13", name: "Cuvée des Galets", price: 9, subcategory: "wine" },
+    // Weinschorle
+    { id: "wg14", name: "Weinschorle", price: 6, subcategory: "wine" },
     // Aperitifs & Spirits
     { id: "dr1", name: "Aperol", price: 8, subcategory: "cocktail" },
     { id: "dr2", name: "Cynar", price: 8, subcategory: "cocktail" },
     { id: "dr3", name: "Campari", price: 8, subcategory: "cocktail" },
+    { id: "dr17", name: "Kir", price: 5, subcategory: "cocktail" },
+    { id: "dr18", name: "Kir Royal", price: 7.5, subcategory: "cocktail" },
+    { id: "dr19", name: "Select", price: 8, subcategory: "cocktail" },
+    { id: "dr20", name: "Pastis", price: 6, subcategory: "cocktail" },
     // Beer
-    { id: "dr5", name: "Pilsner Urquell", price: 3.7, subcategory: "bier" },
-    { id: "dr6", name: "Stortebecker", price: 3.7, subcategory: "bier" },
+    { id: "dr5", name: "Pilsner Urquell", price: 3.8, subcategory: "bier" },
+    { id: "dr6", name: "Stortebecker", price: 3.8, subcategory: "bier" },
     { id: "dr4", name: "Picon Biere", price: 4.8, subcategory: "bier" },
     // Soft Drinks
     { id: "dr7", name: "Fritz Cola", price: 3.7, subcategory: "soft" },
-    { id: "dr8", name: "Limo Granada", price: 3.7, subcategory: "soft" },
-    { id: "dr9", name: "Limo Orange", price: 3.7, subcategory: "soft" },
-    { id: "dr10", name: "Limo Minze", price: 3.7, subcategory: "soft" },
-    { id: "dr11", name: "Limo Pamplemousse", price: 3.7, subcategory: "soft" },
+    { id: "dr8", name: "Limo Granada", price: 3.8, subcategory: "soft" },
+    { id: "dr9", name: "Limo Orange", price: 3.8, subcategory: "soft" },
+    { id: "dr10", name: "Limo Minze", price: 3.8, subcategory: "soft" },
+    { id: "dr11", name: "Limo Pamplemousse", price: 3.8, subcategory: "soft" },
     // Juices & Water
-    { id: "dr12", name: "Rahbarb Saft 0.4 cl", price: 4, subcategory: "soft" },
-    { id: "dr12b", name: "Rahbarb Saft 0.2 cl", price: 3, subcategory: "soft" },
+    { id: "dr12", name: "Rahbarb Saft 0.4 cl", price: 4.7, subcategory: "soft" },
+    { id: "dr12b", name: "Rahbarb Saft 0.2 cl", price: 3.5, subcategory: "soft" },
     { id: "dr13", name: "Rhabarb Schorle 0.4 cl", price: 4, subcategory: "soft" },
     { id: "dr13b", name: "Rhabarb Schorle 0.2 cl", price: 3, subcategory: "soft" },
     { id: "dr14", name: "Apfel Schorle 0.4 cl", price: 4, subcategory: "soft" },
     { id: "dr14b", name: "Apfel Schorle 0.2 cl", price: 3, subcategory: "soft" },
-    { id: "dr15", name: "Apfel Saft 0.4 cl", price: 4, subcategory: "soft" },
-    { id: "dr15b", name: "Apfel Saft 0.2 cl", price: 3, subcategory: "soft" },
+    { id: "dr15", name: "Apfel Saft 0.4 cl", price: 4.7, subcategory: "soft" },
+    { id: "dr15b", name: "Apfel Saft 0.2 cl", price: 3.5, subcategory: "soft" },
     { id: "dr16", name: "Wasser Sprudel 0.4 cl", price: 2.8, subcategory: "soft" },
-    { id: "dr16b", name: "Wasser Sprudel 0.2 cl", price: 1.8, subcategory: "soft" },
+    { id: "dr16b", name: "Wasser Sprudel 0.2 cl", price: 1.5, subcategory: "soft" },
+    { id: "dr21", name: "Wasser Sprudel Bottle", price: 5.5, subcategory: "soft" },
+    { id: "dr22", name: "Wasser Bottle", price: 5.5, subcategory: "soft" },
+    // Schnaps
+    { id: "sn1", name: "Cognac 0,2cl", price: 4.5, subcategory: "schnaps" },
+    { id: "sn2", name: "Cognac 4cl", price: 8.5, subcategory: "schnaps" },
+    { id: "sn3", name: "Calvados 0,2cl", price: 3.5, subcategory: "schnaps" },
+    { id: "sn4", name: "Calvados 0,4cl", price: 6.5, subcategory: "schnaps" },
+    { id: "sn5", name: "Mirabelle 0,2cl", price: 3, subcategory: "schnaps" },
+    { id: "sn6", name: "Mirabelle 0,4cl", price: 5.5, subcategory: "schnaps" },
+    { id: "sn7", name: "Jameson 0,2cl", price: 3, subcategory: "schnaps" },
+    { id: "sn8", name: "Jameson 0,4cl", price: 5.5, subcategory: "schnaps" },
+    { id: "sn9", name: "Crème de Calvados 0,2cl", price: 4, subcategory: "schnaps" },
+    { id: "sn10", name: "Crème de Calvados 0,4cl", price: 7.5, subcategory: "schnaps" },
+    // Teas
+    { id: "te1", name: "PfefferMinze", price: 3, subcategory: "teas" },
+    { id: "te2", name: "Kamille", price: 3, subcategory: "teas" },
+    { id: "te3", name: "Salbei", price: 3, subcategory: "teas" },
+    { id: "te4", name: "Krauter", price: 3, subcategory: "teas" },
+    { id: "te5", name: "Bergtee", price: 3.7, subcategory: "teas" },
+    { id: "te6", name: "Thymian", price: 3.7, subcategory: "teas" },
+    { id: "te7", name: "Heisse Zitrone", price: 3.7, subcategory: "teas" },
+    { id: "te8", name: "Heisse Orange", price: 5, subcategory: "teas" },
+    // Coffee
+    { id: "co1", name: "Espresso", price: 1.9, subcategory: "coffee" },
+    { id: "co2", name: "Cafe Crema", price: 2.6, subcategory: "coffee" },
   ],
   "Wines 🍾": [
     // White wines (also available by glass marked with *)
@@ -151,6 +182,9 @@ export const DRINKS_SUBCATEGORIES = [
   { id: "bier", label: "🍺 Bier" },
   { id: "cocktail", label: "🍸 Cocktail" },
   { id: "soft", label: "🥤 Soft" },
+  { id: "schnaps", label: "🥃 Schnaps" },
+  { id: "teas", label: "🍵 Teas" },
+  { id: "coffee", label: "☕ Coffee" },
 ];
 
 export const WINES_SUBCATEGORIES = [
