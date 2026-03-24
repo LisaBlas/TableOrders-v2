@@ -29,10 +29,15 @@ export const MENU = {
     { id: "f12", name: "Fondue", price: 28, subcategory: "warm" },
     // Salads
     { id: "f13", name: "Salad Seguin", price: 12.5, subcategory: "salads" },
+    { id: "f21", name: "Salad Seguin +", price: 13.5, subcategory: "salads" },
     { id: "f14", name: "Salad Papillon", price: 11, subcategory: "salads" },
+    { id: "f22", name: "Salad Papillon +", price: 12, subcategory: "salads" },
     { id: "f15", name: "Salad Bauern", price: 10, subcategory: "salads" },
+    { id: "f23", name: "Salad Bauern +", price: 11, subcategory: "salads" },
     { id: "f16", name: "Salad Porthos", price: 12, subcategory: "salads" },
+    { id: "f24", name: "Salad Porthos +", price: 13, subcategory: "salads" },
     { id: "f17", name: "Salad Basic", price: 7, subcategory: "salads" },
+    { id: "f25", name: "Salad Basic +", price: 8, subcategory: "salads" },
     // Dessert
     { id: "f18", name: "Tarte Tatin", price: 7, subcategory: "snacks" },
     { id: "f19", name: "Olives", price: 3, subcategory: "snacks" },
