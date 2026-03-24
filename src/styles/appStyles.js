@@ -153,7 +153,6 @@ export const S = {
     flexDirection: "column"
   },
   menuList: {
-    padding: "8px 0",
     maxHeight: "300px",
     overflowY: "auto"
   },

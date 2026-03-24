@@ -17,8 +17,7 @@ export const MENU = {
     // Cheese & Charcuterie
     { id: "f1", name: "Small Cheese Plate", price: 10, subcategory: "cheese" },
     { id: "f2", name: "Cheese Plate", price: 11, subcategory: "cheese" },
-    { id: "f3", name: "Small Charcuterie Plate", price: 11, subcategory: "cheese" },
-    { id: "f4", name: "Charcuterie Plate", price: 22, subcategory: "cheese" },
+    { id: "f4", name: "Charcuterie Plate", price: 11, subcategory: "cheese" },
     { id: "f5", name: "Mixed Plate", price: 25, subcategory: "cheese" },
     // Hot Dishes
     { id: "f6", name: "Marcelin Chaud", price: 9, subcategory: "warm" },
