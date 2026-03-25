@@ -34,6 +34,9 @@ export default function App() {
   const [searchQuery, setSearchQuery] = useState("");
   const [seatConfirmTable, setSeatConfirmTable] = useState(null);
   const [dailySalesTab, setDailySalesTab] = useState("chronological");
+  const [editingBillIndex, setEditingBillIndex] = useState(null);
+  const [billSnapshot, setBillSnapshot] = useState(null);
+  const [deletingBillIndex, setDeletingBillIndex] = useState(null);
 
   // Track sent batches (each send creates a new batch with timestamp)
   const [sentBatches, setSentBatches] = useState({});
@@ -310,6 +313,94 @@ export default function App() {
       setPaidBills([]);
       showToast("Daily sales cleared");
     }
+  };
+
+  const removePaidBillItem = (billIndex, itemId) => {
+    setPaidBills((prev) => {
+      const updated = [...prev];
+      const bill = { ...updated[billIndex] };
+
+      // Find the item and decrease quantity
+      const itemIdx = bill.items.findIndex(i => i.id === itemId);
+      if (itemIdx === -1) return prev;
+
+      const item = bill.items[itemIdx];
+      const newQty = item.qty - 1;
+
+      if (newQty <= 0) {
+        // Remove item completely
+        bill.items = bill.items.filter((_, idx) => idx !== itemIdx);
+        showToast(`Removed ${item.name}`);
+      } else {
+        // Decrease quantity
+        bill.items = bill.items.map((itm, idx) =>
+          idx === itemIdx ? { ...itm, qty: newQty } : itm
+        );
+        showToast(`− ${item.name}`);
+      }
+
+      // Recalculate total
+      bill.total = bill.items.reduce((sum, itm) => sum + itm.price * itm.qty, 0);
+
+      // If no items left, remove the bill
+      if (bill.items.length === 0) {
+        updated.splice(billIndex, 1);
+        showToast("Bill removed (no items left)");
+      } else {
+        updated[billIndex] = bill;
+      }
+
+      return updated;
+    });
+  };
+
+  const deletePaidBill = (billIndex) => {
+    setPaidBills((prev) => {
+      const updated = [...prev];
+      const bill = updated[billIndex];
+      updated.splice(billIndex, 1);
+      showToast(`Table ${bill.tableId} bill deleted`);
+      return updated;
+    });
+  };
+
+  const enterEditMode = (billIndex) => {
+    // Save a snapshot of the current bill state
+    setBillSnapshot(JSON.parse(JSON.stringify(paidBills[billIndex])));
+    setEditingBillIndex(billIndex);
+  };
+
+  const cancelEditMode = () => {
+    // Restore the bill from snapshot
+    if (billSnapshot && editingBillIndex !== null) {
+      setPaidBills((prev) => {
+        const updated = [...prev];
+        updated[editingBillIndex] = billSnapshot;
+        return updated;
+      });
+      showToast("Changes cancelled");
+    }
+    setBillSnapshot(null);
+    setEditingBillIndex(null);
+  };
+
+  const exitEditMode = () => {
+    // Exit edit mode without restoring (changes are kept)
+    setBillSnapshot(null);
+    setEditingBillIndex(null);
+  };
+
+  const confirmDeleteBill = () => {
+    if (deletingBillIndex !== null) {
+      deletePaidBill(deletingBillIndex);
+      setBillSnapshot(null);
+      setEditingBillIndex(null);
+      setDeletingBillIndex(null);
+    }
+  };
+
+  const cancelDeleteBill = () => {
+    setDeletingBillIndex(null);
   };
 
   // ── SPLIT ──────────────────────────────────────────────
@@ -1271,35 +1362,82 @@ export default function App() {
               {/* Chronological Tab Content */}
               {dailySalesTab === "chronological" && (
                 <div style={S.billsList}>
-                  {[...paidBills].reverse().map((bill, idx) => (
-                    <div key={idx} style={S.billCard}>
-                      <div style={S.billCardHeader}>
-                        <span style={S.billTableNum}>Table {bill.tableId}</span>
-                        <span style={S.billTotal}>{bill.total.toFixed(2)}€</span>
+                  {[...paidBills].reverse().map((bill, reverseIdx) => {
+                    // Calculate original index in paidBills array
+                    const billIndex = paidBills.length - 1 - reverseIdx;
+                    const isEditing = editingBillIndex === billIndex;
+
+                    return (
+                      <div key={reverseIdx} style={S.billCard}>
+                        <div style={S.billCardHeader}>
+                          <span style={S.billTableNum}>Table {bill.tableId}</span>
+                          {!isEditing ? (
+                            <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                              <span style={S.billTotal}>{bill.total.toFixed(2)}€</span>
+                              <button
+                                style={S.editBillBtn}
+                                onClick={() => enterEditMode(billIndex)}
+                              >
+                                Edit
+                              </button>
+                            </div>
+                          ) : (
+                            <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                              <button
+                                style={S.doneEditBtn}
+                                onClick={exitEditMode}
+                              >
+                                Done
+                              </button>
+                              <button
+                                style={S.cancelEditBtn}
+                                onClick={cancelEditMode}
+                              >
+                                Cancel
+                              </button>
+                              <button
+                                style={S.deleteBillBtnIcon}
+                                onClick={() => setDeletingBillIndex(billIndex)}
+                                title="Delete this bill"
+                              >
+                                🗑️
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                        <div style={S.billMeta}>
+                          {new Date(bill.timestamp).toLocaleString("en-GB")} ·{" "}
+                          {bill.paymentMode === "full"
+                            ? "Full payment"
+                            : bill.paymentMode === "equal"
+                            ? `Split ${bill.splitData.guests} ways`
+                            : `Split by item (${bill.splitData.payments.length} guests)`}
+                        </div>
+                        <div style={S.billItemsList}>
+                          {bill.items.map((item) => (
+                            <div key={item.id} style={isEditing ? S.billItemEditable : S.billItem}>
+                              {isEditing && (
+                                <button
+                                  style={S.billItemRemoveBtn}
+                                  onClick={() => removePaidBillItem(billIndex, item.id)}
+                                  title="Remove one"
+                                >
+                                  −
+                                </button>
+                              )}
+                              <span style={S.billItemName}>
+                                <span style={S.billItemQty}>{item.qty}×</span>
+                                {item.name}
+                              </span>
+                              <span style={S.billItemPrice}>
+                                {(item.price * item.qty).toFixed(2)}€
+                              </span>
+                            </div>
+                          ))}
+                        </div>
                       </div>
-                      <div style={S.billMeta}>
-                        {new Date(bill.timestamp).toLocaleString("en-GB")} ·{" "}
-                        {bill.paymentMode === "full"
-                          ? "Full payment"
-                          : bill.paymentMode === "equal"
-                          ? `Split ${bill.splitData.guests} ways`
-                          : `Split by item (${bill.splitData.payments.length} guests)`}
-                      </div>
-                      <div style={S.billItemsList}>
-                        {bill.items.map((item) => (
-                          <div key={item.id} style={S.billItem}>
-                            <span style={S.billItemName}>
-                              <span style={S.billItemQty}>{item.qty}×</span>
-                              {item.name}
-                            </span>
-                            <span style={S.billItemPrice}>
-                              {(item.price * item.qty).toFixed(2)}€
-                            </span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
 
@@ -1460,6 +1598,26 @@ export default function App() {
               </button>
             </>
           )}
+        </div>
+      )}
+
+      {/* ── DELETE BILL CONFIRMATION ── */}
+      {deletingBillIndex !== null && (
+        <div style={S.modalOverlay} onClick={cancelDeleteBill}>
+          <div style={S.modalCard} onClick={(e) => e.stopPropagation()}>
+            <div style={S.modalTitle}>Delete Bill?</div>
+            <div style={S.modalMessage}>
+              Are you sure? This action cannot be undone.
+            </div>
+            <div style={S.modalActions}>
+              <button style={S.modalCancelBtn} onClick={cancelDeleteBill}>
+                Cancel
+              </button>
+              <button style={S.modalDeleteBtn} onClick={confirmDeleteBill}>
+                Delete
+              </button>
+            </div>
+          </div>
         </div>
       )}
 

@@ -988,6 +988,17 @@ export const S = {
     fontWeight: 600,
     cursor: "pointer"
   },
+  modalDeleteBtn: {
+    flex: 1,
+    padding: "12px",
+    borderRadius: 10,
+    border: "none",
+    background: "#c0392b",
+    color: "#fff",
+    fontSize: 15,
+    fontWeight: 600,
+    cursor: "pointer"
+  },
 
   // Daily Sales styles
   salesBtn: {
@@ -1098,6 +1109,74 @@ export const S = {
   billItemPrice: {
     fontWeight: 500,
     color: "#555"
+  },
+  billItemEditable: {
+    fontSize: 13,
+    color: "#666",
+    display: "flex",
+    alignItems: "center",
+    gap: 8,
+    padding: "3px 0"
+  },
+  billItemRemoveBtn: {
+    width: 20,
+    height: 20,
+    borderRadius: "50%",
+    border: "1.5px solid #ddd",
+    background: "#fff",
+    fontSize: 14,
+    lineHeight: 1,
+    cursor: "pointer",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    color: "#999",
+    flexShrink: 0
+  },
+  editBillBtn: {
+    padding: "5px 12px",
+    borderRadius: 8,
+    border: "1.5px solid #ddd",
+    background: "#fff",
+    fontSize: 13,
+    fontWeight: 600,
+    cursor: "pointer",
+    color: "#555"
+  },
+  doneEditBtn: {
+    flex: 1,
+    padding: "6px 12px",
+    borderRadius: 8,
+    border: "none",
+    background: "#2d5a35",
+    color: "#fff",
+    fontSize: 13,
+    fontWeight: 600,
+    cursor: "pointer"
+  },
+  cancelEditBtn: {
+    flex: 1,
+    padding: "6px 12px",
+    borderRadius: 8,
+    border: "1.5px solid #ddd",
+    background: "#fff",
+    fontSize: 13,
+    fontWeight: 600,
+    cursor: "pointer",
+    color: "#555"
+  },
+  deleteBillBtnIcon: {
+    width: 32,
+    height: 32,
+    borderRadius: 8,
+    border: "1.5px solid #e0a0a0",
+    background: "#fff",
+    fontSize: 16,
+    cursor: "pointer",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    flexShrink: 0
   },
   clearDayBtn: {
     background: "#c0392b",
