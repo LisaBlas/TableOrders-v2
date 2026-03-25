@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { TABLES, MENU, STATUS_CONFIG, FOOD_SUBCATEGORIES, DRINKS_SUBCATEGORIES, WINES_SUBCATEGORIES } from "./data/constants";
-import { getTableStatus, expandItems, copyToClipboard, formatTicketText, formatOrderText } from "./utils/helpers";
+import { getTableStatus, expandItems, copyToClipboard, formatTicketText, formatOrderText, consolidateItems, getItemDestination } from "./utils/helpers";
 import { S } from "./styles/appStyles";
 
 export default function App() {
@@ -34,6 +34,9 @@ export default function App() {
   const [searchQuery, setSearchQuery] = useState("");
   const [seatConfirmTable, setSeatConfirmTable] = useState(null);
   const [dailySalesTab, setDailySalesTab] = useState("chronological");
+
+  // Track sent batches (each send creates a new batch with timestamp)
+  const [sentBatches, setSentBatches] = useState({});
 
   // Custom item state
   const [customName, setCustomName] = useState("");
@@ -119,16 +122,16 @@ export default function App() {
   const addItem = (item) => {
     setOrders((prev) => {
       const current = prev[activeTable] || [];
-      const existing = current.find((o) => o.id === item.id && !o.sent);
+      const existing = current.find((o) => o.id === item.id);
       if (existing) {
         return {
           ...prev,
           [activeTable]: current.map((o) =>
-            o.id === item.id && !o.sent ? { ...o, qty: o.qty + 1 } : o
+            o.id === item.id ? { ...o, qty: o.qty + 1 } : o
           ),
         };
       }
-      return { ...prev, [activeTable]: [...current, { ...item, qty: 1, sent: false }] };
+      return { ...prev, [activeTable]: [...current, { ...item, qty: 1, sentQty: 0 }] };
     });
     showToast(`+ ${item.name}`);
   };
@@ -158,13 +161,13 @@ export default function App() {
       name,
       price,
       qty: 0, // Will be set by addItem logic
-      sent: false
+      sentQty: 0
     };
 
     // Add to order using existing logic
     setOrders((prev) => {
       const current = prev[activeTable] || [];
-      return { ...prev, [activeTable]: [...current, { ...customItem, qty }] };
+      return { ...prev, [activeTable]: [...current, { ...customItem, qty, sentQty: 0 }] };
     });
 
     showToast(`+ ${name} (${qty}×)`);
@@ -182,7 +185,16 @@ export default function App() {
       return {
         ...prev,
         [activeTable]: current
-          .map((o) => (o.id === itemId && !o.sent ? { ...o, qty: o.qty - 1 } : o))
+          .map((o) => {
+            if (o.id === itemId) {
+              const unsent = o.qty - (o.sentQty || 0);
+              // Only allow removal if there are unsent items
+              if (unsent > 0) {
+                return { ...o, qty: o.qty - 1 };
+              }
+            }
+            return o;
+          })
           .filter((o) => o.qty > 0),
       };
     });
@@ -199,7 +211,15 @@ export default function App() {
       return {
         ...prev,
         [activeTable]: current
-          .map((o) => (o.id === itemId ? { ...o, qty: o.qty - 1 } : o))
+          .map((o) => {
+            if (o.id === itemId) {
+              const newQty = o.qty - 1;
+              // Reduce sentQty if we're removing sent items
+              const newSentQty = Math.min(o.sentQty || 0, newQty);
+              return { ...o, qty: newQty, sentQty: newSentQty };
+            }
+            return o;
+          })
           .filter((o) => o.qty > 0),
       };
     });
@@ -207,14 +227,28 @@ export default function App() {
 
   const sendOrder = () => {
     const current = orders[activeTable] || [];
-    const unsent = current.filter((o) => !o.sent);
+    const unsent = current.filter((o) => (o.qty - (o.sentQty || 0)) > 0);
     if (unsent.length === 0) return;
-    const text = formatOrderText(activeTable, unsent);
+
+    const text = formatOrderText(activeTable, current);
     copyToClipboard(text);
+
+    // Create new batch with timestamp and unsent items
+    const newBatch = {
+      timestamp: new Date(),
+      items: unsent.map(o => ({ ...o, qty: o.qty - (o.sentQty || 0) }))
+    };
+
+    setSentBatches((prev) => ({
+      ...prev,
+      [activeTable]: [...(prev[activeTable] || []), newBatch]
+    }));
+
     setOrders((prev) => ({
       ...prev,
-      [activeTable]: current.map((o) => (o.sent ? o : { ...o, sent: true })),
+      [activeTable]: current.map((o) => ({ ...o, sentQty: o.qty })),
     }));
+
     showToast("Order sent & copied!");
   };
 
@@ -252,6 +286,11 @@ export default function App() {
     setSeatedTables((prev) => {
       const next = new Set(prev);
       next.delete(closedReceipt.tableId);
+      return next;
+    });
+    setSentBatches((prev) => {
+      const next = { ...prev };
+      delete next[closedReceipt.tableId];
       return next;
     });
     showToast(`Table ${closedReceipt.tableId} closed ✓`);
@@ -338,6 +377,11 @@ export default function App() {
       next.delete(ticketTable);
       return next;
     });
+    setSentBatches((prev) => {
+      const next = { ...prev };
+      delete next[ticketTable];
+      return next;
+    });
     showToast(`Table ${ticketTable} closed ✓`);
     setView("tables");
     setTicketTable(null);
@@ -348,9 +392,12 @@ export default function App() {
   };
 
   const currentOrder = orders[activeTable] || [];
-  const unsentItems = currentOrder.filter((o) => !o.sent);
-  const sentItems = currentOrder.filter((o) => o.sent);
+  const unsentItems = currentOrder
+    .map((o) => ({ ...o, qty: o.qty - (o.sentQty || 0) }))
+    .filter((o) => o.qty > 0);
+
   const unsentTotal = unsentItems.reduce((s, o) => s + o.price * o.qty, 0);
+  const tableBatches = sentBatches[activeTable] || [];
 
   const ticketItems = orders[ticketTable] || [];
   const ticketTotal = ticketItems.reduce((s, o) => s + o.price * o.qty, 0);
@@ -655,20 +702,69 @@ export default function App() {
                 })()}
                 </div>
 
-                {/* Sent items section - inside scrollable area */}
-                {sentItems.length > 0 && (
-                  <div style={S.sentSection}>
-                    <span style={S.sentLabel}>Sent to kitchen</span>
-                    {sentItems.map((o) => (
-                      <div key={o.id} style={S.sentItem}>
-                        <span>
-                          {o.qty}× {o.name}
-                        </span>
-                        <span style={S.sentPrice}>
-                          {(o.price * o.qty).toFixed(2)}€
-                        </span>
-                      </div>
-                    ))}
+                {/* Sent batches - each send creates a new timestamped section */}
+                {tableBatches.length > 0 && (
+                  <div style={S.sentSectionsContainer}>
+                    {[...tableBatches].reverse().map((batch, batchIdx) => {
+                      // Group batch items by destination
+                      const batchByDestination = { bar: [], counter: [], kitchen: [] };
+                      batch.items.forEach((item) => {
+                        const destination = getItemDestination(item);
+                        batchByDestination[destination].push(item);
+                      });
+
+                      return (
+                        <div key={batchIdx}>
+                          {/* Timestamp divider for this batch */}
+                          <div style={S.sentDivider}>
+                            <div style={S.sentDividerLine} />
+                            <span style={S.sentDividerText}>
+                              Sent {batch.timestamp.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}
+                            </span>
+                            <div style={S.sentDividerLine} />
+                          </div>
+
+                          {/* Bar items */}
+                          {batchByDestination.bar.length > 0 && (
+                            <div style={S.sentSection}>
+                              <span style={S.sentLabel}>🍷 Bar</span>
+                              {batchByDestination.bar.map((o) => (
+                                <div key={o.id} style={S.sentItem}>
+                                  <span>{o.qty}× {o.name}</span>
+                                  <span style={S.sentPrice}>{(o.price * o.qty).toFixed(2)}€</span>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+
+                          {/* Counter items */}
+                          {batchByDestination.counter.length > 0 && (
+                            <div style={S.sentSection}>
+                              <span style={S.sentLabel}>🧀 Counter </span>
+                              {batchByDestination.counter.map((o) => (
+                                <div key={o.id} style={S.sentItem}>
+                                  <span>{o.qty}× {o.name}</span>
+                                  <span style={S.sentPrice}>{(o.price * o.qty).toFixed(2)}€</span>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+
+                          {/* Kitchen items */}
+                          {batchByDestination.kitchen.length > 0 && (
+                            <div style={S.sentSection}>
+                              <span style={S.sentLabel}>🍽️ Kitchen </span>
+                              {batchByDestination.kitchen.map((o) => (
+                                <div key={o.id} style={S.sentItem}>
+                                  <span>{o.qty}× {o.name}</span>
+                                  <span style={S.sentPrice}>{(o.price * o.qty).toFixed(2)}€</span>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>
                 )}
               </div>
@@ -702,7 +798,7 @@ export default function App() {
                   </span>
                 </div>
                 <div style={S.divider} />
-                {currentOrder.map((o) => (
+                {consolidateItems(currentOrder).map((o) => (
                   <div key={o.id} style={S.ticketRowEditable}>
                     <button
                       style={S.ticketRemoveBtn}
@@ -799,7 +895,7 @@ export default function App() {
               </span>
             </div>
             <div style={S.divider} />
-            {ticketItems.map((o) => (
+            {consolidateItems(ticketItems).map((o) => (
               <div key={o.id} style={S.ticketRow}>
                 <span style={S.ticketQty}>{o.qty}×</span>
                 <span style={S.ticketName}>{o.name}</span>
@@ -1446,7 +1542,7 @@ export default function App() {
               {closedReceipt.time.toLocaleString("en-GB")}
             </div>
             <div style={S.divider} />
-            {closedReceipt.items.map((o) => (
+            {consolidateItems(closedReceipt.items).map((o) => (
               <div key={o.id} style={S.closeRow}>
                 <span style={S.closeQty}>{o.qty}×</span>
                 <span style={S.closeName}>{o.name}</span>

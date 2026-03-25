@@ -262,7 +262,7 @@ export const S = {
     width: "100%"
   },
   sentSection: {
-    margin: "8px 16px 100px",
+    margin: "8px 16px",
     padding: "12px 16px",
     background: "#fff",
     borderRadius: 10,
@@ -286,6 +286,31 @@ export const S = {
   },
   sentPrice: {
     color: "#aaa"
+  },
+  sentDivider: {
+    display: "flex",
+    alignItems: "center",
+    gap: 12,
+    margin: "16px 16px 8px",
+    padding: "0"
+  },
+  sentDividerLine: {
+    flex: 1,
+    height: 1,
+    background: "#d4d2ca"
+  },
+  sentDividerText: {
+    fontSize: 11,
+    fontWeight: 600,
+    color: "#999",
+    textTransform: "uppercase",
+    letterSpacing: "0.5px",
+    whiteSpace: "nowrap"
+  },
+  sentSectionsContainer: {
+    maxHeight: "300px",
+    overflowY: "auto",
+    marginBottom: 8
   },
   ticket: {
     margin: 16,

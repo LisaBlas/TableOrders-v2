@@ -3,7 +3,7 @@ export function getTableStatus(tableId, orders, seatedTables = new Set()) {
   const hasOrders = order && order.length > 0;
 
   if (hasOrders) {
-    const hasOrdered = order.some((item) => item.sent);
+    const hasOrdered = order.some((item) => (item.sentQty || 0) > 0);
     if (hasOrdered) return "ordered";
     return "taken";
   }
@@ -31,14 +31,80 @@ export function copyToClipboard(text) {
 }
 
 export function formatTicketText(tableId, items) {
-  const total = items.reduce((s, o) => s + o.price * o.qty, 0);
-  return `TICKET — Table ${tableId}\n${"─".repeat(28)}\n${items
+  const consolidated = consolidateItems(items);
+  const total = consolidated.reduce((s, o) => s + o.price * o.qty, 0);
+  return `TICKET — Table ${tableId}\n${"─".repeat(28)}\n${consolidated
     .map((o) => `${o.qty}x ${o.name.padEnd(22)} ${(o.price * o.qty).toFixed(2)}€`)
     .join("\n")}\n${"─".repeat(28)}\nTOTAL  ${total.toFixed(2)}€`;
 }
 
 export function formatOrderText(tableId, items) {
-  return `ORDER — Table ${tableId}\n${new Date().toLocaleTimeString()}\n\n${items
-    .map((o) => `${o.qty}x  ${o.name}  (${(o.price * o.qty).toFixed(2)}€)`)
-    .join("\n")}`;
+  // Group by destination
+  const byDestination = { bar: [], counter: [], kitchen: [] };
+  items.forEach((item) => {
+    const unsentQty = item.qty - (item.sentQty || 0);
+    if (unsentQty > 0) {
+      const destination = getItemDestination(item);
+      byDestination[destination].push({ ...item, qty: unsentQty });
+    }
+  });
+
+  const sections = [];
+
+  if (byDestination.bar.length > 0) {
+    sections.push(
+      "🍷 BAR (Waiter):\n" +
+      byDestination.bar.map((o) => `  ${o.qty}x ${o.name}`).join("\n")
+    );
+  }
+
+  if (byDestination.counter.length > 0) {
+    sections.push(
+      "🧀 COUNTER (Cheese):\n" +
+      byDestination.counter.map((o) => `  ${o.qty}x ${o.name}`).join("\n")
+    );
+  }
+
+  if (byDestination.kitchen.length > 0) {
+    sections.push(
+      "🍽️ KITCHEN (Hot/Salad):\n" +
+      byDestination.kitchen.map((o) => `  ${o.qty}x ${o.name}`).join("\n")
+    );
+  }
+
+  return `ORDER — Table ${tableId}\n${new Date().toLocaleTimeString()}\n\n${sections.join("\n\n")}`;
+}
+
+// Consolidate items with same ID by summing their quantities
+export function consolidateItems(items) {
+  const consolidated = new Map();
+
+  items.forEach((item) => {
+    if (consolidated.has(item.id)) {
+      const existing = consolidated.get(item.id);
+      existing.qty += item.qty;
+    } else {
+      consolidated.set(item.id, { ...item });
+    }
+  });
+
+  return Array.from(consolidated.values());
+}
+
+// Determine destination for an item (Bar, Counter, Kitchen)
+export function getItemDestination(item) {
+  // Bar: All drinks and wines
+  if (item.id.startsWith("wg") || item.id.startsWith("dr") ||
+      item.id.startsWith("wb") || item.id.startsWith("sn") ||
+      item.id.startsWith("te") || item.id.startsWith("co")) {
+    return "bar";
+  }
+
+  // Counter: Cheese & Charcuterie
+  if (item.subcategory === "cheese") {
+    return "counter";
+  }
+
+  // Kitchen: Warm, Salads, Snacks
+  return "kitchen";
 }
