@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { TABLES, MENU, STATUS_CONFIG, FOOD_SUBCATEGORIES, DRINKS_SUBCATEGORIES, BOTTLES_SUBCATEGORIES } from "./data/constants";
-import { getTableStatus, copyToClipboard, formatOrderText, consolidateItems, getItemDestination } from "./utils/helpers";
+import { getTableStatus, copyToClipboard, formatOrderText, consolidateItems, getItemDestination, expandItems } from "./utils/helpers";
 import { S } from "./styles/appStyles";
 
 export default function App() {
@@ -37,6 +37,14 @@ export default function App() {
   const [billSnapshot, setBillSnapshot] = useState(null);
   const [deletingBillIndex, setDeletingBillIndex] = useState(null);
   const [confirmingClose, setConfirmingClose] = useState(false);
+
+  // Split state
+  const [splitRemaining, setSplitRemaining] = useState([]);
+  const [splitSelected, setSplitSelected] = useState(new Set());
+  const [splitPayments, setSplitPayments] = useState([]);
+  const [splitMode, setSplitMode] = useState(null);
+  const [equalGuests, setEqualGuests] = useState(2);
+  const [showSplitOptions, setShowSplitOptions] = useState(false);
 
   // Track sent batches (each send creates a new batch with timestamp)
   const [sentBatches, setSentBatches] = useState({});
@@ -113,6 +121,7 @@ export default function App() {
     setCustomPrice("");
     setCustomQty("1");
     setConfirmingClose(false);
+    setShowSplitOptions(false);
     setView("order");
   };
 
@@ -315,6 +324,83 @@ export default function App() {
     setTicketTable(null);
   };
 
+  // ── SPLIT ──────────────────────────────────────────────
+  const initiateSplit = (mode, tableId = ticketTable) => {
+    const items = orders[tableId] || [];
+    setSplitRemaining(expandItems(items));
+    setSplitSelected(new Set());
+    setSplitPayments([]);
+    setSplitMode(mode);
+    setView("split");
+  };
+
+  const toggleSplitItem = (uid) => {
+    setSplitSelected((prev) => {
+      const next = new Set(prev);
+      next.has(uid) ? next.delete(uid) : next.add(uid);
+      return next;
+    });
+  };
+
+  const selectAllRemaining = () =>
+    setSplitSelected(new Set(splitRemaining.map((i) => i._uid)));
+
+  const confirmSplitPayment = () => {
+    const paid = splitRemaining.filter((i) => splitSelected.has(i._uid));
+    const total = paid.reduce((s, i) => s + i.price, 0);
+    const guestNum = splitPayments.length + 1;
+    const newPayments = [...splitPayments, { guestNum, items: paid, total }];
+    const newRemaining = splitRemaining.filter((i) => !splitSelected.has(i._uid));
+    setSplitPayments(newPayments);
+    setSplitRemaining(newRemaining);
+    setSplitSelected(new Set());
+    setView(newRemaining.length === 0 ? "splitDone" : "splitConfirm");
+  };
+
+  const nextSplitGuest = () => {
+    setSplitSelected(new Set());
+    setView("split");
+  };
+
+  const closeSplitTable = () => {
+    const items = orders[ticketTable] || [];
+    const total = items.reduce((s, o) => s + o.price * o.qty, 0);
+    setPaidBills((prev) => [
+      ...prev,
+      {
+        tableId: ticketTable,
+        items,
+        total,
+        timestamp: new Date().toISOString(),
+        paymentMode: splitMode === "equal" ? "equal" : "item",
+        splitData: splitMode === "item" ? { payments: splitPayments } : { guests: equalGuests },
+      },
+    ]);
+    setOrders((prev) => {
+      const next = { ...prev };
+      delete next[ticketTable];
+      return next;
+    });
+    setSeatedTables((prev) => {
+      const next = new Set(prev);
+      next.delete(ticketTable);
+      return next;
+    });
+    setSentBatches((prev) => {
+      const next = { ...prev };
+      delete next[ticketTable];
+      return next;
+    });
+    showToast(`Table ${ticketTable} closed ✓`);
+    setView("tables");
+    setTicketTable(null);
+    setShowSplitOptions(false);
+    setSplitRemaining([]);
+    setSplitSelected(new Set());
+    setSplitPayments([]);
+    setSplitMode(null);
+  };
+
   const clearDailySales = () => {
     if (confirm("Clear all daily sales? This cannot be undone.")) {
       setPaidBills([]);
@@ -420,6 +506,13 @@ export default function App() {
 
   const ticketItems = orders[ticketTable] || [];
   const ticketTotal = ticketItems.reduce((s, o) => s + o.price * o.qty, 0);
+  const equalShare = equalGuests > 0 ? ticketTotal / equalGuests : 0;
+  const currentGuestNum = splitPayments.length + 1;
+  const lastPayment = splitPayments[splitPayments.length - 1];
+  const splitSelectedTotal = splitRemaining
+    .filter((i) => splitSelected.has(i._uid))
+    .reduce((s, i) => s + i.price, 0);
+  const splitRemainingTotal = splitRemaining.reduce((s, i) => s + i.price, 0);
 
   return (
     <div style={S.root}>
@@ -904,14 +997,46 @@ export default function App() {
               </div>
 
               <div style={S.ticketActions}>
-                {!confirmingClose ? (
-                  <button style={S.closeBtn} onClick={() => setConfirmingClose(true)}>
-                    Close table
-                  </button>
-                ) : (
-                  <button style={S.confirmCloseBtn} onClick={() => confirmClose(activeTable)}>
-                    Confirm close
-                  </button>
+                <button style={S.closeBtn} onClick={() => {
+                  setTicketTable(activeTable);
+                  setShowSplitOptions(true);
+                }}>
+                  Close table
+                </button>
+                {showSplitOptions && (
+                  <div style={S.splitOptions}>
+                    <div style={S.splitOptionsLabel}>Split the bill</div>
+                    <div style={S.splitBtns}>
+                      <button
+                        style={S.splitOptionBtn}
+                        onClick={() => {
+                          setTicketTable(activeTable);
+                          initiateSplit("equal", activeTable);
+                        }}
+                      >
+                        <span style={S.splitOptionIcon}>⚖</span>
+                        <span style={S.splitOptionTitle}>Equal split</span>
+                        <span style={S.splitOptionSub}>Total ÷ guests</span>
+                      </button>
+                      <button
+                        style={S.splitOptionBtn}
+                        onClick={() => {
+                          setTicketTable(activeTable);
+                          initiateSplit("item", activeTable);
+                        }}
+                      >
+                        <span style={S.splitOptionIcon}>☰</span>
+                        <span style={S.splitOptionTitle}>By item</span>
+                        <span style={S.splitOptionSub}>Pay round by round</span>
+                      </button>
+                    </div>
+                    <button style={S.confirmCloseBtn} onClick={() => {
+                      setShowSplitOptions(false);
+                      confirmClose(activeTable);
+                    }}>
+                      Pay in full
+                    </button>
+                  </div>
                 )}
               </div>
             </>
@@ -925,7 +1050,7 @@ export default function App() {
           <header style={S.header}>
             <button style={S.back} onClick={() => {
               setView("tables");
-              setConfirmingClose(false);
+              setShowSplitOptions(false);
             }}>
               ← Back
             </button>
@@ -961,15 +1086,260 @@ export default function App() {
           </div>
 
           <div style={S.ticketActions}>
-            {!confirmingClose ? (
-              <button style={S.closeBtn} onClick={() => setConfirmingClose(true)}>
-                Close table
-              </button>
-            ) : (
-              <button style={S.confirmCloseBtn} onClick={() => confirmClose(ticketTable)}>
-                Confirm close
-              </button>
+            <button style={S.closeBtn} onClick={() => setShowSplitOptions(true)}>
+              Close table
+            </button>
+            {showSplitOptions && (
+              <div style={S.splitOptions}>
+                <div style={S.splitOptionsLabel}>Split the bill</div>
+                <div style={S.splitBtns}>
+                  <button
+                    style={S.splitOptionBtn}
+                    onClick={() => initiateSplit("equal")}
+                  >
+                    <span style={S.splitOptionIcon}>⚖</span>
+                    <span style={S.splitOptionTitle}>Equal split</span>
+                    <span style={S.splitOptionSub}>Total ÷ guests</span>
+                  </button>
+                  <button
+                    style={S.splitOptionBtn}
+                    onClick={() => initiateSplit("item")}
+                  >
+                    <span style={S.splitOptionIcon}>☰</span>
+                    <span style={S.splitOptionTitle}>By item</span>
+                    <span style={S.splitOptionSub}>Pay round by round</span>
+                  </button>
+                </div>
+                <button style={S.confirmCloseBtn} onClick={() => {
+                  setShowSplitOptions(false);
+                  confirmClose(ticketTable);
+                }}>
+                  Pay in full
+                </button>
+              </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* ── EQUAL SPLIT ── */}
+      {view === "split" && splitMode === "equal" && (
+        <div style={S.page}>
+          <header style={S.header}>
+            <button style={S.back} onClick={() => { setView("ticket"); setShowSplitOptions(false); }}>
+              ← Back
+            </button>
+            <span style={S.headerTitle}>Equal Split — Table {ticketTable}</span>
+            <span />
+          </header>
+          <div style={S.equalCard}>
+            <div style={S.equalTotalLine}>
+              <span style={S.equalTotalLabel}>Bill total</span>
+              <span style={S.equalTotalAmt}>{ticketTotal.toFixed(2)}€</span>
+            </div>
+            <div style={S.divider} />
+            <div style={S.guestCountRow}>
+              <span style={S.guestCountLabel}>Number of guests</span>
+              <div style={S.guestCounter}>
+                <button
+                  style={S.guestCountBtn}
+                  onClick={() => setEqualGuests(Math.max(1, equalGuests - 1))}
+                >
+                  −
+                </button>
+                <span style={S.guestCountNum}>{equalGuests}</span>
+                <button
+                  style={S.guestCountBtn}
+                  onClick={() => setEqualGuests(equalGuests + 1)}
+                >
+                  +
+                </button>
+              </div>
+            </div>
+            <div style={S.divider} />
+            <div style={S.equalShareRow}>
+              <span style={S.equalShareLabel}>Each guest pays</span>
+              <span style={S.equalShareAmt}>{equalShare.toFixed(2)}€</span>
+            </div>
+            {equalGuests > 1 && (
+              <div style={S.equalBreakdown}>
+                {Array.from({ length: equalGuests }).map((_, i) => (
+                  <div key={i} style={S.equalGuestRow}>
+                    <span style={S.equalGuestChip}>Guest {i + 1}</span>
+                    <span style={S.equalGuestAmt}>{equalShare.toFixed(2)}€</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+          <div style={S.ticketActions}>
+            <button
+              style={S.copyBtn}
+              onClick={() => {
+                const lines = Array.from({ length: equalGuests })
+                  .map((_, i) => `Guest ${i + 1}: ${equalShare.toFixed(2)}€`)
+                  .join("\n");
+                copyToClipboard(
+                  `SPLIT — Table ${ticketTable}\nTotal: ${ticketTotal.toFixed(2)}€ ÷ ${equalGuests}\n\n${lines}`
+                );
+                showToast("Split copied!");
+              }}
+            >
+              Copy split
+            </button>
+            <button style={S.closeBtn} onClick={closeSplitTable}>
+              Close table
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ── ITEM SPLIT: SELECT ── */}
+      {view === "split" && splitMode === "item" && (
+        <div style={S.page}>
+          <header style={S.header}>
+            <button style={S.back} onClick={() => { setView("ticket"); setShowSplitOptions(false); }}>
+              ← Back
+            </button>
+            <span style={S.headerTitle}>Guest {currentGuestNum}</span>
+            <button style={S.selectAllBtn} onClick={selectAllRemaining}>
+              All
+            </button>
+          </header>
+
+          {splitPayments.length > 0 && (
+            <div style={S.splitProgress}>
+              {splitPayments.map((p) => (
+                <span key={p.guestNum} style={S.splitProgressChip}>
+                  G{p.guestNum} — {p.total.toFixed(2)}€
+                </span>
+              ))}
+              <span style={S.splitProgressRemaining}>
+                Left: {splitRemainingTotal.toFixed(2)}€
+              </span>
+            </div>
+          )}
+
+          <div style={S.splitItemList}>
+            {splitRemaining.map((item) => {
+              const selected = splitSelected.has(item._uid);
+              return (
+                <button
+                  key={item._uid}
+                  style={{
+                    ...S.splitItem,
+                    background: selected ? "#f0f7f1" : "#fff",
+                    border: selected ? "1.5px solid #a3c4a8" : "1.5px solid #ebe9e3",
+                  }}
+                  onClick={() => toggleSplitItem(item._uid)}
+                >
+                  <span
+                    style={{
+                      ...S.splitItemCheck,
+                      background: selected ? "#2d5a35" : "#e8e8e6",
+                      color: selected ? "#fff" : "transparent",
+                    }}
+                  >
+                    ✓
+                  </span>
+                  <span style={S.splitItemName}>{item.name}</span>
+                  <span style={S.splitItemPrice}>{item.price.toFixed(2)}€</span>
+                </button>
+              );
+            })}
+          </div>
+
+          {splitSelected.size > 0 && (
+            <div style={S.orderBar}>
+              <div style={S.orderBarItems}>
+                <span style={S.orderBarChip}>
+                  {splitSelected.size} item{splitSelected.size > 1 ? "s" : ""} selected
+                </span>
+                <span style={{ ...S.orderBarChip, background: "#e8f3e9", color: "#2d5a35" }}>
+                  Remaining after: {(splitRemainingTotal - splitSelectedTotal).toFixed(2)}€
+                </span>
+              </div>
+              <button style={S.sendBtn} onClick={confirmSplitPayment}>
+                Guest {currentGuestNum} pays — {splitSelectedTotal.toFixed(2)}€
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ── SPLIT CONFIRM ── */}
+      {view === "splitConfirm" && lastPayment && (
+        <div style={S.page}>
+          <header style={S.header}>
+            <span />
+            <span style={S.headerTitle}>Guest {lastPayment.guestNum} — Paid</span>
+            <span />
+          </header>
+          <div style={S.splitConfirmCard}>
+            <div style={S.splitConfirmBadge}>✓</div>
+            <div style={S.splitConfirmAmt}>{lastPayment.total.toFixed(2)}€</div>
+            <div style={S.splitConfirmSub}>Guest {lastPayment.guestNum} paid</div>
+            <div style={S.divider} />
+            {lastPayment.items.map((item, idx) => (
+              <div key={idx} style={S.splitConfirmRow}>
+                <span style={S.splitConfirmName}>{item.name}</span>
+                <span style={S.splitConfirmPrice}>{item.price.toFixed(2)}€</span>
+              </div>
+            ))}
+          </div>
+          <div style={S.splitRemainingBanner}>
+            <div>
+              <div style={S.splitRemainingLabel}>Still to pay</div>
+              <div style={S.splitRemainingItems}>
+                {splitRemaining.length} item{splitRemaining.length > 1 ? "s" : ""}
+              </div>
+            </div>
+            <span style={S.splitRemainingAmt}>{splitRemainingTotal.toFixed(2)}€</span>
+          </div>
+          <div style={{ padding: "0 16px 24px" }}>
+            <button style={S.sendBtn} onClick={nextSplitGuest}>
+              Next guest →
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ── SPLIT DONE ── */}
+      {view === "splitDone" && (
+        <div style={S.page}>
+          <header style={S.header}>
+            <span />
+            <span style={S.headerTitle}>Bill Settled — Table {ticketTable}</span>
+            <span />
+          </header>
+          <div style={S.splitDoneCard}>
+            <div style={S.splitDoneBadge}>✓</div>
+            <div style={S.splitDoneTitle}>All paid</div>
+            <div style={S.splitDoneSub}>
+              {splitPayments.length} guest{splitPayments.length > 1 ? "s" : ""} · {ticketTotal.toFixed(2)}€ total
+            </div>
+            <div style={S.divider} />
+            {splitPayments.map((p) => (
+              <div key={p.guestNum} style={S.splitDoneRow}>
+                <span style={S.splitDoneGuest}>Guest {p.guestNum}</span>
+                <div style={S.splitDoneItems}>
+                  {p.items.map((item, idx) => (
+                    <span key={idx} style={S.splitDoneItemChip}>{item.name}</span>
+                  ))}
+                </div>
+                <span style={S.splitDoneAmt}>{p.total.toFixed(2)}€</span>
+              </div>
+            ))}
+            <div style={S.divider} />
+            <div style={S.splitDoneTotal}>
+              <span>Total collected</span>
+              <span>{splitPayments.reduce((s, p) => s + p.total, 0).toFixed(2)}€</span>
+            </div>
+          </div>
+          <div style={S.ticketActions}>
+            <button style={S.closeBtn} onClick={closeSplitTable}>
+              Close table
+            </button>
           </div>
         </div>
       )}
