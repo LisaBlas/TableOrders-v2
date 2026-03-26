@@ -997,19 +997,18 @@ export default function App() {
               </div>
 
               <div style={S.ticketActions}>
-                {!showSplitOptions && (
                   <button style={confirmingClose ? S.confirmCloseBtn : S.closeBtn} onClick={() => {
                     if (confirmingClose) {
-                      setTicketTable(activeTable);
-                      setShowSplitOptions(true);
-                      setConfirmingClose(false);
+                      setShowSplitOptions(false);
+                      confirmClose(activeTable);
                     } else {
+                      setTicketTable(activeTable);
                       setConfirmingClose(true);
+                      setShowSplitOptions(true);
                     }
                   }}>
                     {confirmingClose ? "Confirm close" : "Close table"}
                   </button>
-                )}
                 {showSplitOptions && (
                   <div style={S.splitOptions}>
                     <div style={S.splitOptionsLabel}>Split the bill</div>
@@ -1090,10 +1089,11 @@ export default function App() {
           <div style={S.ticketActions}>
             <button style={confirmingClose ? S.confirmCloseBtn : S.closeBtn} onClick={() => {
               if (confirmingClose) {
-                setShowSplitOptions(true);
-                setConfirmingClose(false);
+                setShowSplitOptions(false);
+                confirmClose(ticketTable);
               } else {
                 setConfirmingClose(true);
+                setShowSplitOptions(true);
               }
             }}>
               {confirmingClose ? "Confirm close" : "Close table"}
