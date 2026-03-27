@@ -1218,18 +1218,25 @@ export default function App() {
                     </div>
                   );
                 })()}
-                <button style={confirmingClose ? S.confirmCloseBtn : S.closeBtn} onClick={() => {
-                  if (confirmingClose) {
-                    setShowSplitOptions(false);
-                    confirmClose(activeTable);
-                  } else {
-                    setTicketTable(activeTable);
-                    setConfirmingClose(true);
-                    setShowSplitOptions(true);
-                    setPaymentAmount("");
-                    setPaymentConfirmed(false);
-                  }
-                }}>
+                <button
+                  style={{
+                    ...(confirmingClose ? S.confirmCloseBtn : S.closeBtn),
+                    ...(confirmingClose && paymentAmount && !paymentConfirmed ? { opacity: 0.5, cursor: "not-allowed" } : {})
+                  }}
+                  onClick={() => {
+                    if (confirmingClose) {
+                      setShowSplitOptions(false);
+                      confirmClose(activeTable);
+                    } else {
+                      setTicketTable(activeTable);
+                      setConfirmingClose(true);
+                      setShowSplitOptions(true);
+                      setPaymentAmount("");
+                      setPaymentConfirmed(false);
+                    }
+                  }}
+                  disabled={confirmingClose && paymentAmount && !paymentConfirmed}
+                >
                   {confirmingClose ? "Confirm close" : "Close table"}
                 </button>
               </div>
@@ -1409,7 +1416,14 @@ export default function App() {
                 return null;
               })()}
             </div>
-            <button style={S.closeBtn} onClick={closeSplitTable}>
+            <button
+              style={{
+                ...S.closeBtn,
+                ...(equalSplitPayments.some(p => p.amount && !p.confirmed) ? { opacity: 0.5, cursor: "not-allowed" } : {})
+              }}
+              onClick={closeSplitTable}
+              disabled={equalSplitPayments.some(p => p.amount && !p.confirmed)}
+            >
               Close table
             </button>
           </div>
@@ -1576,11 +1590,25 @@ export default function App() {
             )}
 
             {splitRemaining.length > 0 ? (
-              <button style={S.sendBtn} onClick={nextSplitGuest}>
+              <button
+                style={{
+                  ...S.sendBtn,
+                  ...(itemSplitPayments[lastPayment.guestNum]?.amount && !itemSplitPayments[lastPayment.guestNum]?.confirmed ? { opacity: 0.5, cursor: "not-allowed" } : {})
+                }}
+                onClick={nextSplitGuest}
+                disabled={itemSplitPayments[lastPayment.guestNum]?.amount && !itemSplitPayments[lastPayment.guestNum]?.confirmed}
+              >
                 Next guest →
               </button>
             ) : (
-              <button style={S.sendBtn} onClick={() => setView("splitDone")}>
+              <button
+                style={{
+                  ...S.sendBtn,
+                  ...(itemSplitPayments[lastPayment.guestNum]?.amount && !itemSplitPayments[lastPayment.guestNum]?.confirmed ? { opacity: 0.5, cursor: "not-allowed" } : {})
+                }}
+                onClick={() => setView("splitDone")}
+                disabled={itemSplitPayments[lastPayment.guestNum]?.amount && !itemSplitPayments[lastPayment.guestNum]?.confirmed}
+              >
                 Confirm
               </button>
             )}

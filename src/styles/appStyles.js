@@ -30,12 +30,14 @@ export const S = {
     animation: "fadeIn 0.2s ease-out"
   },
   header: {
+    position: "sticky",
+    top: 0,
+    zIndex: 100,
     display: "flex",
     alignItems: "center",
     justifyContent: "space-between",
     padding: "18px 20px 12px",
-    background: "#fff",
-    borderBottom: "1px solid #ebe9e3"
+    background: "#fff"
   },
   headerTitle: {
     fontWeight: 700,
@@ -972,6 +974,9 @@ export const S = {
 
   // Tab styles
   tabs: {
+    position: "sticky",
+    top: 54,
+    zIndex: 99,
     background: "#fff",
     borderBottom: "1px solid #ebe9e3"
   },
