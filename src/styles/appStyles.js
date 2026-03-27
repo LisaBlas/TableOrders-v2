@@ -262,7 +262,8 @@ export const S = {
     maxWidth: 480,
     background: "#fff",
     borderTop: "1px solid #ebe9e3",
-    padding: "12px 16px 20px",
+    boxShadow: "0 -2px 12px rgba(0,0,0,0.15)",
+    padding: "8px 16px 20px",
     display: "flex",
     flexDirection: "column",
     gap: 10,
@@ -270,12 +271,40 @@ export const S = {
     maxHeight: "50vh",
     overflowY: "auto"
   },
+  orderBarHandle: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    gap: 4,
+    padding: "4px 0 8px",
+    cursor: "pointer",
+    userSelect: "none"
+  },
+  orderBarHandleLine: {
+    width: 40,
+    height: 4,
+    borderRadius: 2,
+    background: "#d4d2ca"
+  },
+  orderBarHandleText: {
+    fontSize: 11,
+    color: "#999",
+    fontWeight: 600,
+    textTransform: "uppercase",
+    letterSpacing: "0.5px"
+  },
   orderBarList: {
     display: "flex",
     flexDirection: "column",
     gap: 8,
     maxHeight: "200px",
     overflowY: "auto",
+    marginBottom: 4
+  },
+  orderBarListCollapsed: {
+    display: "flex",
+    flexDirection: "column",
+    gap: 8,
     marginBottom: 4
   },
   orderBarItemWrapper: {
@@ -404,7 +433,9 @@ export const S = {
   sentSectionsContainer: {
     maxHeight: "300px",
     overflowY: "auto",
-    marginBottom: 8
+    marginBottom: 8,
+    backgroundColor: "#f0f4f8",
+    borderTop: "1px solid #e2e8f0"
   },
   ticket: {
     margin: "16px",

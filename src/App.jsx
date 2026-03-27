@@ -68,6 +68,7 @@ export default function App() {
   const [customPrice, setCustomPrice] = useState("");
   const [customQty, setCustomQty] = useState("1");
   const [showCustomModal, setShowCustomModal] = useState(false);
+  const [orderBarExpanded, setOrderBarExpanded] = useState(false);
 
   // Paid bills state with localStorage persistence
   const [paidBills, setPaidBills] = useState(() => {
@@ -143,6 +144,7 @@ export default function App() {
     setPaymentConfirmed(false);
     setEqualSplitPayments([{ amount: "", confirmed: false }]);
     setItemSplitPayments({});
+    setOrderBarExpanded(false);
     setView("order");
   };
 
@@ -1049,8 +1051,21 @@ export default function App() {
               {/* Order bar - fixed at bottom */}
               {unsentItems.length > 0 && (
                 <div style={S.orderBar}>
-                  <div style={S.orderBarList}>
-                    {unsentItems.slice().reverse().map((o) => (
+                  {/* Swipe handle */}
+                  <div
+                    style={S.orderBarHandle}
+                    onClick={() => setOrderBarExpanded(!orderBarExpanded)}
+                  >
+                    <div style={S.orderBarHandleLine} />
+                    {unsentItems.length > 1 && (
+                      <span style={S.orderBarHandleText}>
+                        {orderBarExpanded ? "Show less" : `${unsentItems.length} items`}
+                      </span>
+                    )}
+                  </div>
+
+                  <div style={orderBarExpanded ? S.orderBarList : S.orderBarListCollapsed}>
+                    {(orderBarExpanded ? unsentItems.slice().reverse() : unsentItems.slice(-1)).map((o) => (
                       <div key={o.id} style={S.orderBarItemWrapper}>
                         <div style={S.orderBarItem}>
                           <div style={S.orderBarItemInfo}>
