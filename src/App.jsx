@@ -463,7 +463,8 @@ export default function App() {
 
     if (splitMode === "equal") {
       const confirmedPayments = equalSplitPayments.filter(p => p.confirmed);
-      if (confirmedPayments.length > 0) {
+      // Only calculate tips if all guests have paid
+      if (confirmedPayments.length === equalGuests) {
         payments = confirmedPayments.map(p => parseFloat(p.amount));
         totalPaid = payments.reduce((sum, p) => sum + p, 0);
         totalTip = totalPaid - total;
@@ -484,12 +485,12 @@ export default function App() {
         return payment;
       });
 
-      // Calculate totals
+      // Calculate totals - only if all guests have paid
       const paidAmounts = guestPayments
         .filter(p => p.amountPaid !== undefined)
         .map(p => p.amountPaid);
 
-      if (paidAmounts.length > 0) {
+      if (paidAmounts.length === splitPayments.length) {
         totalPaid = paidAmounts.reduce((sum, p) => sum + p, 0);
         totalTip = totalPaid - total;
       }
@@ -1138,82 +1139,85 @@ export default function App() {
                 />
               </div>
 
-              {/* Payment and Split Options - Between Bill and Button */}
-              {showSplitOptions && (
-                <div style={S.paymentSplitContainer}>
-                  {/* Amount Paid Section */}
-                  <div style={S.paymentSection}>
-                    <div style={S.paymentLabel}>Amount Paid</div>
-                    <div style={S.paymentInputRow}>
-                      <input
-                        type="number"
-                        placeholder="0.00"
-                        value={paymentAmount}
-                        onChange={(e) => setPaymentAmount(e.target.value)}
-                        step="0.01"
-                        min="0"
-                        style={S.paymentInput}
-                        disabled={paymentConfirmed}
-                      />
-                      <button
-                        style={paymentConfirmed ? S.paymentCheckConfirmed : S.paymentCheck}
-                        onClick={() => {
-                          if (paymentAmount && parseFloat(paymentAmount) > 0) {
-                            setPaymentConfirmed(true);
-                          }
-                        }}
-                        disabled={paymentConfirmed}
-                      >
-                        ✓
-                      </button>
-                    </div>
-                    {paymentConfirmed && (() => {
-                      const subtotal = sentItems.reduce((s, o) => s + o.price * o.qty, 0);
-                      const gutschein = gutscheinAmounts[activeTable] || 0;
-                      const total = Math.max(0, subtotal - gutschein);
-                      const paid = parseFloat(paymentAmount);
-                      const tip = paid - total;
-                      return (
-                        <div style={S.paymentTip}>
-                          Tip: {tip >= 0 ? `+${tip.toFixed(2)}€` : `${tip.toFixed(2)}€`}
-                        </div>
-                      );
-                    })()}
-                  </div>
-
-                  {/* Split Options */}
-                  <div style={S.splitOptions}>
-                    <div style={S.splitOptionsLabel}>Split the bill</div>
-                    <div style={S.splitBtns}>
-                      <button
-                        style={S.splitOptionBtn}
-                        onClick={() => {
-                          setTicketTable(activeTable);
-                          setEqualSplitPayments([{ amount: "", confirmed: false }]);
-                          initiateSplit("equal", activeTable);
-                        }}
-                      >
-                        <span style={S.splitOptionIcon}>⚖</span>
-                        <span style={S.splitOptionTitle}>Equal split</span>
-                        <span style={S.splitOptionSub}>Total ÷ guests</span>
-                      </button>
-                      <button
-                        style={S.splitOptionBtn}
-                        onClick={() => {
-                          setTicketTable(activeTable);
-                          initiateSplit("item", activeTable);
-                        }}
-                      >
-                        <span style={S.splitOptionIcon}>☰</span>
-                        <span style={S.splitOptionTitle}>By item</span>
-                        <span style={S.splitOptionSub}>Pay round by round</span>
-                      </button>
-                    </div>
+              {/* Split Options - Right under bill */}
+              {confirmingClose && (
+                <div style={S.splitOptions}>
+                  <div style={S.splitOptionsLabel}>Split the bill</div>
+                  <div style={S.splitBtns}>
+                    <button
+                      style={S.splitOptionBtn}
+                      onClick={() => {
+                        setTicketTable(activeTable);
+                        setEqualSplitPayments([{ amount: "", confirmed: false }]);
+                        initiateSplit("equal", activeTable);
+                      }}
+                    >
+                      <span style={S.splitOptionIcon}>⚖</span>
+                      <span style={S.splitOptionTitle}>Equal split</span>
+                      <span style={S.splitOptionSub}>Total ÷ guests</span>
+                    </button>
+                    <button
+                      style={S.splitOptionBtn}
+                      onClick={() => {
+                        setTicketTable(activeTable);
+                        initiateSplit("item", activeTable);
+                      }}
+                    >
+                      <span style={S.splitOptionIcon}>☰</span>
+                      <span style={S.splitOptionTitle}>By item</span>
+                      <span style={S.splitOptionSub}>Pay round by round</span>
+                    </button>
                   </div>
                 </div>
               )}
 
+              {/* Sticky bottom: Payment + Button */}
               <div style={S.ticketActions}>
+                {confirmingClose && (() => {
+                  const subtotal = sentItems.reduce((s, o) => s + o.price * o.qty, 0);
+                  const gutschein = gutscheinAmounts[activeTable] || 0;
+                  const total = Math.max(0, subtotal - gutschein);
+
+                  return (
+                    <div style={S.paymentSection}>
+                      <div style={S.paymentLabel}>Amount Paid</div>
+                      <div style={S.paymentInputRow}>
+                        <input
+                          type="number"
+                          placeholder={total.toFixed(2)}
+                          value={paymentAmount}
+                          onChange={(e) => setPaymentAmount(e.target.value)}
+                          step="0.01"
+                          min="0"
+                          style={S.paymentInput}
+                          disabled={paymentConfirmed}
+                        />
+                        <button
+                          style={paymentConfirmed ? S.paymentCheckConfirmed : S.paymentCheck}
+                          onClick={() => {
+                            const amount = paymentAmount && parseFloat(paymentAmount) > 0
+                              ? parseFloat(paymentAmount)
+                              : total;
+                            setPaymentAmount(amount.toString());
+                            setPaymentConfirmed(true);
+                          }}
+                          disabled={paymentConfirmed}
+                        >
+                          ✓
+                        </button>
+                      </div>
+                      {paymentConfirmed && (() => {
+                        const paid = parseFloat(paymentAmount);
+                        const tip = paid - total;
+                        return (
+                          <div style={S.paymentTip}>
+                            Tip: {tip >= 0 ? `+${tip.toFixed(2)}€` : `${tip.toFixed(2)}€`}
+                          </div>
+                        );
+                      })()}
+                    </div>
+                  );
+                })()}
                 <button style={confirmingClose ? S.confirmCloseBtn : S.closeBtn} onClick={() => {
                   if (confirmingClose) {
                     setShowSplitOptions(false);
@@ -1345,63 +1349,66 @@ export default function App() {
             )}
           </div>
 
-          {/* Amount Paid Section */}
-          <div style={S.paymentSection}>
-            <div style={S.paymentLabel}>Amount Paid</div>
-            {equalSplitPayments.map((payment, idx) => (
-              <div
-                key={idx}
-                style={idx === equalSplitPayments.length - 1 ? S.paymentItemLast : S.paymentItem}
-              >
-                <div style={S.paymentInputRow}>
-                  <input
-                    type="number"
-                    placeholder="0.00"
-                    value={payment.amount}
-                    onChange={(e) => {
-                      const updated = [...equalSplitPayments];
-                      updated[idx] = { ...updated[idx], amount: e.target.value };
-                      setEqualSplitPayments(updated);
-                    }}
-                    step="0.01"
-                    min="0"
-                    style={S.paymentInput}
-                    disabled={payment.confirmed}
-                  />
-                  <button
-                    style={payment.confirmed ? S.paymentCheckConfirmed : S.paymentCheck}
-                    onClick={() => {
-                      if (payment.amount && parseFloat(payment.amount) > 0 && !payment.confirmed) {
-                        const updated = [...equalSplitPayments];
-                        updated[idx] = { ...updated[idx], confirmed: true };
-                        setEqualSplitPayments(updated);
-                        // Add new empty payment input
-                        setEqualSplitPayments([...updated, { amount: "", confirmed: false }]);
-                      }
-                    }}
-                    disabled={payment.confirmed}
-                  >
-                    ✓
-                  </button>
-                </div>
-              </div>
-            ))}
-            {(() => {
-              const confirmedPayments = equalSplitPayments.filter(p => p.confirmed);
-              if (confirmedPayments.length > 0) {
-                const totalPaid = confirmedPayments.reduce((sum, p) => sum + parseFloat(p.amount), 0);
-                const totalTip = totalPaid - ticketTotal;
-                return (
-                  <div style={S.paymentTip}>
-                    Total Tip: {totalTip >= 0 ? `+${totalTip.toFixed(2)}€` : `${totalTip.toFixed(2)}€`}
-                  </div>
-                );
-              }
-              return null;
-            })()}
-          </div>
-
+          {/* Sticky bottom: Payment + Button */}
           <div style={S.ticketActions}>
+            <div style={S.paymentSection}>
+              <div style={S.paymentLabel}>Amount Paid</div>
+              {equalSplitPayments.map((payment, idx) => (
+                <div
+                  key={idx}
+                  style={idx === equalSplitPayments.length - 1 ? S.paymentItemLast : S.paymentItem}
+                >
+                  <div style={S.paymentInputRow}>
+                    <input
+                      type="number"
+                      placeholder={equalShare.toFixed(2)}
+                      value={payment.amount}
+                      onChange={(e) => {
+                        const updated = [...equalSplitPayments];
+                        updated[idx] = { ...updated[idx], amount: e.target.value };
+                        setEqualSplitPayments(updated);
+                      }}
+                      step="0.01"
+                      min="0"
+                      style={S.paymentInput}
+                      disabled={payment.confirmed}
+                    />
+                    <button
+                      style={payment.confirmed ? S.paymentCheckConfirmed : S.paymentCheck}
+                      onClick={() => {
+                        if (!payment.confirmed) {
+                          const amount = payment.amount && parseFloat(payment.amount) > 0
+                            ? parseFloat(payment.amount)
+                            : equalShare;
+                          const updated = [...equalSplitPayments];
+                          updated[idx] = { amount: amount.toString(), confirmed: true };
+                          setEqualSplitPayments(updated);
+                          // Add new empty payment input
+                          setEqualSplitPayments([...updated, { amount: "", confirmed: false }]);
+                        }
+                      }}
+                      disabled={payment.confirmed}
+                    >
+                      ✓
+                    </button>
+                  </div>
+                </div>
+              ))}
+              {(() => {
+                const confirmedPayments = equalSplitPayments.filter(p => p.confirmed);
+                if (confirmedPayments.length > 0) {
+                  const totalPaid = confirmedPayments.reduce((sum, p) => sum + parseFloat(p.amount), 0);
+                  const expectedTotal = confirmedPayments.length * equalShare;
+                  const totalTip = totalPaid - expectedTotal;
+                  return (
+                    <div style={S.paymentTip}>
+                      Total Tip: {totalTip >= 0 ? `+${totalTip.toFixed(2)}€` : `${totalTip.toFixed(2)}€`}
+                    </div>
+                  );
+                }
+                return null;
+              })()}
+            </div>
             <button style={S.closeBtn} onClick={closeSplitTable}>
               Close table
             </button>
@@ -1500,72 +1507,74 @@ export default function App() {
             />
           </div>
 
-          {/* Amount Paid Section */}
-          <div style={S.paymentSection}>
-            <div style={S.paymentLabel}>Amount Paid</div>
-            <div style={S.paymentInputRow}>
-              <input
-                type="number"
-                placeholder="0.00"
-                value={itemSplitPayments[lastPayment.guestNum]?.amount || ""}
-                onChange={(e) => {
-                  setItemSplitPayments(prev => ({
-                    ...prev,
-                    [lastPayment.guestNum]: {
-                      amount: e.target.value,
-                      confirmed: false
-                    }
-                  }));
-                }}
-                step="0.01"
-                min="0"
-                style={S.paymentInput}
-                disabled={itemSplitPayments[lastPayment.guestNum]?.confirmed}
-              />
-              <button
-                style={itemSplitPayments[lastPayment.guestNum]?.confirmed ? S.paymentCheckConfirmed : S.paymentCheck}
-                onClick={() => {
-                  const payment = itemSplitPayments[lastPayment.guestNum];
-                  if (payment?.amount && parseFloat(payment.amount) > 0) {
+          {/* Sticky bottom: Payment + Still to pay + Button */}
+          <div style={S.ticketActions}>
+            <div style={S.paymentSection}>
+              <div style={S.paymentLabel}>Amount Paid</div>
+              <div style={S.paymentInputRow}>
+                <input
+                  type="number"
+                  placeholder={lastPayment.total.toFixed(2)}
+                  value={itemSplitPayments[lastPayment.guestNum]?.amount || ""}
+                  onChange={(e) => {
                     setItemSplitPayments(prev => ({
                       ...prev,
                       [lastPayment.guestNum]: {
-                        ...prev[lastPayment.guestNum],
+                        amount: e.target.value,
+                        confirmed: false
+                      }
+                    }));
+                  }}
+                  step="0.01"
+                  min="0"
+                  style={S.paymentInput}
+                  disabled={itemSplitPayments[lastPayment.guestNum]?.confirmed}
+                />
+                <button
+                  style={itemSplitPayments[lastPayment.guestNum]?.confirmed ? S.paymentCheckConfirmed : S.paymentCheck}
+                  onClick={() => {
+                    const payment = itemSplitPayments[lastPayment.guestNum];
+                    const amount = payment?.amount && parseFloat(payment.amount) > 0
+                      ? parseFloat(payment.amount)
+                      : lastPayment.total;
+
+                    setItemSplitPayments(prev => ({
+                      ...prev,
+                      [lastPayment.guestNum]: {
+                        amount: amount.toString(),
                         confirmed: true
                       }
                     }));
-                  }
-                }}
-                disabled={itemSplitPayments[lastPayment.guestNum]?.confirmed}
-              >
-                ✓
-              </button>
-            </div>
-            {itemSplitPayments[lastPayment.guestNum]?.confirmed && (() => {
-              const paid = parseFloat(itemSplitPayments[lastPayment.guestNum].amount);
-              const tip = paid - lastPayment.total;
-              return (
-                <div style={S.paymentTip}>
-                  Tip: {tip >= 0 ? `+${tip.toFixed(2)}€` : `${tip.toFixed(2)}€`}
-                </div>
-              );
-            })()}
-          </div>
-
-          {/* Still to pay banner */}
-          {splitRemaining.length > 0 && (
-            <div style={S.splitRemainingBanner}>
-              <div>
-                <div style={S.splitRemainingLabel}>Still to pay</div>
-                <div style={S.splitRemainingItems}>
-                  {splitRemaining.length} item{splitRemaining.length > 1 ? "s" : ""}
-                </div>
+                  }}
+                  disabled={itemSplitPayments[lastPayment.guestNum]?.confirmed}
+                >
+                  ✓
+                </button>
               </div>
-              <span style={S.splitRemainingAmt}>{splitRemainingTotal.toFixed(2)}€</span>
+              {itemSplitPayments[lastPayment.guestNum]?.confirmed && (() => {
+                const paid = parseFloat(itemSplitPayments[lastPayment.guestNum].amount);
+                const tip = paid - lastPayment.total;
+                return (
+                  <div style={S.paymentTip}>
+                    Tip: {tip >= 0 ? `+${tip.toFixed(2)}€` : `${tip.toFixed(2)}€`}
+                  </div>
+                );
+              })()}
             </div>
-          )}
 
-          <div style={{ padding: "0 16px 24px" }}>
+            {/* Still to pay banner */}
+            {splitRemaining.length > 0 && (
+              <div style={S.splitRemainingBanner}>
+                <div>
+                  <div style={S.splitRemainingLabel}>Still to pay</div>
+                  <div style={S.splitRemainingItems}>
+                    {splitRemaining.length} item{splitRemaining.length > 1 ? "s" : ""}
+                  </div>
+                </div>
+                <span style={S.splitRemainingAmt}>{splitRemainingTotal.toFixed(2)}€</span>
+              </div>
+            )}
+
             {splitRemaining.length > 0 ? (
               <button style={S.sendBtn} onClick={nextSplitGuest}>
                 Next guest →

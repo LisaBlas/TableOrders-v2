@@ -405,7 +405,7 @@ export const S = {
     marginBottom: 8
   },
   ticket: {
-    margin: 16,
+    margin: "16px",
     background: "#fff",
     borderRadius: 12,
     border: "1px solid #ebe9e3",
@@ -478,11 +478,18 @@ export const S = {
     fontSize: 18
   },
   ticketActions: {
+    position: "fixed",
+    bottom: 0,
+    left: "50%",
+    transform: "translateX(-50%)",
+    width: "100%",
+    maxWidth: 480,
+    background: "#fff",
+    borderTop: "1px solid #ebe9e3",
+    padding: "16px",
     display: "flex",
     flexDirection: "column",
-    gap: 10,
-    padding: "0 16px 24px",
-    animation: "slideUpFade 0.3s ease-out"
+    gap: 10
   },
   copyBtn: {
     flex: 1,
@@ -508,7 +515,7 @@ export const S = {
   },
 
   splitOptions: {
-    margin: "0 16px 12px",
+    margin: "0 16px 100px",
     padding: "16px",
     background: "#fff",
     borderRadius: 12,
@@ -552,7 +559,7 @@ export const S = {
   },
 
   equalCard: {
-    margin: 16,
+    margin: "16px 16px 100px 16px",
     background: "#fff",
     borderRadius: 12,
     border: "1px solid #ebe9e3",
@@ -749,7 +756,7 @@ export const S = {
   },
 
   splitRemainingBanner: {
-    margin: "0 16px 16px",
+    marginBottom: "10px",
     padding: "14px 16px",
     background: "#fff8ed",
     border: "1px solid #f0d9a0",
@@ -1484,10 +1491,11 @@ export const S = {
 
   // Payment/Tip section styles
   paymentSplitContainer: {
+    marginBottom: "100px",
     animation: "slideDown 0.3s ease-out"
   },
   paymentSection: {
-    margin: "8px 16px 16px",
+    marginBottom: "10px",
     padding: "16px",
     background: "#f0f7f1",
     borderRadius: 12,
