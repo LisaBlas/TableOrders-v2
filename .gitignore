@@ -13,6 +13,7 @@ dist-ssr
 *.local
 
 CLAUDE.md
+REFACTOR_PLAN.md
 
 # Editor directories and files
 .vscode/*

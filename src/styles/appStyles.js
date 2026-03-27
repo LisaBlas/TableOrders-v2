@@ -508,7 +508,7 @@ export const S = {
   },
 
   splitOptions: {
-    margin: "0 16px 4px",
+    margin: "0 16px 12px",
     padding: "16px",
     background: "#fff",
     borderRadius: 12,
@@ -1481,4 +1481,83 @@ export const S = {
     color: "#c0392b",
     flexShrink: 0
   },
+
+  // Payment/Tip section styles
+  paymentSplitContainer: {
+    animation: "slideDown 0.3s ease-out"
+  },
+  paymentSection: {
+    margin: "8px 16px 16px",
+    padding: "16px",
+    background: "#f0f7f1",
+    borderRadius: 12,
+    border: "1px solid #d0e5d3"
+  },
+  paymentLabel: {
+    fontSize: 13,
+    fontWeight: 600,
+    color: "#2d5a35",
+    marginBottom: 10
+  },
+  paymentInputRow: {
+    display: "flex",
+    gap: 8,
+    alignItems: "center"
+  },
+  paymentInput: {
+    flex: 1,
+    padding: "10px 12px",
+    fontSize: 15,
+    border: "1.5px solid #a3c4a8",
+    borderRadius: 8,
+    background: "#fff",
+    outline: "none",
+    fontFamily: "inherit"
+  },
+  paymentCheck: {
+    width: 40,
+    height: 40,
+    borderRadius: 8,
+    border: "1.5px solid #a3c4a8",
+    background: "#fff",
+    fontSize: 18,
+    lineHeight: 1,
+    cursor: "pointer",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    color: "#2d5a35",
+    flexShrink: 0,
+    fontWeight: 700
+  },
+  paymentCheckConfirmed: {
+    width: 40,
+    height: 40,
+    borderRadius: 8,
+    border: "1.5px solid #2d5a35",
+    background: "#2d5a35",
+    fontSize: 18,
+    lineHeight: 1,
+    cursor: "not-allowed",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    color: "#fff",
+    flexShrink: 0,
+    fontWeight: 700,
+    opacity: 0.7
+  },
+  paymentTip: {
+    marginTop: 10,
+    fontSize: 14,
+    fontWeight: 600,
+    color: "#2d5a35",
+    textAlign: "center"
+  },
+  paymentItem: {
+    marginBottom: 12
+  },
+  paymentItemLast: {
+    marginBottom: 0
+  }
 };

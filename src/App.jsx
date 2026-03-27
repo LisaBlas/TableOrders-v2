@@ -1,7 +1,9 @@
 import { useState, useEffect } from "react";
 import { TABLES, MENU, STATUS_CONFIG, FOOD_SUBCATEGORIES, DRINKS_SUBCATEGORIES, BOTTLES_SUBCATEGORIES } from "./data/constants";
-import { getTableStatus, copyToClipboard, formatOrderText, consolidateItems, getItemDestination, expandItems } from "./utils/helpers";
+import { getTableStatus, copyToClipboard, formatOrderText, getItemDestination, expandItems } from "./utils/helpers";
 import { S } from "./styles/appStyles";
+import { Receipt } from "./components/Receipt";
+import { Modal } from "./components/Modal";
 
 export default function App() {
   // Active orders with localStorage persistence
@@ -54,6 +56,12 @@ export default function App() {
   const [gutscheinAmounts, setGutscheinAmounts] = useState({});
   const [showGutscheinModal, setShowGutscheinModal] = useState(false);
   const [gutscheinInput, setGutscheinInput] = useState("");
+
+  // Payment/tip state
+  const [paymentAmount, setPaymentAmount] = useState("");
+  const [paymentConfirmed, setPaymentConfirmed] = useState(false);
+  const [equalSplitPayments, setEqualSplitPayments] = useState([{ amount: "", confirmed: false }]);
+  const [itemSplitPayments, setItemSplitPayments] = useState({}); // { [guestNum]: { amount, confirmed } }
 
   // Custom item state
   const [customName, setCustomName] = useState("");
@@ -131,6 +139,10 @@ export default function App() {
     setShowGutscheinModal(false);
     setGutscheinInput("");
     setShowSplitOptions(false);
+    setPaymentAmount("");
+    setPaymentConfirmed(false);
+    setEqualSplitPayments([{ amount: "", confirmed: false }]);
+    setItemSplitPayments({});
     setView("order");
   };
 
@@ -350,7 +362,11 @@ export default function App() {
     const gutschein = gutscheinAmounts[tableId] || 0;
     const total = Math.max(0, subtotal - gutschein);
 
-    // Save bill to paid bills (including gutschein info)
+    // Calculate tip if payment amount was entered
+    const paid = paymentConfirmed && paymentAmount ? parseFloat(paymentAmount) : null;
+    const tip = paid !== null ? paid - total : null;
+
+    // Save bill to paid bills (including gutschein and tip info)
     setPaidBills((prev) => [
       ...prev,
       {
@@ -359,6 +375,8 @@ export default function App() {
         total,
         subtotal,
         gutschein: gutschein > 0 ? gutschein : undefined,
+        amountPaid: paid !== null ? paid : undefined,
+        tip: tip !== null ? tip : undefined,
         timestamp: new Date().toISOString(),
         paymentMode: "full",
       },
@@ -387,6 +405,8 @@ export default function App() {
     showToast(`Table ${tableId} closed ✓`);
     setConfirmingClose(false);
     setEditingBill(false);
+    setPaymentAmount("");
+    setPaymentConfirmed(false);
     setView("tables");
     setTicketTable(null);
   };
@@ -398,6 +418,7 @@ export default function App() {
     setSplitSelected(new Set());
     setSplitPayments([]);
     setSplitMode(mode);
+    setItemSplitPayments({});
     setView("split");
   };
 
@@ -421,7 +442,8 @@ export default function App() {
     setSplitPayments(newPayments);
     setSplitRemaining(newRemaining);
     setSplitSelected(new Set());
-    setView(newRemaining.length === 0 ? "splitDone" : "splitConfirm");
+    // Always go to splitConfirm, even for last guest
+    setView("splitConfirm");
   };
 
   const nextSplitGuest = () => {
@@ -432,6 +454,47 @@ export default function App() {
   const closeSplitTable = () => {
     const items = orders[ticketTable] || [];
     const total = items.reduce((s, o) => s + o.price * o.qty, 0);
+
+    // Calculate tips
+    let totalPaid = null;
+    let totalTip = null;
+    let payments = null;
+    let guestPayments = null;
+
+    if (splitMode === "equal") {
+      const confirmedPayments = equalSplitPayments.filter(p => p.confirmed);
+      if (confirmedPayments.length > 0) {
+        payments = confirmedPayments.map(p => parseFloat(p.amount));
+        totalPaid = payments.reduce((sum, p) => sum + p, 0);
+        totalTip = totalPaid - total;
+      }
+    } else if (splitMode === "item") {
+      // Calculate tips for item split
+      guestPayments = splitPayments.map(payment => {
+        const guestPaymentData = itemSplitPayments[payment.guestNum];
+        if (guestPaymentData?.confirmed) {
+          const paid = parseFloat(guestPaymentData.amount);
+          const tip = paid - payment.total;
+          return {
+            ...payment,
+            amountPaid: paid,
+            tip: tip
+          };
+        }
+        return payment;
+      });
+
+      // Calculate totals
+      const paidAmounts = guestPayments
+        .filter(p => p.amountPaid !== undefined)
+        .map(p => p.amountPaid);
+
+      if (paidAmounts.length > 0) {
+        totalPaid = paidAmounts.reduce((sum, p) => sum + p, 0);
+        totalTip = totalPaid - total;
+      }
+    }
+
     setPaidBills((prev) => [
       ...prev,
       {
@@ -440,7 +503,10 @@ export default function App() {
         total,
         timestamp: new Date().toISOString(),
         paymentMode: splitMode === "equal" ? "equal" : "item",
-        splitData: splitMode === "item" ? { payments: splitPayments } : { guests: equalGuests },
+        splitData: splitMode === "item" ? { payments: guestPayments || splitPayments } : { guests: equalGuests },
+        amountPaid: totalPaid !== null ? totalPaid : undefined,
+        tip: totalTip !== null ? totalTip : undefined,
+        payments: payments !== null ? payments : undefined,
       },
     ]);
     setOrders((prev) => {
@@ -466,6 +532,8 @@ export default function App() {
     setSplitSelected(new Set());
     setSplitPayments([]);
     setSplitMode(null);
+    setEqualSplitPayments([{ amount: "", confirmed: false }]);
+    setItemSplitPayments({});
   };
 
   const clearDailySales = () => {
@@ -643,22 +711,16 @@ export default function App() {
 
       {/* ── SEAT CONFIRMATION ── */}
       {seatConfirmTable && (
-        <div style={S.modalOverlay} onClick={cancelSeatTable}>
-          <div style={S.modalCard} onClick={(e) => e.stopPropagation()}>
-            <div style={S.modalTitle}>Seat Table {seatConfirmTable}?</div>
-            <div style={S.modalMessage}>
-              Mark this table as seated for incoming guests.
-            </div>
-            <div style={S.modalActions}>
-              <button style={S.modalCancelBtn} onClick={cancelSeatTable}>
-                Cancel
-              </button>
-              <button style={S.modalConfirmBtn} onClick={confirmSeatTable}>
-                Seat Table
-              </button>
-            </div>
+        <Modal
+          title={`Seat Table ${seatConfirmTable}?`}
+          onClose={cancelSeatTable}
+          onConfirm={confirmSeatTable}
+          confirmText="Seat Table"
+        >
+          <div style={S.modalMessage}>
+            Mark this table as seated for incoming guests.
           </div>
-        </div>
+        </Modal>
       )}
 
       {/* ── ORDER ── */}
@@ -1064,88 +1126,62 @@ export default function App() {
                     </button>
                   </div>
                 </div>
-                <div style={S.divider} />
-                {consolidateItems(sentItems).map((o) => (
-                  <div key={o.id} style={S.closeRowEditable}>
-                    {editingBill && (
-                      <button
-                        style={S.closeRemoveBtn}
-                        onClick={() => removeItemFromBill(o.id)}
-                        title="Remove one"
-                      >
-                        −
-                      </button>
-                    )}
-                    <span style={S.closeQty}>{o.qty}×</span>
-                    {editingBill && (
-                      <button
-                        style={S.closeAddBtn}
-                        onClick={() => addItemToBill(o.id)}
-                        title="Add one"
-                      >
-                        +
-                      </button>
-                    )}
-                    <span style={S.closeName}>{o.name}</span>
-                    <span style={S.closeLinePrice}>
-                      {(o.price * o.qty).toFixed(2)}€
-                    </span>
-                  </div>
-                ))}
-                <div style={S.perforationDivider} />
-                {(() => {
-                  const subtotal = sentItems.reduce((s, o) => s + o.price * o.qty, 0);
-                  const gutschein = gutscheinAmounts[activeTable] || 0;
-                  const total = Math.max(0, subtotal - gutschein);
-
-                  return (
-                    <>
-                      {gutschein > 0 && (
-                        <>
-                          <div style={S.closeSubtotalRow}>
-                            <span>Subtotal</span>
-                            <span>{subtotal.toFixed(2)}€</span>
-                          </div>
-                          <div style={S.closeGutscheinRow}>
-                            <span>Gutschein</span>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                              <span>-{gutschein.toFixed(2)}€</span>
-                              {editingBill && (
-                                <button
-                                  style={S.removeGutscheinBtn}
-                                  onClick={removeGutschein}
-                                  title="Remove gutschein"
-                                >
-                                  ✕
-                                </button>
-                              )}
-                            </div>
-                          </div>
-                        </>
-                      )}
-                      <div style={S.closeTotalRow}>
-                        <span>Total</span>
-                        <span>{total.toFixed(2)}€</span>
-                      </div>
-                    </>
-                  );
-                })()}
+                <Receipt
+                  tableId={activeTable}
+                  items={sentItems}
+                  editMode={editingBill}
+                  gutschein={gutscheinAmounts[activeTable] || 0}
+                  onRemoveItem={removeItemFromBill}
+                  onAddItem={addItemToBill}
+                  onRemoveGutschein={removeGutschein}
+                  skipHeader
+                />
               </div>
 
-              <div style={S.ticketActions}>
-                  <button style={confirmingClose ? S.confirmCloseBtn : S.closeBtn} onClick={() => {
-                    if (confirmingClose) {
-                      setShowSplitOptions(false);
-                      confirmClose(activeTable);
-                    } else {
-                      setTicketTable(activeTable);
-                      setConfirmingClose(true);
-                      setShowSplitOptions(true);
-                    }
-                  }}>
-                    {confirmingClose ? "Confirm close" : "Close table"}
-                  </button>
-                {showSplitOptions && (
+              {/* Payment and Split Options - Between Bill and Button */}
+              {showSplitOptions && (
+                <div style={S.paymentSplitContainer}>
+                  {/* Amount Paid Section */}
+                  <div style={S.paymentSection}>
+                    <div style={S.paymentLabel}>Amount Paid</div>
+                    <div style={S.paymentInputRow}>
+                      <input
+                        type="number"
+                        placeholder="0.00"
+                        value={paymentAmount}
+                        onChange={(e) => setPaymentAmount(e.target.value)}
+                        step="0.01"
+                        min="0"
+                        style={S.paymentInput}
+                        disabled={paymentConfirmed}
+                      />
+                      <button
+                        style={paymentConfirmed ? S.paymentCheckConfirmed : S.paymentCheck}
+                        onClick={() => {
+                          if (paymentAmount && parseFloat(paymentAmount) > 0) {
+                            setPaymentConfirmed(true);
+                          }
+                        }}
+                        disabled={paymentConfirmed}
+                      >
+                        ✓
+                      </button>
+                    </div>
+                    {paymentConfirmed && (() => {
+                      const subtotal = sentItems.reduce((s, o) => s + o.price * o.qty, 0);
+                      const gutschein = gutscheinAmounts[activeTable] || 0;
+                      const total = Math.max(0, subtotal - gutschein);
+                      const paid = parseFloat(paymentAmount);
+                      const tip = paid - total;
+                      return (
+                        <div style={S.paymentTip}>
+                          Tip: {tip >= 0 ? `+${tip.toFixed(2)}€` : `${tip.toFixed(2)}€`}
+                        </div>
+                      );
+                    })()}
+                  </div>
+
+                  {/* Split Options */}
                   <div style={S.splitOptions}>
                     <div style={S.splitOptionsLabel}>Split the bill</div>
                     <div style={S.splitBtns}>
@@ -1153,6 +1189,7 @@ export default function App() {
                         style={S.splitOptionBtn}
                         onClick={() => {
                           setTicketTable(activeTable);
+                          setEqualSplitPayments([{ amount: "", confirmed: false }]);
                           initiateSplit("equal", activeTable);
                         }}
                       >
@@ -1173,7 +1210,24 @@ export default function App() {
                       </button>
                     </div>
                   </div>
-                )}
+                </div>
+              )}
+
+              <div style={S.ticketActions}>
+                <button style={confirmingClose ? S.confirmCloseBtn : S.closeBtn} onClick={() => {
+                  if (confirmingClose) {
+                    setShowSplitOptions(false);
+                    confirmClose(activeTable);
+                  } else {
+                    setTicketTable(activeTable);
+                    setConfirmingClose(true);
+                    setShowSplitOptions(true);
+                    setPaymentAmount("");
+                    setPaymentConfirmed(false);
+                  }
+                }}>
+                  {confirmingClose ? "Confirm close" : "Close table"}
+                </button>
               </div>
             </>
           )}
@@ -1195,31 +1249,10 @@ export default function App() {
             <span />
           </header>
           <div style={S.ticket}>
-            <div style={S.closeReceiptBrand}>Käserei Camidi</div>
-            <div style={S.closeReceiptMeta}>
-              Table {ticketTable} · {new Date().toLocaleString("en-GB", {
-                day: '2-digit',
-                month: '2-digit',
-                year: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit'
-              })}
-            </div>
-            <div style={S.divider} />
-            {consolidateItems(ticketItems).map((o) => (
-              <div key={o.id} style={S.closeRow}>
-                <span style={S.closeQty}>{o.qty}×</span>
-                <span style={S.closeName}>{o.name}</span>
-                <span style={S.closeLinePrice}>
-                  {(o.price * o.qty).toFixed(2)}€
-                </span>
-              </div>
-            ))}
-            <div style={S.perforationDivider} />
-            <div style={S.closeTotalRow}>
-              <span>Total</span>
-              <span>{ticketTotal.toFixed(2)}€</span>
-            </div>
+            <Receipt
+              tableId={ticketTable}
+              items={ticketItems}
+            />
           </div>
 
           <div style={S.ticketActions}>
@@ -1311,21 +1344,64 @@ export default function App() {
               </div>
             )}
           </div>
-          <div style={S.ticketActions}>
-            <button
-              style={S.copyBtn}
-              onClick={() => {
-                const lines = Array.from({ length: equalGuests })
-                  .map((_, i) => `Guest ${i + 1}: ${equalShare.toFixed(2)}€`)
-                  .join("\n");
-                copyToClipboard(
-                  `SPLIT — Table ${ticketTable}\nTotal: ${ticketTotal.toFixed(2)}€ ÷ ${equalGuests}\n\n${lines}`
+
+          {/* Amount Paid Section */}
+          <div style={S.paymentSection}>
+            <div style={S.paymentLabel}>Amount Paid</div>
+            {equalSplitPayments.map((payment, idx) => (
+              <div
+                key={idx}
+                style={idx === equalSplitPayments.length - 1 ? S.paymentItemLast : S.paymentItem}
+              >
+                <div style={S.paymentInputRow}>
+                  <input
+                    type="number"
+                    placeholder="0.00"
+                    value={payment.amount}
+                    onChange={(e) => {
+                      const updated = [...equalSplitPayments];
+                      updated[idx] = { ...updated[idx], amount: e.target.value };
+                      setEqualSplitPayments(updated);
+                    }}
+                    step="0.01"
+                    min="0"
+                    style={S.paymentInput}
+                    disabled={payment.confirmed}
+                  />
+                  <button
+                    style={payment.confirmed ? S.paymentCheckConfirmed : S.paymentCheck}
+                    onClick={() => {
+                      if (payment.amount && parseFloat(payment.amount) > 0 && !payment.confirmed) {
+                        const updated = [...equalSplitPayments];
+                        updated[idx] = { ...updated[idx], confirmed: true };
+                        setEqualSplitPayments(updated);
+                        // Add new empty payment input
+                        setEqualSplitPayments([...updated, { amount: "", confirmed: false }]);
+                      }
+                    }}
+                    disabled={payment.confirmed}
+                  >
+                    ✓
+                  </button>
+                </div>
+              </div>
+            ))}
+            {(() => {
+              const confirmedPayments = equalSplitPayments.filter(p => p.confirmed);
+              if (confirmedPayments.length > 0) {
+                const totalPaid = confirmedPayments.reduce((sum, p) => sum + parseFloat(p.amount), 0);
+                const totalTip = totalPaid - ticketTotal;
+                return (
+                  <div style={S.paymentTip}>
+                    Total Tip: {totalTip >= 0 ? `+${totalTip.toFixed(2)}€` : `${totalTip.toFixed(2)}€`}
+                  </div>
                 );
-                showToast("Split copied!");
-              }}
-            >
-              Copy split
-            </button>
+              }
+              return null;
+            })()}
+          </div>
+
+          <div style={S.ticketActions}>
             <button style={S.closeBtn} onClick={closeSplitTable}>
               Close table
             </button>
@@ -1411,34 +1487,94 @@ export default function App() {
         <div style={S.page}>
           <header style={S.header}>
             <span />
-            <span style={S.headerTitle}>Guest {lastPayment.guestNum} — Paid</span>
+            <span style={S.headerTitle}>Guest {lastPayment.guestNum} — pays</span>
             <span />
           </header>
-          <div style={S.splitConfirmCard}>
-            <div style={S.splitConfirmBadge}>✓</div>
-            <div style={S.splitConfirmAmt}>{lastPayment.total.toFixed(2)}€</div>
-            <div style={S.splitConfirmSub}>Guest {lastPayment.guestNum} paid</div>
-            <div style={S.divider} />
-            {lastPayment.items.map((item, idx) => (
-              <div key={idx} style={S.splitConfirmRow}>
-                <span style={S.splitConfirmName}>{item.name}</span>
-                <span style={S.splitConfirmPrice}>{item.price.toFixed(2)}€</span>
-              </div>
-            ))}
+
+          {/* Bill Receipt */}
+          <div style={S.ticket}>
+            <Receipt
+              tableId={ticketTable}
+              items={lastPayment.items}
+              guestNum={lastPayment.guestNum}
+            />
           </div>
-          <div style={S.splitRemainingBanner}>
-            <div>
-              <div style={S.splitRemainingLabel}>Still to pay</div>
-              <div style={S.splitRemainingItems}>
-                {splitRemaining.length} item{splitRemaining.length > 1 ? "s" : ""}
-              </div>
+
+          {/* Amount Paid Section */}
+          <div style={S.paymentSection}>
+            <div style={S.paymentLabel}>Amount Paid</div>
+            <div style={S.paymentInputRow}>
+              <input
+                type="number"
+                placeholder="0.00"
+                value={itemSplitPayments[lastPayment.guestNum]?.amount || ""}
+                onChange={(e) => {
+                  setItemSplitPayments(prev => ({
+                    ...prev,
+                    [lastPayment.guestNum]: {
+                      amount: e.target.value,
+                      confirmed: false
+                    }
+                  }));
+                }}
+                step="0.01"
+                min="0"
+                style={S.paymentInput}
+                disabled={itemSplitPayments[lastPayment.guestNum]?.confirmed}
+              />
+              <button
+                style={itemSplitPayments[lastPayment.guestNum]?.confirmed ? S.paymentCheckConfirmed : S.paymentCheck}
+                onClick={() => {
+                  const payment = itemSplitPayments[lastPayment.guestNum];
+                  if (payment?.amount && parseFloat(payment.amount) > 0) {
+                    setItemSplitPayments(prev => ({
+                      ...prev,
+                      [lastPayment.guestNum]: {
+                        ...prev[lastPayment.guestNum],
+                        confirmed: true
+                      }
+                    }));
+                  }
+                }}
+                disabled={itemSplitPayments[lastPayment.guestNum]?.confirmed}
+              >
+                ✓
+              </button>
             </div>
-            <span style={S.splitRemainingAmt}>{splitRemainingTotal.toFixed(2)}€</span>
+            {itemSplitPayments[lastPayment.guestNum]?.confirmed && (() => {
+              const paid = parseFloat(itemSplitPayments[lastPayment.guestNum].amount);
+              const tip = paid - lastPayment.total;
+              return (
+                <div style={S.paymentTip}>
+                  Tip: {tip >= 0 ? `+${tip.toFixed(2)}€` : `${tip.toFixed(2)}€`}
+                </div>
+              );
+            })()}
           </div>
+
+          {/* Still to pay banner */}
+          {splitRemaining.length > 0 && (
+            <div style={S.splitRemainingBanner}>
+              <div>
+                <div style={S.splitRemainingLabel}>Still to pay</div>
+                <div style={S.splitRemainingItems}>
+                  {splitRemaining.length} item{splitRemaining.length > 1 ? "s" : ""}
+                </div>
+              </div>
+              <span style={S.splitRemainingAmt}>{splitRemainingTotal.toFixed(2)}€</span>
+            </div>
+          )}
+
           <div style={{ padding: "0 16px 24px" }}>
-            <button style={S.sendBtn} onClick={nextSplitGuest}>
-              Next guest →
-            </button>
+            {splitRemaining.length > 0 ? (
+              <button style={S.sendBtn} onClick={nextSplitGuest}>
+                Next guest →
+              </button>
+            ) : (
+              <button style={S.sendBtn} onClick={() => setView("splitDone")}>
+                Confirm
+              </button>
+            )}
           </div>
         </div>
       )}
@@ -1474,6 +1610,35 @@ export default function App() {
               <span>Total collected</span>
               <span>{splitPayments.reduce((s, p) => s + p.total, 0).toFixed(2)}€</span>
             </div>
+            {(() => {
+              // Calculate total tips from all guests
+              const guestsWithPayment = splitPayments.filter(p =>
+                itemSplitPayments[p.guestNum]?.confirmed
+              );
+
+              if (guestsWithPayment.length > 0) {
+                const totalTip = guestsWithPayment.reduce((sum, p) => {
+                  const paid = parseFloat(itemSplitPayments[p.guestNum].amount);
+                  const tip = paid - p.total;
+                  return sum + tip;
+                }, 0);
+
+                return (
+                  <div style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    fontSize: 15,
+                    color: totalTip >= 0 ? "#2d5a35" : "#c0392b",
+                    marginTop: 8,
+                    fontWeight: 600
+                  }}>
+                    <span>Total tip</span>
+                    <span>{totalTip >= 0 ? `+${totalTip.toFixed(2)}€` : `${totalTip.toFixed(2)}€`}</span>
+                  </div>
+                );
+              }
+              return null;
+            })()}
           </div>
           <div style={S.ticketActions}>
             <button style={S.closeBtn} onClick={closeSplitTable}>
@@ -1536,6 +1701,22 @@ export default function App() {
                     )}
                   </span>
                 </div>
+                {(() => {
+                  const totalTips = paidBills.reduce((sum, bill) =>
+                    sum + (bill.tip !== undefined ? bill.tip : 0), 0
+                  );
+                  if (totalTips !== 0) {
+                    return (
+                      <div style={S.salesSummaryRow}>
+                        <span style={S.salesLabel}>Total Tips</span>
+                        <span style={{ ...S.salesValue, color: totalTips >= 0 ? "#2d5a35" : "#c0392b" }}>
+                          {totalTips >= 0 ? `+${totalTips.toFixed(2)}€` : `${totalTips.toFixed(2)}€`}
+                        </span>
+                      </div>
+                    );
+                  }
+                  return null;
+                })()}
                 <div style={S.salesTotalRow}>
                   <span style={S.salesTotalLabel}>Total Revenue</span>
                   <span style={S.salesTotalAmt}>
@@ -1599,6 +1780,11 @@ export default function App() {
                             : bill.paymentMode === "equal"
                             ? `Split ${bill.splitData.guests} ways`
                             : `Split by item (${bill.splitData.payments.length} guests)`}
+                          {bill.tip !== undefined && (
+                            <span style={{ color: bill.tip >= 0 ? "#2d5a35" : "#c0392b" }}>
+                              {" "}· Tip: {bill.tip >= 0 ? `+${bill.tip.toFixed(2)}€` : `${bill.tip.toFixed(2)}€`}
+                            </span>
+                          )}
                         </div>
                         <div style={S.billItemsList}>
                           {bill.items.map((item) => (
@@ -1794,124 +1980,96 @@ export default function App() {
 
       {/* ── DELETE BILL CONFIRMATION ── */}
       {deletingBillIndex !== null && (
-        <div style={S.modalOverlay} onClick={cancelDeleteBill}>
-          <div style={S.modalCard} onClick={(e) => e.stopPropagation()}>
-            <div style={S.modalTitle}>Delete Bill?</div>
-            <div style={S.modalMessage}>
-              Are you sure? This action cannot be undone.
-            </div>
-            <div style={S.modalActions}>
-              <button style={S.modalCancelBtn} onClick={cancelDeleteBill}>
-                Cancel
-              </button>
-              <button style={S.modalDeleteBtn} onClick={confirmDeleteBill}>
-                Delete
-              </button>
-            </div>
+        <Modal
+          title="Delete Bill?"
+          onClose={cancelDeleteBill}
+          onConfirm={confirmDeleteBill}
+          confirmText="Delete"
+          confirmStyle={S.modalDeleteBtn}
+        >
+          <div style={S.modalMessage}>
+            Are you sure? This action cannot be undone.
           </div>
-        </div>
+        </Modal>
       )}
 
       {/* ── CUSTOM ITEM MODAL ── */}
       {showCustomModal && (
-        <div style={S.modalOverlay}>
-          <div style={S.modalCard}>
-            <div style={S.modalTitle}>Add Custom Item</div>
-            <div style={S.customModalForm}>
+        <Modal
+          title="Add Custom Item"
+          onClose={() => setShowCustomModal(false)}
+          onConfirm={addCustomItem}
+          confirmText="Add to order"
+          closeOnBackdrop={false}
+        >
+          <div style={S.customModalForm}>
+            <div style={S.customModalField}>
+              <label style={S.customModalLabel}>Item name</label>
+              <input
+                type="text"
+                placeholder="e.g., Special request"
+                value={customName}
+                onChange={(e) => setCustomName(e.target.value)}
+                style={S.customModalInput}
+                autoFocus
+              />
+            </div>
+            <div style={S.customModalRow}>
               <div style={S.customModalField}>
-                <label style={S.customModalLabel}>Item name</label>
+                <label style={S.customModalLabel}>Price (€)</label>
                 <input
-                  type="text"
-                  placeholder="e.g., Special request"
-                  value={customName}
-                  onChange={(e) => setCustomName(e.target.value)}
+                  type="number"
+                  placeholder="0.00"
+                  value={customPrice}
+                  onChange={(e) => setCustomPrice(e.target.value)}
+                  step="0.01"
+                  min="0"
                   style={S.customModalInput}
-                  autoFocus
                 />
               </div>
-              <div style={S.customModalRow}>
-                <div style={S.customModalField}>
-                  <label style={S.customModalLabel}>Price (€)</label>
-                  <input
-                    type="number"
-                    placeholder="0.00"
-                    value={customPrice}
-                    onChange={(e) => setCustomPrice(e.target.value)}
-                    step="0.01"
-                    min="0"
-                    style={S.customModalInput}
-                  />
-                </div>
-                <div style={S.customModalFieldSmall}>
-                  <label style={S.customModalLabel}>Quantity</label>
-                  <input
-                    type="number"
-                    placeholder="1"
-                    value={customQty}
-                    onChange={(e) => setCustomQty(e.target.value)}
-                    min="1"
-                    style={S.customModalInput}
-                  />
-                </div>
+              <div style={S.customModalFieldSmall}>
+                <label style={S.customModalLabel}>Quantity</label>
+                <input
+                  type="number"
+                  placeholder="1"
+                  value={customQty}
+                  onChange={(e) => setCustomQty(e.target.value)}
+                  min="1"
+                  style={S.customModalInput}
+                />
               </div>
             </div>
-            <div style={S.modalActions}>
-              <button
-                style={S.modalCancelBtn}
-                onClick={() => setShowCustomModal(false)}
-              >
-                Cancel
-              </button>
-              <button
-                style={S.modalConfirmBtn}
-                onClick={addCustomItem}
-              >
-                Add to order
-              </button>
-            </div>
           </div>
-        </div>
+        </Modal>
       )}
 
       {/* ── GUTSCHEIN MODAL ── */}
       {showGutscheinModal && (
-        <div style={S.modalOverlay} onClick={() => setShowGutscheinModal(false)}>
-          <div style={S.modalCard} onClick={(e) => e.stopPropagation()}>
-            <div style={S.modalTitle}>Apply Gutschein</div>
-            <div style={S.customModalForm}>
-              <div style={S.customModalField}>
-                <label style={S.customModalLabel}>Amount (€)</label>
-                <input
-                  type="number"
-                  placeholder="0.00"
-                  value={gutscheinInput}
-                  onChange={(e) => setGutscheinInput(e.target.value)}
-                  step="0.01"
-                  min="0"
-                  style={S.customModalInput}
-                  autoFocus
-                />
-              </div>
-            </div>
-            <div style={S.modalActions}>
-              <button
-                style={S.modalCancelBtn}
-                onClick={() => {
-                  setShowGutscheinModal(false);
-                  setGutscheinInput("");
-                }}
-              >
-                Cancel
-              </button>
-              <button
-                style={S.modalConfirmBtn}
-                onClick={applyGutschein}
-              >
-                Apply
-              </button>
+        <Modal
+          title="Apply Gutschein"
+          onClose={() => {
+            setShowGutscheinModal(false);
+            setGutscheinInput("");
+          }}
+          onConfirm={applyGutschein}
+          confirmText="Apply"
+        >
+          <div style={S.customModalForm}>
+            <div style={S.customModalField}>
+              <label style={S.customModalLabel}>Amount (€)</label>
+              <input
+                type="number"
+                placeholder="0.00"
+                value={gutscheinInput}
+                onChange={(e) => setGutscheinInput(e.target.value)}
+                step="0.01"
+                min="0"
+                style={S.customModalInput}
+                autoFocus
+              />
             </div>
           </div>
-        </div>
+        </Modal>
       )}
 
     </div>
