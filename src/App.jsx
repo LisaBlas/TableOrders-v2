@@ -640,13 +640,8 @@ export default function App() {
       // Recalculate total
       bill.total = bill.items.reduce((sum, itm) => sum + itm.price * itm.qty, 0);
 
-      // If no items left, remove the bill
-      if (bill.items.length === 0) {
-        updated.splice(billIndex, 1);
-        showToast("Bill removed (no items left)");
-      } else {
-        updated[billIndex] = bill;
-      }
+      // Keep bill even if empty (will be cleaned up when exiting edit mode)
+      updated[billIndex] = bill;
 
       return updated;
     });
@@ -683,6 +678,15 @@ export default function App() {
   };
 
   const exitEditMode = () => {
+    // If bill has no items, show modal to confirm deletion
+    if (editingBillIndex !== null) {
+      const bill = paidBills[editingBillIndex];
+      if (bill && bill.items.length === 0) {
+        setDeletingBillIndex(editingBillIndex);
+        // Modal will handle confirmation and deletion
+        return;
+      }
+    }
     // Exit edit mode without restoring (changes are kept)
     setBillSnapshot(null);
     setEditingBillIndex(null);
@@ -1908,18 +1912,24 @@ export default function App() {
             <>
               {/* Tabs */}
               <div style={S.tabs}>
-                <button
-                  style={{ ...S.tab, ...(dailySalesTab === "chronological" ? S.tabActive : {}) }}
-                  onClick={() => setDailySalesTab("chronological")}
-                >
-                  Chronological
-                </button>
-                <button
-                  style={{ ...S.tab, ...(dailySalesTab === "total" ? S.tabActive : {}) }}
-                  onClick={() => setDailySalesTab("total")}
-                >
-                  Total
-                </button>
+                <div style={S.tabsContainer}>
+                  <button
+                    style={{ ...S.tab, ...(dailySalesTab === "chronological" ? S.tabActive : {}) }}
+                    onClick={() => setDailySalesTab("chronological")}
+                  >
+                    Chronological
+                  </button>
+                  <button
+                    style={{ ...S.tab, ...(dailySalesTab === "total" ? S.tabActive : {}) }}
+                    onClick={() => setDailySalesTab("total")}
+                  >
+                    Total
+                  </button>
+                  <div style={{
+                    ...S.tabIndicator,
+                    transform: dailySalesTab === "total" ? "translateX(100%)" : "translateX(0)"
+                  }} />
+                </div>
               </div>
 
               <div style={S.salesSummary}>
@@ -2035,26 +2045,38 @@ export default function App() {
                         <div style={{ height: 0, borderTop: "2px dashed #d4d2ca", margin: "10px 0 8px" }} />
                         {/* Items list */}
                         <div style={S.billItemsList}>
-                          {bill.items.map((item) => (
-                            <div key={item.id} style={isEditing ? S.billItemEditable : S.billItem}>
-                              {isEditing && (
-                                <button
-                                  style={S.billItemRemoveBtn}
-                                  onClick={() => removePaidBillItem(billIndex, item.id)}
-                                  title="Remove one"
-                                >
-                                  −
-                                </button>
-                              )}
-                              <span style={S.billItemName}>
-                                <span style={S.billItemQty}>{item.qty}×</span>
-                                {item.name}
-                              </span>
-                              <span style={S.billItemPrice}>
-                                {(item.price * item.qty).toFixed(2)}€
-                              </span>
+                          {bill.items.length === 0 ? (
+                            <div style={{
+                              padding: "20px",
+                              textAlign: "center",
+                              color: "#999",
+                              fontSize: 14,
+                              fontStyle: "italic"
+                            }}>
+                              No items in this bill
                             </div>
-                          ))}
+                          ) : (
+                            bill.items.map((item) => (
+                              <div key={item.id} style={isEditing ? S.billItemEditable : S.billItem}>
+                                {isEditing && (
+                                  <button
+                                    style={S.billItemRemoveBtn}
+                                    onClick={() => removePaidBillItem(billIndex, item.id)}
+                                    title="Remove one"
+                                  >
+                                    −
+                                  </button>
+                                )}
+                                <span style={S.billItemName}>
+                                  <span style={S.billItemQty}>{item.qty}×</span>
+                                  {item.name}
+                                </span>
+                                <span style={S.billItemPrice}>
+                                  {(item.price * item.qty).toFixed(2)}€
+                                </span>
+                              </div>
+                            ))
+                          )}
                         </div>
                         {/* Total bottom-right */}
                         <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 8 }}>
@@ -2241,7 +2263,9 @@ export default function App() {
           confirmStyle={S.modalDeleteBtn}
         >
           <div style={S.modalMessage}>
-            Are you sure? This action cannot be undone.
+            {editingBillIndex !== null && paidBills[deletingBillIndex]?.items.length === 0
+              ? "This bill has no items. Delete it?"
+              : "Are you sure? This action cannot be undone."}
           </div>
         </Modal>
       )}
