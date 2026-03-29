@@ -2025,10 +2025,10 @@ export default function App() {
                           )}
                         </div>
                         <div style={S.billMeta}>
-                          {new Date(bill.timestamp).toLocaleString("en-GB")} ·{" "}
+                          {new Date(bill.timestamp).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })} ·{" "}
                           {bill.paymentMode === "full"
                             ? bill.gutschein
-                              ? `Full payment (Gutschein: ${bill.gutschein.toFixed(2)}€)`
+                              ? <span style={{ color: "#2d7a3a", fontWeight: 600 }}>Full payment (Gutschein: {bill.gutschein.toFixed(2)}€)</span>
                               : "Full payment"
                             : bill.paymentMode === "equal"
                             ? `Split ${bill.splitData.guests} ways`
