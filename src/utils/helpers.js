@@ -93,10 +93,20 @@ export function consolidateItems(items) {
 
 // Determine destination for an item (Bar, Counter, Kitchen)
 export function getItemDestination(item) {
-  // Bar: All drinks and wines
-  if (item.id.startsWith("wg") || item.id.startsWith("dr") ||
-      item.id.startsWith("wb") || item.id.startsWith("sn") ||
-      item.id.startsWith("te") || item.id.startsWith("co")) {
+  // Bar: All drinks, wines, bottles, schnaps, juices, water
+  if (
+    item.id.startsWith("wg") || // Wines by glass
+    item.id.startsWith("dr") || // Drinks/beer/cocktails
+    item.id.startsWith("te") || // Teas
+    item.id.startsWith("co") || // Coffee
+    item.id.endsWith("_bottle") || // All bottles
+    item.category === "Bottles 🍾" || // Bottles category
+    item.category === "Drinks🍷" || // Drinks category
+    // Schnaps items
+    ["cognac", "calvados", "mirabelle", "jameson", "creme_calvados"].includes(item.id.split("-")[0]) ||
+    // Juices and water items
+    item.id.includes("saft") || item.id.includes("schorle") || item.id.includes("wasser")
+  ) {
     return "bar";
   }
 

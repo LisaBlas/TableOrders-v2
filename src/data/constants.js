@@ -10,6 +10,14 @@ export const TABLES = [
   { id: 13, label: "Table 13" },
   { id: 14, label: "Table 14" },
   { id: 15, label: "Table 15" },
+  { id: "ToGo", label: "To Go" },
+  { isDivider: true, label: "Outside" },
+  { id: "A", label: "A" },
+  { id: "B", label: "B" },
+  { id: "C", label: "C" },
+  { id: "Left", label: "Left" },
+  { id: "Mid", label: "Mid" },
+  { id: "Right", label: "Right" },
 ];
 
 export const MENU = {
@@ -50,7 +58,7 @@ export const MENU = {
     // Wines by Glass - White WITH SIZE VARIANTS
     {
       id: "wg1",
-      name: "Picpoul de Pinet",
+      name: "Picpoul",
       subcategory: "wine",
       variants: [
         { type: "small", price: 3.5, label: "0,1" },
@@ -124,7 +132,7 @@ export const MENU = {
     // Wines by Glass - Red WITH SIZE VARIANTS
     {
       id: "wg9",
-      name: "Montepulciano D'Abruzzo",
+      name: "Montepulciano",
       subcategory: "wine",
       variants: [
         { type: "small", price: 3.5, label: "0,1" },
@@ -314,7 +322,7 @@ export const MENU = {
     // White wines WITH LOCATION VARIANTS (Here / To Go)
     {
       id: "picpoul_bottle",
-      name: "Picpoul de Pinet",
+      name: "Picpoul Fl.",
       subcategory: "white",
       variants: [
         { type: "here", price: 22.5, label: "Here" },
@@ -323,7 +331,7 @@ export const MENU = {
     },
     {
       id: "sauvignon_bottle",
-      name: "Sauvignon Blanc",
+      name: "Sauvignon Blanc Fl.",
       subcategory: "white",
       variants: [
         { type: "here", price: 24, label: "Here" },
@@ -332,7 +340,7 @@ export const MENU = {
     },
     {
       id: "grauburgunder_bottle",
-      name: "Grauburgunder",
+      name: "Grauburgunder Fl.",
       subcategory: "white",
       variants: [
         { type: "here", price: 25.5, label: "Here" },
@@ -341,7 +349,7 @@ export const MENU = {
     },
     {
       id: "sancerre_bottle",
-      name: "Sancerre",
+      name: "Sancerre Fl.",
       subcategory: "white",
       variants: [
         { type: "here", price: 38, label: "Here" },
@@ -351,7 +359,7 @@ export const MENU = {
     { id: "chablis_bottle", name: "Chablis", price: 38, subcategory: "white" },
     {
       id: "riesling_bottle",
-      name: "Riesling",
+      name: "Riesling Fl.",
       subcategory: "white",
       variants: [
         { type: "here", price: 24.5, label: "Here" },
@@ -360,7 +368,7 @@ export const MENU = {
     },
     {
       id: "entre_deux_mers_bottle",
-      name: "Entre-Deux-Mers",
+      name: "Entre-Deux-Mers Fl.",
       subcategory: "white",
       variants: [
         { type: "here", price: 23, label: "Here" },
@@ -369,7 +377,7 @@ export const MENU = {
     },
     {
       id: "zotz_bottle",
-      name: "Zotz",
+      name: "Zotz Fl.",
       subcategory: "white",
       variants: [
         { type: "here", price: 25.5, label: "Here" },
@@ -379,7 +387,7 @@ export const MENU = {
     { id: "rocailles_bottle", name: "Rocailles", price: 25.5, subcategory: "white" },
     {
       id: "divin_sauv_bottle",
-      name: "Divin Sauvignon Blanc",
+      name: "Divin Sauvignon Blanc Fl.",
       subcategory: "white",
       variants: [
         { type: "here", price: 25.5, label: "Here" },
@@ -389,7 +397,7 @@ export const MENU = {
     // Rosé
     {
       id: "brise_marine_bottle",
-      name: "Brise-Marine",
+      name: "Brise-Marine Fl.",
       subcategory: "rosé",
       variants: [
         { type: "here", price: 24, label: "Here" },
@@ -398,7 +406,7 @@ export const MENU = {
     },
     {
       id: "aurore_boreale_bottle",
-      name: "Aurore Boréale",
+      name: "Aurore Boréale Fl.",
       subcategory: "rosé",
       variants: [
         { type: "here", price: 28, label: "Here" },
@@ -407,7 +415,7 @@ export const MENU = {
     },
     {
       id: "petnat_rose_bottle",
-      name: "PetNat Rosé",
+      name: "PetNat Rosé Fl.",
       subcategory: "rosé",
       variants: [
         { type: "here", price: 33, label: "Here" },
@@ -417,7 +425,7 @@ export const MENU = {
     // Sparkling wines
     {
       id: "cidre_bottle",
-      name: "Cidre",
+      name: "Cidre Fl.",
       subcategory: "sparkling",
       variants: [
         { type: "here", price: 21, label: "Here" },
@@ -426,7 +434,7 @@ export const MENU = {
     },
     {
       id: "cremant_bottle",
-      name: "Crémant",
+      name: "Crémant Fl.",
       subcategory: "sparkling",
       variants: [
         { type: "here", price: 35, label: "Here" },
@@ -435,7 +443,7 @@ export const MENU = {
     },
     {
       id: "prosecco_bottle",
-      name: "Prosecco",
+      name: "Prosecco Fl.",
       subcategory: "sparkling",
       variants: [
         { type: "here", price: 23, label: "Here" },
@@ -444,7 +452,7 @@ export const MENU = {
     },
     {
       id: "sekt_bottle",
-      name: "Sekt",
+      name: "Sekt Fl.",
       subcategory: "sparkling",
       variants: [
         { type: "here", price: 28, label: "Here" },
@@ -453,7 +461,7 @@ export const MENU = {
     },
     {
       id: "petnat_bottle",
-      name: "PetNat",
+      name: "PetNat Fl.",
       subcategory: "sparkling",
       variants: [
         { type: "here", price: 36, label: "Here" },
@@ -463,7 +471,7 @@ export const MENU = {
     // Red wines
     {
       id: "montepulciano_bottle",
-      name: "Montepulciano D'Abruzzo",
+      name: "Montepulciano Fl.",
       subcategory: "red",
       variants: [
         { type: "here", price: 22.5, label: "Here" },
@@ -472,7 +480,7 @@ export const MENU = {
     },
     {
       id: "gamay_bottle",
-      name: "Gamay",
+      name: "Gamay Fl.",
       subcategory: "red",
       variants: [
         { type: "here", price: 25.5, label: "Here" },
@@ -481,7 +489,7 @@ export const MENU = {
     },
     {
       id: "carignan_bottle",
-      name: "Carignan",
+      name: "Carignan Fl.",
       subcategory: "red",
       variants: [
         { type: "here", price: 27, label: "Here" },
@@ -490,7 +498,7 @@ export const MENU = {
     },
     {
       id: "graves_bottle",
-      name: "Graves",
+      name: "Graves Fl.",
       subcategory: "red",
       variants: [
         { type: "here", price: 32, label: "Here" },
@@ -499,7 +507,7 @@ export const MENU = {
     },
     {
       id: "malbec_bottle",
-      name: "Malbec",
+      name: "Malbec Fl.",
       subcategory: "red",
       variants: [
         { type: "here", price: 29, label: "Here" },
@@ -508,7 +516,7 @@ export const MENU = {
     },
     {
       id: "crozes_hermitage_bottle",
-      name: "Crozes Hermitage",
+      name: "Crozes Hermitage Fl.",
       subcategory: "red",
       variants: [
         { type: "here", price: 48, label: "Here" },
@@ -517,7 +525,7 @@ export const MENU = {
     },
     {
       id: "der_roth_bottle",
-      name: "Der Roth",
+      name: "Der Roth Fl.",
       subcategory: "red",
       variants: [
         { type: "here", price: 26, label: "Here" },
@@ -526,7 +534,7 @@ export const MENU = {
     },
     {
       id: "primitivo_bottle",
-      name: "Primitivo",
+      name: "Primitivo Fl.",
       subcategory: "red",
       variants: [
         { type: "here", price: 32, label: "Here" },
@@ -536,7 +544,7 @@ export const MENU = {
     // Natural & Other wines
     {
       id: "pinot_grisant_bottle",
-      name: "Pinot Grisant",
+      name: "Pinot Grisant Fl.",
       subcategory: "natural",
       variants: [
         { type: "here", price: 30, label: "Here" },
@@ -545,7 +553,7 @@ export const MENU = {
     },
     {
       id: "ca_va_le_faire_bottle",
-      name: "Ca va le faire",
+      name: "Ca va le faire Fl.",
       subcategory: "natural",
       variants: [
         { type: "here", price: 30, label: "Here" },
@@ -554,7 +562,7 @@ export const MENU = {
     },
     {
       id: "bonne_mine_bottle",
-      name: "Bonne Mine",
+      name: "Bonne Mine Fl.",
       subcategory: "natural",
       variants: [
         { type: "here", price: 32, label: "Here" },
@@ -563,7 +571,7 @@ export const MENU = {
     },
     {
       id: "yellow_muskat_bottle",
-      name: "Yellow Muskat",
+      name: "Yellow Muskat Fl.",
       subcategory: "natural",
       variants: [
         { type: "here", price: 30, label: "Here" },
@@ -572,7 +580,7 @@ export const MENU = {
     },
     {
       id: "clairette_bottle",
-      name: "Clairette",
+      name: "Clairette Fl.",
       subcategory: "natural",
       variants: [
         { type: "here", price: 30, label: "Here" },
@@ -581,7 +589,7 @@ export const MENU = {
     },
     {
       id: "infrarouge_bottle",
-      name: "Infrarouge",
+      name: "Infrarouge Fl.",
       subcategory: "natural",
       variants: [
         { type: "here", price: 29, label: "Here" },
@@ -590,7 +598,7 @@ export const MENU = {
     },
     {
       id: "grenache_bottle",
-      name: "Grenache",
+      name: "Grenache Fl.",
       subcategory: "natural",
       variants: [
         { type: "here", price: 30, label: "Here" },
@@ -599,7 +607,7 @@ export const MENU = {
     },
     {
       id: "cuvee_galets_bottle",
-      name: "Cuvée des Galets",
+      name: "Cuvée des Galets Fl.",
       subcategory: "natural",
       variants: [
         { type: "here", price: 27, label: "Here" },
@@ -609,7 +617,7 @@ export const MENU = {
     // Water bottles WITH LOCATION VARIANTS
     {
       id: "wasser_sprudel_bottle",
-      name: "Wasser Sprudel Bottle",
+      name: "Sprudel Wasser Fl.",
       subcategory: "water",
       variants: [
         { type: "here", price: 5.5, label: "Here" },
@@ -618,7 +626,7 @@ export const MENU = {
     },
     {
       id: "wasser_bottle",
-      name: "Wasser Bottle",
+      name: "Wasser Fl.",
       subcategory: "water",
       variants: [
         { type: "here", price: 5.5, label: "Here" },

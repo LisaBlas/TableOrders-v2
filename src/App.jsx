@@ -56,6 +56,7 @@ export default function App() {
 
   // Bill editing and gutschein state
   const [editingBill, setEditingBill] = useState(false);
+  const [billEditSnapshot, setBillEditSnapshot] = useState(null);
   const [gutscheinAmounts, setGutscheinAmounts] = useState({});
   const [showGutscheinModal, setShowGutscheinModal] = useState(false);
   const [gutscheinInput, setGutscheinInput] = useState("");
@@ -189,11 +190,13 @@ export default function App() {
       const current = prev[activeTable] || [];
       const existing = current.find((o) => o.id === orderItem.id);
       if (existing) {
+        // Move existing item to end (most recent) with updated quantity
         return {
           ...prev,
-          [activeTable]: current.map((o) =>
-            o.id === orderItem.id ? { ...o, qty: o.qty + 1 } : o
-          ),
+          [activeTable]: [
+            ...current.filter((o) => o.id !== orderItem.id),
+            { ...existing, qty: existing.qty + 1 }
+          ],
         };
       }
       return { ...prev, [activeTable]: [...current, { ...orderItem, qty: 1, sentQty: 0 }] };
@@ -336,6 +339,61 @@ export default function App() {
       return next;
     });
     showToast("Gutschein removed");
+  };
+
+  const startBillEdit = () => {
+    // Take snapshot when entering edit mode
+    const current = orders[activeTable] || [];
+    setBillEditSnapshot(current.map(o => ({ id: o.id, sentQty: o.sentQty || 0 })));
+    setEditingBill(true);
+  };
+
+  const confirmBillEdit = () => {
+    const current = orders[activeTable] || [];
+
+    // Find items with increased sentQty during edit session
+    const itemsAddedDuringEdit = [];
+    if (billEditSnapshot) {
+      current.forEach(item => {
+        const snapItem = billEditSnapshot.find(s => s.id === item.id);
+        const oldSentQty = snapItem ? snapItem.sentQty : 0;
+        const newSentQty = item.sentQty || 0;
+        const qtyAdded = newSentQty - oldSentQty;
+
+        if (qtyAdded > 0) {
+          itemsAddedDuringEdit.push({
+            ...item,
+            qty: qtyAdded  // Only the added quantity
+          });
+        }
+      });
+    }
+
+    // Create a new batch for items added during edit
+    if (itemsAddedDuringEdit.length > 0) {
+      setSentBatches((prev) => {
+        const tableBatches = prev[activeTable] || [];
+        return {
+          ...prev,
+          [activeTable]: [
+            ...tableBatches,
+            {
+              timestamp: new Date(),
+              items: itemsAddedDuringEdit,
+            },
+          ],
+        };
+      });
+    }
+
+    // Also send any unsent items from Order tab
+    const unsent = current.filter((o) => (o.qty - (o.sentQty || 0)) > 0);
+    if (unsent.length > 0) {
+      sendOrder();
+    }
+
+    setBillEditSnapshot(null);
+    setEditingBill(false);
   };
 
   const sendOrder = () => {
@@ -700,6 +758,15 @@ export default function App() {
           </button>
           <div style={S.grid}>
             {TABLES.map((t) => {
+              if (t.isDivider) {
+                return (
+                  <div key={t.label} style={{ ...S.sentDivider, gridColumn: "1 / -1", margin: "8px 0 4px" }}>
+                    <div style={S.sentDividerLine} />
+                    <span style={S.sentDividerText}>{t.label}</span>
+                    <div style={S.sentDividerLine} />
+                  </div>
+                );
+              }
               const status = getTableStatus(t.id, orders, seatedTables);
               const cfg = STATUS_CONFIG[status];
               return (
@@ -993,24 +1060,26 @@ export default function App() {
                                     <span style={S.menuItemName}>{item.name}</span>
                                   </div>
                                   <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
-                                    {item.variants.map((variant) => (
-                                      <button
-                                        key={variant.type}
-                                        style={S.variantBtn}
-                                        onClick={() => addItem(item, variant)}
-                                      >
-                                        <span style={S.variantLabel}>{variant.label}</span>
-                                        <span style={S.variantPrice}>
-                                          {variant.price.toFixed(2)}€
-                                        </span>
-                                      </button>
-                                    ))}
+                                    {(activeCategory === "Bottles 🍾" ? item.variants.slice().reverse() : item.variants).map((variant) => {
+                                      const variantId = `${item.id}-${variant.type}`;
+                                      const unsentQty = unsentItems.find(o => o.id === variantId)?.qty || 0;
+                                      return (
+                                        <button
+                                          key={variant.type}
+                                          style={S.variantBtn}
+                                          onClick={() => addItem(item, variant)}
+                                        >
+                                          <span style={S.variantLabel}>{variant.label}{unsentQty > 0 && ` (${unsentQty})`}</span>
+                                        </button>
+                                      );
+                                    })}
                                   </div>
                                 </div>
                               );
                             }
 
                             // Standard item without variants
+                            const unsentQty = unsentItems.find(o => o.id === item.id)?.qty || 0;
                             return (
                               <div key={item.id} style={S.menuItem}>
                                 <div style={S.menuItemInfo}>
@@ -1019,8 +1088,8 @@ export default function App() {
                                     {item.price.toFixed(2)}€
                                   </span>
                                 </div>
-                                <button style={S.addBtn} onClick={() => addItem(item)}>
-                                  Add
+                                <button style={S.variantBtn} onClick={() => addItem(item)}>
+                                  <span style={S.variantLabel}>Add{unsentQty > 0 && ` (${unsentQty})`}</span>
                                 </button>
                               </div>
                             );
@@ -1048,24 +1117,26 @@ export default function App() {
                               </span>
                             </div>
                             <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
-                              {item.variants.map((variant) => (
-                                <button
-                                  key={variant.type}
-                                  style={S.variantBtn}
-                                  onClick={() => addItem(item, variant)}
-                                >
-                                  <span style={S.variantLabel}>{variant.label}</span>
-                                  <span style={S.variantPrice}>
-                                    {variant.price.toFixed(2)}€
-                                  </span>
-                                </button>
-                              ))}
+                              {(item.category === "Bottles 🍾" ? item.variants.slice().reverse() : item.variants).map((variant) => {
+                                const variantId = `${item.id}-${variant.type}`;
+                                const unsentQty = unsentItems.find(o => o.id === variantId)?.qty || 0;
+                                return (
+                                  <button
+                                    key={variant.type}
+                                    style={S.variantBtn}
+                                    onClick={() => addItem(item, variant)}
+                                  >
+                                    <span style={S.variantLabel}>{variant.label}{unsentQty > 0 && ` (${unsentQty})`}</span>
+                                  </button>
+                                );
+                              })}
                             </div>
                           </div>
                         );
                       }
 
                       // Standard item without variants
+                      const unsentQty = unsentItems.find(o => o.id === item.id)?.qty || 0;
                       return (
                         <div key={item.id} style={S.menuItem}>
                           <div style={S.menuItemInfo}>
@@ -1081,8 +1152,8 @@ export default function App() {
                               {item.price.toFixed(2)}€
                             </span>
                           </div>
-                          <button style={S.addBtn} onClick={() => addItem(item)}>
-                            Add
+                          <button style={S.variantBtn} onClick={() => addItem(item)}>
+                            <span style={S.variantLabel}>Add{unsentQty > 0 && ` (${unsentQty})`}</span>
                           </button>
                         </div>
                       );
@@ -1244,7 +1315,7 @@ export default function App() {
                   <div style={S.billHeaderActions}>
                     <button
                       style={editingBill ? S.billIconBtnActive : S.billIconBtn}
-                      onClick={() => setEditingBill(!editingBill)}
+                      onClick={() => editingBill ? confirmBillEdit() : startBillEdit()}
                       title={editingBill ? "Done" : "Edit"}
                     >
                       {editingBill ? "✓" : "✏️"}
@@ -1272,7 +1343,7 @@ export default function App() {
 
               {/* Split Options - Right under bill */}
               {confirmingClose && (
-                <div style={S.splitOptions}>
+                <div style={{ ...S.splitOptions, marginBottom: "200px" }}>
                   <div style={S.splitOptionsLabel}>Split the bill</div>
                   <div style={S.splitBtns}>
                     <button
@@ -1879,6 +1950,23 @@ export default function App() {
                         <span style={S.salesLabel}>Total Tips</span>
                         <span style={{ ...S.salesValue, color: totalTips >= 0 ? "#2d5a35" : "#c0392b" }}>
                           {totalTips >= 0 ? `+${totalTips.toFixed(2)}€` : `${totalTips.toFixed(2)}€`}
+                        </span>
+                      </div>
+                    );
+                  }
+                  return null;
+                })()}
+                {(() => {
+                  const billsWithGutschein = paidBills.filter(bill => bill.gutschein && bill.gutschein > 0);
+                  const totalGutschein = billsWithGutschein.reduce((sum, bill) => sum + bill.gutschein, 0);
+                  if (totalGutschein > 0) {
+                    return (
+                      <div style={S.salesSummaryRow}>
+                        <span style={S.salesLabel}>
+                          Gutscheins ({billsWithGutschein.length})
+                        </span>
+                        <span style={{ ...S.salesValue, color: "#c0392b" }}>
+                          -{totalGutschein.toFixed(2)}€
                         </span>
                       </div>
                     );
