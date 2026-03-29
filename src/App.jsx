@@ -1988,35 +1988,39 @@ export default function App() {
 
                     return (
                       <div key={reverseIdx} style={S.billCard}>
-                        <div style={S.billCardHeader}>
-                          <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
-                            <span style={S.billTableNum}>Table {bill.tableId}</span>
-                            <span style={{ fontSize: 12, color: "#888" }}>{new Date(bill.timestamp).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}</span>
+                        {/* Header: table + time + payment info + edit buttons */}
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                          <div>
+                            <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
+                              <span style={S.billTableNum}>Table {bill.tableId}</span>
+                              <span style={{ fontSize: 12, color: "#888" }}>{new Date(bill.timestamp).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}</span>
+                            </div>
+                            <div style={{ ...S.billMeta, marginTop: 2 }}>
+                              {bill.paymentMode === "full"
+                                ? bill.gutschein
+                                  ? <span style={{ color: "#2d7a3a", fontWeight: 600 }}>Full payment (Gutschein: {bill.gutschein.toFixed(2)}€)</span>
+                                  : "Full payment"
+                                : bill.paymentMode === "equal"
+                                ? `Split ${bill.splitData.guests} ways`
+                                : `Split by item (${bill.splitData.payments.length} guests)`}
+                              {bill.tip !== undefined && (
+                                <div style={{ color: bill.tip >= 0 ? "#2d5a35" : "#c0392b" }}>
+                                  Tip: {bill.tip >= 0 ? `+${bill.tip.toFixed(2)}€` : `${bill.tip.toFixed(2)}€`}
+                                </div>
+                              )}
+                            </div>
                           </div>
                           {!isEditing ? (
-                            <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                              <span style={S.billTotal}>{bill.total.toFixed(2)}€</span>
-                              <button
-                                style={S.editBillBtn}
-                                onClick={() => enterEditMode(billIndex)}
-                              >
-                                Edit
-                              </button>
-                            </div>
+                            <button
+                              style={S.editBillBtn}
+                              onClick={() => enterEditMode(billIndex)}
+                            >
+                              Edit
+                            </button>
                           ) : (
                             <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
-                              <button
-                                style={S.doneEditBtn}
-                                onClick={exitEditMode}
-                              >
-                                Done
-                              </button>
-                              <button
-                                style={S.cancelEditBtn}
-                                onClick={cancelEditMode}
-                              >
-                                Cancel
-                              </button>
+                              <button style={S.doneEditBtn} onClick={exitEditMode}>Done</button>
+                              <button style={S.cancelEditBtn} onClick={cancelEditMode}>Cancel</button>
                               <button
                                 style={S.deleteBillBtnIcon}
                                 onClick={() => setDeletingBillIndex(billIndex)}
@@ -2027,20 +2031,9 @@ export default function App() {
                             </div>
                           )}
                         </div>
-                        <div style={S.billMeta}>
-                          {bill.paymentMode === "full"
-                            ? bill.gutschein
-                              ? <span style={{ color: "#2d7a3a", fontWeight: 600 }}>Full payment (Gutschein: {bill.gutschein.toFixed(2)}€)</span>
-                              : "Full payment"
-                            : bill.paymentMode === "equal"
-                            ? `Split ${bill.splitData.guests} ways`
-                            : `Split by item (${bill.splitData.payments.length} guests)`}
-                          {bill.tip !== undefined && (
-                            <div style={{ color: bill.tip >= 0 ? "#2d5a35" : "#c0392b" }}>
-                              Tip: {bill.tip >= 0 ? `+${bill.tip.toFixed(2)}€` : `${bill.tip.toFixed(2)}€`}
-                            </div>
-                          )}
-                        </div>
+                        {/* Dotted divider */}
+                        <div style={{ height: 0, borderTop: "2px dashed #d4d2ca", margin: "10px 0 8px" }} />
+                        {/* Items list */}
                         <div style={S.billItemsList}>
                           {bill.items.map((item) => (
                             <div key={item.id} style={isEditing ? S.billItemEditable : S.billItem}>
@@ -2062,6 +2055,10 @@ export default function App() {
                               </span>
                             </div>
                           ))}
+                        </div>
+                        {/* Total bottom-right */}
+                        <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 8 }}>
+                          <span style={S.billTotal}>{bill.total.toFixed(2)}€</span>
                         </div>
                       </div>
                     );
