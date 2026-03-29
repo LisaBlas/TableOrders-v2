@@ -1989,7 +1989,10 @@ export default function App() {
                     return (
                       <div key={reverseIdx} style={S.billCard}>
                         <div style={S.billCardHeader}>
-                          <span style={S.billTableNum}>Table {bill.tableId}</span>
+                          <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
+                            <span style={S.billTableNum}>Table {bill.tableId}</span>
+                            <span style={{ fontSize: 12, color: "#888" }}>{new Date(bill.timestamp).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}</span>
+                          </div>
                           {!isEditing ? (
                             <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                               <span style={S.billTotal}>{bill.total.toFixed(2)}€</span>
@@ -2025,7 +2028,6 @@ export default function App() {
                           )}
                         </div>
                         <div style={S.billMeta}>
-                          {new Date(bill.timestamp).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })} ·{" "}
                           {bill.paymentMode === "full"
                             ? bill.gutschein
                               ? <span style={{ color: "#2d7a3a", fontWeight: 600 }}>Full payment (Gutschein: {bill.gutschein.toFixed(2)}€)</span>
@@ -2034,9 +2036,9 @@ export default function App() {
                             ? `Split ${bill.splitData.guests} ways`
                             : `Split by item (${bill.splitData.payments.length} guests)`}
                           {bill.tip !== undefined && (
-                            <span style={{ color: bill.tip >= 0 ? "#2d5a35" : "#c0392b" }}>
-                              {" "}· Tip: {bill.tip >= 0 ? `+${bill.tip.toFixed(2)}€` : `${bill.tip.toFixed(2)}€`}
-                            </span>
+                            <div style={{ color: bill.tip >= 0 ? "#2d5a35" : "#c0392b" }}>
+                              Tip: {bill.tip >= 0 ? `+${bill.tip.toFixed(2)}€` : `${bill.tip.toFixed(2)}€`}
+                            </div>
                           )}
                         </div>
                         <div style={S.billItemsList}>
