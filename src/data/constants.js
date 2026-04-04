@@ -37,6 +37,8 @@ export const MENU = {
     { id: "f11", name: "Raclette", price: 28, subcategory: "warm" },
     { id: "f12", name: "Fondue", price: 28, subcategory: "warm" },
     { id: "f28", name: "Fondue Alkoholfrei", price: 28, subcategory: "warm" },
+    { id: "f30", name: "Tartine", price: 13.5, subcategory: "warm" },
+    { id: "f31", name: "Tartine + Schinken", price: 15.5, subcategory: "warm" },
     // Salads
     { id: "f13", name: "Seguin", price: 12.5, subcategory: "salads" },
     { id: "f21", name: "Seguin + Speck", price: 14.5, subcategory: "salads" },
@@ -756,7 +758,9 @@ export const ARTICLE_ALIASES = {
   "f27": "Tarte Tatin Calvados [30-1]",
   "f19": "Oliven [9]",
   "f20": "Oliven Grissini [9-1]",
-  "f26": "Cornichons [0000]",
+  "f26": "Cornichons [20]",
+  "f30": "Tartine [26]",
+  "f31": "Tartine Schinken [26]",
 
   // Drinks by glass — White
   "wg1-small":  "Picpoul 0,1 [251-1]",
@@ -839,7 +843,7 @@ export const ARTICLE_ALIASES = {
   "te4": "Kraut [93-4]",
   "te5": "BergT [94-1]",
   "te6": "Thym [94-2]",
-  "te7": "HeissZ [0000]",
+  "te7": "HeissZ [94]",
   "te8": "Hot Orange [95]",
   // Coffee
   "co1": "Espr [91]",
