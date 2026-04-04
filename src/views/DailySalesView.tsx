@@ -96,13 +96,15 @@ export function DailySalesView() {
     const sortedItems = Array.from(itemsMap.values()).sort((a, b) => b.qty - a.qty);
 
     return (
-      <div style={{ ...S.billsList, padding: "0 16px" }}>
-        {sortedItems.map((item, idx) => (
-          <div key={idx} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 0", borderBottom: "1px solid #f0f0f0" }}>
-            <span style={{ fontSize: 15, color: "#1a1a1a" }}>{item.alias || item.name}</span>
-            <span style={{ fontSize: 15, fontWeight: 700, color: "#1a1a1a", minWidth: 28, textAlign: "right" as const }}>{item.qty}</span>
-          </div>
-        ))}
+      <div style={S.billsList}>
+        <div style={S.salesSummary}>
+          {sortedItems.map((item, idx) => (
+            <div key={idx} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 0", borderBottom: idx < sortedItems.length - 1 ? "1px solid #f0f0f0" : "none" }}>
+              <span style={{ fontSize: 14, color: "#1a1a1a" }}>{item.alias || item.name}</span>
+              <span style={{ fontSize: 14, fontWeight: 700, color: "#1a1a1a", minWidth: 28, textAlign: "right" as const }}>{item.qty}</span>
+            </div>
+          ))}
+        </div>
       </div>
     );
   };
