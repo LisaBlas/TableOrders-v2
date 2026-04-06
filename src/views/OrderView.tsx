@@ -47,12 +47,18 @@ export function OrderView() {
 
   const handleCardTap = (item: MenuItem) => {
     if (item.variants && item.variants.length > 0) {
-      // Show variant sheet for items with variants
+      // Tap: add the default "large" (0,2L) variant directly
+      const defaultVariant = item.variants.find((v) => v.type === "large") ?? item.variants[0];
+      handleAddItem(item, defaultVariant);
+    } else {
+      handleAddItem(item, null);
+    }
+  };
+
+  const handleCardLongPress = (item: MenuItem) => {
+    if (item.variants && item.variants.length > 0) {
       setSelectedItemForVariant(item);
       setShowVariantSheet(true);
-    } else {
-      // Add simple items directly
-      handleAddItem(item, null);
     }
   };
 
@@ -222,6 +228,7 @@ export function OrderView() {
                   unsent={unsent}
                   showCategory={!!searchQuery}
                   onTap={handleCardTap}
+                  onLongPress={handleCardLongPress}
                 />
               ))}
             </div>
