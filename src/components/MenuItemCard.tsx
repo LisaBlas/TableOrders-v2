@@ -27,26 +27,17 @@ export function MenuItemCard({ item, unsent, showCategory, onTap }: MenuItemCard
 
   const unsentQty = getUnsentQty();
 
-  // Extract emoji from name or use first letter as fallback
-  const getEmoji = () => {
-    const emojiRegex = /[\u{1F300}-\u{1F9FF}]/u;
-    const match = item.name.match(emojiRegex);
-    return match ? match[0] : item.name[0];
-  };
-
-  const emoji = getEmoji();
-  const displayPrice = item.variants ? item.variants[0].price : item.price;
+  // Use posName if available, fallback to name
+  const displayName = (item as any).posName || item.name;
 
   return (
-    <button style={S.menuCard} onClick={() => onTap(item)}>
+    <button style={S.menuCard as any} onClick={() => onTap(item)}>
       {unsentQty > 0 && (
-        <span style={S.menuCardBadge}>({unsentQty})</span>
+        <span style={S.menuCardBadge as any}>({unsentQty})</span>
       )}
-      <div style={S.menuCardEmoji}>{emoji}</div>
-      <div style={S.menuCardName}>{item.name}</div>
-      <div style={S.menuCardPrice}>{displayPrice?.toFixed(2)}€</div>
-      {showCategory && item.category && (
-        <div style={{ fontSize: 10, color: "#999", marginTop: 2 }}>{item.category}</div>
+      <div style={S.menuCardName as any}>{displayName}</div>
+      {showCategory && (item as any).category && (
+        <div style={{ fontSize: 9, color: "#999", marginTop: 2 }}>{(item as any).category}</div>
       )}
     </button>
   );

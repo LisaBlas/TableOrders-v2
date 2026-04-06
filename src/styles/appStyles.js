@@ -1637,22 +1637,23 @@ export const S = {
   grid4: {
     display: "grid",
     gridTemplateColumns: "repeat(4, 1fr)",
-    gap: 8,
-    padding: 12
+    gap: 0,
+    padding: 0
   },
 
   // Menu card styles
   menuCard: {
     background: "#fff",
     border: "1px solid #ebe9e3",
-    borderRadius: 8,
-    padding: 12,
+    borderRadius: 0,
+    padding: 8,
     textAlign: "center",
     cursor: "pointer",
-    minHeight: 100,
+    minHeight: 60,
     display: "flex",
     flexDirection: "column",
-    justifyContent: "space-between",
+    justifyContent: "center",
+    alignItems: "center",
     position: "relative"
   },
   menuCardEmoji: {
@@ -1665,8 +1666,9 @@ export const S = {
     overflow: "hidden",
     textOverflow: "ellipsis",
     display: "-webkit-box",
-    WebkitLineClamp: 2,
-    WebkitBoxOrient: "vertical"
+    WebkitLineClamp: 3,
+    WebkitBoxOrient: "vertical",
+    wordBreak: "break-word"
   },
   menuCardPrice: {
     fontSize: 12,
