@@ -3,13 +3,15 @@ import { MENU, FOOD_SUBCATEGORIES, DRINKS_SUBCATEGORIES, BOTTLES_SUBCATEGORIES }
 import { useApp } from "../contexts/AppContext";
 import { useTable } from "../contexts/TableContext";
 import { useTableOrder } from "../hooks/useTableOrder";
+import { groupBy } from "../utils/helpers";
 import { S } from "../styles/appStyles";
 import { Modal } from "../components/Modal";
-import { MenuItemRow } from "../components/MenuItemRow";
+import { MenuItemCard } from "../components/MenuItemCard";
+import { VariantBottomSheet } from "../components/VariantBottomSheet";
 import { SentBatchCard } from "../components/SentBatchCard";
 import { OrderBar } from "../components/OrderBar";
-import { BillTab } from "../components/BillTab";
-import type { MenuCategory } from "../types";
+import { BillView } from "../components/BillView";
+import type { MenuCategory, MenuItem, MenuItemVariant } from "../types";
 
 export function OrderView() {
   const app = useApp();
@@ -18,10 +20,6 @@ export function OrderView() {
   const { unsent, sent, unsentTotal, batches } = useTableOrder(tableId);
 
   // Local UI state
-  const [activeTab, setActiveTab] = useState<"order" | "bill">(() => {
-    const hasSent = table.orders[tableId]?.some((o: any) => (o.sentQty || 0) > 0);
-    return hasSent ? "bill" : "order";
-  });
   const [activeCategory, setActiveCategory] = useState<string>("Food");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedFoodSubcategory, setSelectedFoodSubcategory] = useState<string | null>(null);
@@ -32,6 +30,9 @@ export function OrderView() {
   const [customName, setCustomName] = useState("");
   const [customPrice, setCustomPrice] = useState("");
   const [customQty, setCustomQty] = useState("1");
+  const [showBillView, setShowBillView] = useState(false);
+  const [showVariantSheet, setShowVariantSheet] = useState(false);
+  const [selectedItemForVariant, setSelectedItemForVariant] = useState<MenuItem | null>(null);
 
   // Clear subcategories when searching
   if (searchQuery) {
@@ -40,8 +41,25 @@ export function OrderView() {
     if (selectedBottlesSubcategory) setSelectedBottlesSubcategory(null);
   }
 
-  const handleAddItem = (item: any, variant: any = null) => {
+  const handleAddItem = (item: MenuItem, variant: MenuItemVariant | null = null) => {
     table.addItem(tableId, item, variant, activeCategory as MenuCategory);
+  };
+
+  const handleCardTap = (item: MenuItem) => {
+    if (item.variants && item.variants.length > 0) {
+      // Show variant sheet for items with variants
+      setSelectedItemForVariant(item);
+      setShowVariantSheet(true);
+    } else {
+      // Add simple items directly
+      handleAddItem(item, null);
+    }
+  };
+
+  const handleSelectVariant = (variant: MenuItemVariant) => {
+    if (selectedItemForVariant) {
+      handleAddItem(selectedItemForVariant, variant);
+    }
   };
 
   const addCustomItem = () => {
@@ -173,21 +191,7 @@ export function OrderView() {
     return items;
   };
 
-  const renderMenuContent = () => {
-    // Show subcategory tiles when no subcategory selected
-    if (!searchQuery && !selectedSubcategory && subcategoryConfig.length > 0) {
-      return (
-        <div style={S.subcategoryGrid}>
-          {subcategoryConfig.map(({ id, label }: any) => (
-            <button key={id} style={S.subcategoryTile} onClick={() => setSubcategoryForCategory(id)}>
-              <div style={S.subcategoryTileEmoji}>{label.split(" ")[0]}</div>
-              <div>{label.substring(label.indexOf(" ") + 1)}</div>
-            </button>
-          ))}
-        </div>
-      );
-    }
-
+  const renderMenuGrid = () => {
     const filteredItems = getFilteredItems();
 
     if (filteredItems.length === 0) {
@@ -198,10 +202,39 @@ export function OrderView() {
       );
     }
 
-    return filteredItems.map((item: any) => (
-      <MenuItemRow key={item.id} item={item} unsent={unsent} showCategory={!!searchQuery} onAddItem={handleAddItem} />
-    ));
+    // Group by subcategory and render with dividers
+    const grouped = groupBy(filteredItems, "subcategory");
+
+    return (
+      <div style={S.grid4}>
+        {Object.entries(grouped).map(([subcategoryId, items]: [string, any]) => {
+          // Find subcategory label
+          const subcategoryObj = subcategoryConfig.find((s: any) => s.id === subcategoryId);
+          const subcategoryLabel = subcategoryObj?.label || subcategoryId;
+
+          return (
+            <div key={subcategoryId} style={{ gridColumn: "1 / -1", display: "contents" }}>
+              <div style={S.subcategoryDivider}>{subcategoryLabel}</div>
+              {items.map((item: any) => (
+                <MenuItemCard
+                  key={item.id}
+                  item={item}
+                  unsent={unsent}
+                  showCategory={!!searchQuery}
+                  onTap={handleCardTap}
+                />
+              ))}
+            </div>
+          );
+        })}
+      </div>
+    );
   };
+
+  // Show BillView if active
+  if (showBillView) {
+    return <BillView tableId={tableId} sent={sent} onClose={() => setShowBillView(false)} />;
+  }
 
   return (
     <div style={S.page}>
@@ -210,89 +243,62 @@ export function OrderView() {
           ← Back
         </button>
         <span style={S.headerTitle}>Table {tableId}</span>
-        <span />
+        <button style={S.ticketBtn} onClick={() => setShowBillView(true)}>
+          Bill →
+        </button>
       </header>
 
-      {/* Tabs */}
+      {/* Category Tabs */}
       <div style={S.tabs}>
         <div style={S.tabsContainer}>
-          <button
-            style={{ ...S.tab, ...(activeTab === "order" ? S.tabActive : {}) }}
-            onClick={() => setActiveTab("order")}
-          >
-            Order
-          </button>
-          <button
-            style={{ ...S.tab, ...(activeTab === "bill" ? S.tabActive : {}) }}
-            onClick={() => setActiveTab("bill")}
-          >
-            Bill
-          </button>
+          {Object.keys(MENU).map((category, idx) => (
+            <button
+              key={category}
+              style={{ ...S.tab, ...(activeCategory === category ? S.tabActive : {}) }}
+              onClick={() => { setActiveCategory(category); clearAllSubcategories(); }}
+            >
+              {category}
+            </button>
+          ))}
           <div style={{
             ...S.tabIndicator,
-            transform: activeTab === "bill" ? "translateX(100%)" : "translateX(0)",
+            transform: activeCategory === "Drinks🍷"
+              ? "translateX(100%)"
+              : activeCategory === "Bottles 🍾"
+              ? "translateX(200%)"
+              : "translateX(0)",
           }} />
         </div>
       </div>
 
-      {/* ORDER TAB */}
-      {activeTab === "order" && (
-        <>
-          <div style={S.searchBar}>
-            <button style={S.customAddBtn} onClick={() => setShowCustomModal(true)} title="Add custom item">+</button>
-            <input
-              type="text"
-              placeholder="Search menu items..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              style={S.searchInputWithBtn}
-            />
-            {searchQuery && (
-              <button style={S.searchClear} onClick={() => setSearchQuery("")}>✕</button>
-            )}
-          </div>
+      <div style={S.searchBar}>
+        <button style={S.customAddBtn} onClick={() => setShowCustomModal(true)} title="Add custom item">+</button>
+        <input
+          type="text"
+          placeholder="Search menu items..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          style={S.searchInputWithBtn}
+        />
+        {searchQuery && (
+          <button style={S.searchClear} onClick={() => setSearchQuery("")}>✕</button>
+        )}
+      </div>
 
-          {!searchQuery && (
-            <div style={S.cats}>
-              {Object.keys(MENU).map((cat) => (
-                <button
-                  key={cat}
-                  style={{ ...S.catBtn, ...(activeCategory === cat ? S.catBtnActive : {}) }}
-                  onClick={() => { setActiveCategory(cat); clearAllSubcategories(); }}
-                >
-                  {cat}
-                </button>
-              ))}
-            </div>
-          )}
+      <div style={S.orderContent}>
+        {renderMenuGrid()}
+        <SentBatchCard batches={batches} tableId={tableId} />
+      </div>
 
-          {!searchQuery && selectedSubcategory && (
-            <div style={{ padding: "12px 16px", background: "#fff", borderBottom: "1px solid #ebe9e3" }}>
-              <button style={S.back} onClick={clearAllSubcategories}>← Back to categories</button>
-            </div>
-          )}
-
-          <div style={S.orderContent}>
-            <div style={S.menuList}>{renderMenuContent()}</div>
-            <SentBatchCard batches={batches} />
-          </div>
-
-          {unsent.length > 0 && (
-            <OrderBar
-              tableId={tableId}
-              unsent={unsent}
-              unsentTotal={unsentTotal}
-              expanded={orderBarExpanded}
-              onToggleExpand={() => setOrderBarExpanded(!orderBarExpanded)}
-              onAddItem={handleAddItem}
-            />
-          )}
-        </>
-      )}
-
-      {/* BILL TAB */}
-      {activeTab === "bill" && (
-        <BillTab tableId={tableId} sent={sent} />
+      {unsent.length > 0 && (
+        <OrderBar
+          tableId={tableId}
+          unsent={unsent}
+          unsentTotal={unsentTotal}
+          expanded={orderBarExpanded}
+          onToggleExpand={() => setOrderBarExpanded(!orderBarExpanded)}
+          onAddItem={handleAddItem}
+        />
       )}
 
       {/* Custom Item Modal */}
@@ -324,6 +330,19 @@ export function OrderView() {
             </div>
           </div>
         </Modal>
+      )}
+
+      {/* Variant Bottom Sheet */}
+      {showVariantSheet && selectedItemForVariant && (
+        <VariantBottomSheet
+          item={selectedItemForVariant}
+          unsent={unsent}
+          onSelectVariant={handleSelectVariant}
+          onClose={() => {
+            setShowVariantSheet(false);
+            setSelectedItemForVariant(null);
+          }}
+        />
       )}
     </div>
   );

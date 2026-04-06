@@ -1631,5 +1631,152 @@ export const S = {
   },
   paymentItemLast: {
     marginBottom: 0
+  },
+
+  // Grid layout (4 columns for menu cards)
+  grid4: {
+    display: "grid",
+    gridTemplateColumns: "repeat(4, 1fr)",
+    gap: 8,
+    padding: 12
+  },
+
+  // Menu card styles
+  menuCard: {
+    background: "#fff",
+    border: "1px solid #ebe9e3",
+    borderRadius: 8,
+    padding: 12,
+    textAlign: "center",
+    cursor: "pointer",
+    minHeight: 100,
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "space-between",
+    position: "relative"
+  },
+  menuCardEmoji: {
+    fontSize: 32,
+    marginBottom: 6
+  },
+  menuCardName: {
+    fontSize: 11,
+    lineHeight: 1.3,
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+    display: "-webkit-box",
+    WebkitLineClamp: 2,
+    WebkitBoxOrient: "vertical"
+  },
+  menuCardPrice: {
+    fontSize: 12,
+    fontWeight: 600,
+    marginTop: 4
+  },
+  menuCardBadge: {
+    position: "absolute",
+    top: 4,
+    right: 4,
+    background: "#2d5a35",
+    color: "#fff",
+    fontSize: 10,
+    fontWeight: 600,
+    padding: "2px 6px",
+    borderRadius: 10
+  },
+
+  // Subcategory dividers
+  subcategoryDivider: {
+    gridColumn: "1 / -1",
+    borderTop: "1px solid #ebe9e3",
+    paddingTop: 12,
+    paddingBottom: 8,
+    fontSize: 14,
+    fontWeight: 600,
+    color: "#555"
+  },
+
+  // Variant bottom sheet
+  variantSheetOverlay: {
+    position: "fixed",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    background: "rgba(0,0,0,0.5)",
+    zIndex: 200,
+    animation: "fadeIn 0.3s ease-out"
+  },
+  variantSheet: {
+    position: "fixed",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    maxWidth: 480,
+    margin: "0 auto",
+    background: "#fff",
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
+    padding: 20,
+    zIndex: 201,
+    animation: "slideUp 0.3s ease-out"
+  },
+  variantSheetHeader: {
+    fontSize: 18,
+    fontWeight: 700,
+    marginBottom: 16,
+    textAlign: "center"
+  },
+  variantBtn: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    background: "#f5f4f0",
+    border: "1px solid #ebe9e3",
+    borderRadius: 8,
+    padding: 16,
+    marginBottom: 10,
+    cursor: "pointer",
+    fontSize: 14,
+    fontWeight: 600,
+    minHeight: 60,
+    position: "relative"
+  },
+  variantBtnLabel: {
+    fontSize: 14,
+    fontWeight: 600
+  },
+  variantBtnPrice: {
+    fontSize: 14,
+    fontWeight: 600,
+    color: "#555"
+  },
+
+  // Bill view header
+  billViewHeader: {
+    position: "sticky",
+    top: 0,
+    zIndex: 100,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    padding: "18px 20px 12px",
+    background: "#fff",
+    borderBottom: "1px solid #ebe9e3"
+  },
+
+  // Mark button for sent batches
+  markBtn: {
+    background: "none",
+    border: "1px solid #ccc",
+    borderRadius: 4,
+    padding: "4px 10px",
+    fontSize: 12,
+    fontWeight: 600,
+    cursor: "pointer",
+    marginLeft: 8
+  },
+  sentSectionMarked: {
+    background: "#e3f2fd"
   }
 };

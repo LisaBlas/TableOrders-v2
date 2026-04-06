@@ -69,3 +69,16 @@ export function getItemDestination(item) {
   // Kitchen: Warm, Salads, Snacks
   return "kitchen";
 }
+
+// Group items by a property (e.g., subcategory)
+export function groupBy(items, key) {
+  const grouped = {};
+  items.forEach((item) => {
+    const value = item[key];
+    if (!grouped[value]) {
+      grouped[value] = [];
+    }
+    grouped[value].push(item);
+  });
+  return grouped;
+}

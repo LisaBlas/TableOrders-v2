@@ -1,17 +1,24 @@
+import { useTable } from "../contexts/TableContext";
 import { getItemDestination } from "../utils/helpers";
 import { S } from "../styles/appStyles";
-import type { OrderItem, Batch } from "../types";
+import type { OrderItem, Batch, TableId } from "../types";
 
 interface SentBatchCardProps {
   batches: Batch[];
+  tableId: TableId;
 }
 
-export function SentBatchCard({ batches }: SentBatchCardProps) {
+export function SentBatchCard({ batches, tableId }: SentBatchCardProps) {
+  const table = useTable();
+
   if (batches.length === 0) return null;
 
   return (
     <div style={S.sentSectionsContainer}>
       {[...batches].reverse().map((batch, batchIdx) => {
+        const actualBatchIdx = batches.length - 1 - batchIdx;
+        const isMarked = table.markedBatches[tableId]?.has(actualBatchIdx) || false;
+
         const batchByDest: Record<string, OrderItem[]> = { bar: [], counter: [], kitchen: [] };
         batch.items.forEach((item: OrderItem) => {
           const dest = getItemDestination(item);
@@ -25,10 +32,16 @@ export function SentBatchCard({ batches }: SentBatchCardProps) {
               <span style={S.sentDividerText}>
                 Sent {ts.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}
               </span>
+              <button
+                style={S.markBtn}
+                onClick={() => table.toggleMarkBatch(tableId, actualBatchIdx)}
+              >
+                {isMarked ? "Unmark" : "Mark"}
+              </button>
               <div style={S.sentDividerLine} />
             </div>
             {batchByDest.bar.length > 0 && (
-              <div style={S.sentSection}>
+              <div style={{ ...S.sentSection, ...(isMarked ? S.sentSectionMarked : {}) }}>
                 <span style={S.sentLabel}>🍷 Bar</span>
                 {batchByDest.bar.map((o) => (
                   <div key={o.id} style={S.sentItem}>
@@ -39,7 +52,7 @@ export function SentBatchCard({ batches }: SentBatchCardProps) {
               </div>
             )}
             {batchByDest.counter.length > 0 && (
-              <div style={S.sentSection}>
+              <div style={{ ...S.sentSection, ...(isMarked ? S.sentSectionMarked : {}) }}>
                 <span style={S.sentLabel}>🧀 Counter </span>
                 {batchByDest.counter.map((o) => (
                   <div key={o.id} style={S.sentItem}>
@@ -50,7 +63,7 @@ export function SentBatchCard({ batches }: SentBatchCardProps) {
               </div>
             )}
             {batchByDest.kitchen.length > 0 && (
-              <div style={S.sentSection}>
+              <div style={{ ...S.sentSection, ...(isMarked ? S.sentSectionMarked : {}) }}>
                 <span style={S.sentLabel}>🍽️ Kitchen </span>
                 {batchByDest.kitchen.map((o) => (
                   <div key={o.id} style={S.sentItem}>

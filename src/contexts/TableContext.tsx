@@ -14,6 +14,8 @@ interface TableContextValue {
   setSentBatches: React.Dispatch<React.SetStateAction<SentBatches>>;
   gutscheinAmounts: GutscheinAmounts;
   setGutscheinAmounts: React.Dispatch<React.SetStateAction<GutscheinAmounts>>;
+  markedBatches: Record<TableId, Set<number>>;
+  setMarkedBatches: React.Dispatch<React.SetStateAction<Record<TableId, Set<number>>>>;
 
   // Actions
   addItem: (tableId: TableId, item: MenuItem, variant: MenuItemVariant | null, category: MenuCategory) => void;
@@ -25,6 +27,7 @@ interface TableContextValue {
   applyGutschein: (tableId: TableId, amount: number) => void;
   removeGutschein: (tableId: TableId) => void;
   cleanupTable: (tableId: TableId) => void;
+  toggleMarkBatch: (tableId: TableId, batchIndex: number) => void;
 }
 
 const TableContext = createContext<TableContextValue | null>(null);
@@ -36,6 +39,7 @@ export function TableProvider({ children }: { children: ReactNode }) {
   const [seatedTablesArr, setSeatedTablesArr] = useLocalStorage<(string | number)[]>("seatedTables", []);
   const [sentBatches, setSentBatches] = useState<SentBatches>({});
   const [gutscheinAmounts, setGutscheinAmounts] = useState<GutscheinAmounts>({});
+  const [markedBatches, setMarkedBatches] = useState<Record<TableId, Set<number>>>({});
 
   // Wrap seatedTables as Set for the API, backed by localStorage array
   const seatedTables = new Set<TableId>(seatedTablesArr);
@@ -181,6 +185,19 @@ export function TableProvider({ children }: { children: ReactNode }) {
     showToast("Gutschein removed");
   }, [showToast]);
 
+  const toggleMarkBatch = useCallback((tableId: TableId, batchIndex: number) => {
+    setMarkedBatches((prev) => {
+      const tableMarks = prev[tableId] || new Set<number>();
+      const next = new Set(tableMarks);
+      if (next.has(batchIndex)) {
+        next.delete(batchIndex);
+      } else {
+        next.add(batchIndex);
+      }
+      return { ...prev, [tableId]: next };
+    });
+  }, [setMarkedBatches]);
+
   const cleanupTable = useCallback((tableId: TableId) => {
     setOrders((prev) => {
       const next = { ...prev };
@@ -202,7 +219,12 @@ export function TableProvider({ children }: { children: ReactNode }) {
       delete next[tableId];
       return next;
     });
-  }, [setOrders, setSeatedTablesArr, setSentBatches]);
+    setMarkedBatches((prev) => {
+      const next = { ...prev };
+      delete next[tableId];
+      return next;
+    });
+  }, [setOrders, setSeatedTablesArr, setSentBatches, setMarkedBatches]);
 
   return (
     <TableContext.Provider value={{
@@ -210,10 +232,11 @@ export function TableProvider({ children }: { children: ReactNode }) {
       seatedTables, setSeatedTables,
       sentBatches, setSentBatches,
       gutscheinAmounts, setGutscheinAmounts,
+      markedBatches, setMarkedBatches,
       addItem, removeItem, removeItemFromBill, addItemToBill,
       sendOrder, seatTable,
       applyGutschein, removeGutschein,
-      cleanupTable,
+      cleanupTable, toggleMarkBatch,
     }}>
       {children}
     </TableContext.Provider>
