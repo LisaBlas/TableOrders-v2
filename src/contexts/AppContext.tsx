@@ -1,5 +1,6 @@
-import { createContext, useContext, useState, useCallback, type ReactNode } from "react";
+import { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from "react";
 import { useLocalStorage } from "../hooks/useLocalStorage";
+import { migratePaidBills } from "../utils/migration";
 import type { View, Bill, DailySalesTab, TableId } from "../types";
 
 interface AppContextValue {
@@ -52,6 +53,20 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const addPaidBill = useCallback((bill: Bill) => {
     setPaidBills((prev) => [...prev, bill]);
   }, [setPaidBills]);
+
+  // Migrate legacy paid bills on mount
+  useEffect(() => {
+    if (paidBills.length > 0) {
+      const needsMigration = paidBills.some((bill) =>
+        bill.items.some((item) => !(item as any).posId)
+      );
+      if (needsMigration) {
+        const migrated = migratePaidBills(paidBills);
+        setPaidBills(migrated);
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Run once on mount
 
   return (
     <AppContext.Provider value={{

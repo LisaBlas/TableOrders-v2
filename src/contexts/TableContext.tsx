@@ -73,6 +73,8 @@ export function TableProvider({ children }: { children: ReactNode }) {
           variantType: variant.type,
           subcategory: item.subcategory,
           category,
+          posId: (variant as any).posId,
+          posName: (variant as any).posName,
         }
       : { ...item, category };
 
