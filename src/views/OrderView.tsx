@@ -244,7 +244,7 @@ export function OrderView() {
   }
 
   return (
-    <div style={S.page}>
+    <div style={{ ...S.page, height: "100vh", overflow: "hidden" }}>
       <header style={S.header}>
         <button style={S.back} onClick={() => app.setView("tables")}>
           ← Back
