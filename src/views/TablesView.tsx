@@ -104,7 +104,7 @@ export function TablesView() {
         <span style={S.salesIcon}>📊</span>
         Daily Sales
       </button>
-      <div style={S.grid}>
+      <div style={{ ...S.grid, paddingBottom: swapSourceTable !== null ? 160 : 16 }}>
         {TABLES.map((t: any) => {
           if (t.isDivider) {
             return (
@@ -190,9 +190,7 @@ export function TablesView() {
 
       {/* Swap bottom sheet */}
       {swapSourceTable !== null && (
-        <>
-          <div style={S.variantSheetOverlay} onClick={cancelSwap} />
-          <div style={S.variantSheet}>
+        <div style={S.variantSheet}>
             <div style={S.variantSheetHeader}>
               Move Table {swapSourceTable}
             </div>
@@ -236,8 +234,7 @@ export function TablesView() {
                 Confirm
               </button>
             </div>
-          </div>
-        </>
+        </div>
       )}
     </div>
   );
