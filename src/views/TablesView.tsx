@@ -35,15 +35,15 @@ export function TablesView() {
   }, []);
 
   const handleTableClick = (tableId: string | number) => {
-    if (longFiredRef.current) return;
-    cancelLongPress();
-
-    // In swap mode: select target
+    // In swap mode: select target (bypass long-press guard — longFiredRef is stale from the activation press)
     if (swapSourceTable !== null) {
       if (tableId === swapSourceTable) return;
       setSwapTargetTable(tableId);
       return;
     }
+
+    if (longFiredRef.current) return;
+    cancelLongPress();
 
     const status = getTableStatus(tableId, orders, seatedTables, sentBatches, markedBatches);
     if (status === "open") {
