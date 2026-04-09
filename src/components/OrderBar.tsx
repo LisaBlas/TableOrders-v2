@@ -62,7 +62,10 @@ export function OrderBar({ tableId, unsent, batches, expanded, onToggleExpand, o
                       <span style={S.sentLabel}>🍷 Bar</span>
                       {batchByDest.bar.map((o) => (
                         <div key={o.id} style={S.sentItem}>
-                          <span>{o.qty}× {o.name}</span>
+                          <span>
+                            {o.qty}× {o.name}
+                            {o.note && <span style={{ fontSize: 11, color: "#888", fontStyle: "italic", marginLeft: 4 }}>({o.note})</span>}
+                          </span>
                           <span style={S.sentPrice}>{(o.price * o.qty).toFixed(2)}€</span>
                         </div>
                       ))}
@@ -73,7 +76,10 @@ export function OrderBar({ tableId, unsent, batches, expanded, onToggleExpand, o
                       <span style={S.sentLabel}>🧀 Counter</span>
                       {batchByDest.counter.map((o) => (
                         <div key={o.id} style={S.sentItem}>
-                          <span>{o.qty}× {o.name}</span>
+                          <span>
+                            {o.qty}× {o.name}
+                            {o.note && <span style={{ fontSize: 11, color: "#888", fontStyle: "italic", marginLeft: 4 }}>({o.note})</span>}
+                          </span>
                           <span style={S.sentPrice}>{(o.price * o.qty).toFixed(2)}€</span>
                         </div>
                       ))}
@@ -84,7 +90,10 @@ export function OrderBar({ tableId, unsent, batches, expanded, onToggleExpand, o
                       <span style={S.sentLabel}>🍽️ Kitchen</span>
                       {batchByDest.kitchen.map((o) => (
                         <div key={o.id} style={S.sentItem}>
-                          <span>{o.qty}× {o.name}</span>
+                          <span>
+                            {o.qty}× {o.name}
+                            {o.note && <span style={{ fontSize: 11, color: "#888", fontStyle: "italic", marginLeft: 4 }}>({o.note})</span>}
+                          </span>
                           <span style={S.sentPrice}>{(o.price * o.qty).toFixed(2)}€</span>
                         </div>
                       ))}
@@ -103,6 +112,11 @@ export function OrderBar({ tableId, unsent, batches, expanded, onToggleExpand, o
                 <div style={S.orderBarItem}>
                   <div style={S.orderBarItemInfo}>
                     <div style={S.orderBarItemName}>{o.name}</div>
+                    {o.note && (
+                      <div style={{ fontSize: 11, color: "#888", fontStyle: "italic", marginTop: 1 }}>
+                        {o.note}
+                      </div>
+                    )}
                     <div style={S.orderBarItemPrice}>{o.price.toFixed(2)}€</div>
                   </div>
                   <div style={S.orderBarItemControls}>

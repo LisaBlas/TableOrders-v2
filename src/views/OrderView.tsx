@@ -8,6 +8,7 @@ import { S } from "../styles/appStyles";
 import { Modal } from "../components/Modal";
 import { MenuItemCard } from "../components/MenuItemCard";
 import { VariantBottomSheet } from "../components/VariantBottomSheet";
+import { NoteBottomSheet } from "../components/NoteBottomSheet";
 import { OrderBar } from "../components/OrderBar";
 import { BillView } from "../components/BillView";
 import type { MenuCategory, MenuItem, MenuItemVariant } from "../types";
@@ -32,6 +33,9 @@ export function OrderView() {
   const [showBillView, setShowBillView] = useState(false);
   const [showVariantSheet, setShowVariantSheet] = useState(false);
   const [selectedItemForVariant, setSelectedItemForVariant] = useState<MenuItem | null>(null);
+  const [showNoteSheet, setShowNoteSheet] = useState(false);
+  const [noteSheetItem, setNoteSheetItem] = useState<MenuItem | null>(null);
+  const [noteText, setNoteText] = useState("");
 
   // Clear subcategories when searching
   if (searchQuery) {
@@ -40,8 +44,8 @@ export function OrderView() {
     if (selectedBottlesSubcategory) setSelectedBottlesSubcategory(null);
   }
 
-  const handleAddItem = (item: MenuItem, variant: MenuItemVariant | null = null) => {
-    table.addItem(tableId, item, variant, activeCategory as MenuCategory);
+  const handleAddItem = (item: MenuItem, variant: MenuItemVariant | null = null, note?: string) => {
+    table.addItem(tableId, item, variant, activeCategory as MenuCategory, note);
   };
 
   const handleCardTap = (item: MenuItem) => {
@@ -58,6 +62,10 @@ export function OrderView() {
     if (item.variants && item.variants.length > 0) {
       setSelectedItemForVariant(item);
       setShowVariantSheet(true);
+    } else {
+      setNoteSheetItem(item);
+      setNoteText("");
+      setShowNoteSheet(true);
     }
   };
 
@@ -346,6 +354,28 @@ export function OrderView() {
           onClose={() => {
             setShowVariantSheet(false);
             setSelectedItemForVariant(null);
+          }}
+        />
+      )}
+
+      {/* Note Bottom Sheet */}
+      {showNoteSheet && noteSheetItem && (
+        <NoteBottomSheet
+          item={noteSheetItem}
+          note={noteText}
+          onNoteChange={setNoteText}
+          onConfirm={() => {
+            const trimmed = noteText.trim();
+            if (trimmed) handleAddItem(noteSheetItem, null, trimmed);
+            else handleAddItem(noteSheetItem, null);
+            setShowNoteSheet(false);
+            setNoteSheetItem(null);
+            setNoteText("");
+          }}
+          onClose={() => {
+            setShowNoteSheet(false);
+            setNoteSheetItem(null);
+            setNoteText("");
           }}
         />
       )}

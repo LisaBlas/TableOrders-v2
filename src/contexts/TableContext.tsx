@@ -18,7 +18,7 @@ interface TableContextValue {
   setMarkedBatches: React.Dispatch<React.SetStateAction<Record<TableId, Set<number>>>>;
 
   // Actions
-  addItem: (tableId: TableId, item: MenuItem, variant: MenuItemVariant | null, category: MenuCategory) => void;
+  addItem: (tableId: TableId, item: MenuItem, variant: MenuItemVariant | null, category: MenuCategory, note?: string) => void;
   removeItem: (tableId: TableId, itemId: string) => void;
   removeItemFromBill: (tableId: TableId, itemId: string) => void;
   addItemToBill: (tableId: TableId, itemId: string) => void;
@@ -63,8 +63,8 @@ export function TableProvider({ children }: { children: ReactNode }) {
     });
   }, [setSeatedTablesArr]);
 
-  const addItem = useCallback((tableId: TableId, item: MenuItem, variant: MenuItemVariant | null, category: MenuCategory) => {
-    const orderItem = variant
+  const addItem = useCallback((tableId: TableId, item: MenuItem, variant: MenuItemVariant | null, category: MenuCategory, note?: string) => {
+    const baseOrderItem = variant
       ? {
           id: `${item.id}-${variant.type}`,
           name: `${item.name} (${variant.label})`,
@@ -78,9 +78,14 @@ export function TableProvider({ children }: { children: ReactNode }) {
         }
       : { ...item, category };
 
+    // Items with a note get a unique id so they never merge with the base item
+    const orderItem = note
+      ? { ...baseOrderItem, id: `${baseOrderItem.id}-note-${Date.now()}`, note }
+      : baseOrderItem;
+
     setOrders((prev) => {
       const current = prev[tableId] || [];
-      const existing = current.find((o: OrderItem) => o.id === orderItem.id);
+      const existing = note ? null : current.find((o: OrderItem) => o.id === orderItem.id);
       if (existing) {
         return {
           ...prev,
@@ -92,7 +97,7 @@ export function TableProvider({ children }: { children: ReactNode }) {
       }
       return { ...prev, [tableId]: [...current, { ...orderItem, qty: 1, sentQty: 0 }] };
     });
-    showToast(`+ ${orderItem.name}`);
+    showToast(`+ ${baseOrderItem.name}`);
   }, [setOrders, showToast]);
 
   const removeItem = useCallback((tableId: TableId, itemId: string) => {

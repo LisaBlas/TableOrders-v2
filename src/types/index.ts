@@ -65,6 +65,7 @@ export interface OrderItem {
   subcategory?: string;
   _uid?: string;
   crossed?: boolean;
+  note?: string;
 }
 
 export type Orders = Record<string, OrderItem[]>;
