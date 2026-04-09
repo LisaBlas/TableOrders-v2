@@ -98,8 +98,8 @@ export function OrderView() {
   // Subcategory helpers
   const getSelectedSubcategory = () => {
     if (activeCategory === "Food") return selectedFoodSubcategory;
-    if (activeCategory === "Drinks🍷") return selectedDrinksSubcategory;
-    if (activeCategory === "Wines 🍷") return selectedBottlesSubcategory;
+    if (activeCategory === "Drinks") return selectedDrinksSubcategory;
+    if (activeCategory === "Wines") return selectedBottlesSubcategory;
     return null;
   };
 
@@ -111,14 +111,14 @@ export function OrderView() {
 
   const setSubcategoryForCategory = (sub: string) => {
     if (activeCategory === "Food") setSelectedFoodSubcategory(sub);
-    else if (activeCategory === "Drinks🍷") setSelectedDrinksSubcategory(sub);
-    else if (activeCategory === "Wines 🍷") setSelectedBottlesSubcategory(sub);
+    else if (activeCategory === "Drinks") setSelectedDrinksSubcategory(sub);
+    else if (activeCategory === "Wines") setSelectedBottlesSubcategory(sub);
   };
 
   const getSubcategoryConfig = () => {
     if (activeCategory === "Food") return FOOD_SUBCATEGORIES;
-    if (activeCategory === "Drinks🍷") return DRINKS_SUBCATEGORIES;
-    if (activeCategory === "Wines 🍷") return BOTTLES_SUBCATEGORIES;
+    if (activeCategory === "Drinks") return DRINKS_SUBCATEGORIES;
+    if (activeCategory === "Wines") return BOTTLES_SUBCATEGORIES;
     return [];
   };
 
@@ -141,19 +141,19 @@ export function OrderView() {
     }
 
     // Special handling for Bottles category: wines with glass sizes first, then static bottles
-    if (activeCategory === "Wines 🍷") {
-      const winesWithGlasses = (MENU as any)["Drinks🍷"]
+    if (activeCategory === "Wines") {
+      const winesWithGlasses = (MENU as any)["Drinks"]
         ?.filter((item: any) => item.variants?.some((v: any) => v.bottleSubcategory))
         .map((item: any) => ({
           ...item,
-          category: "Wines 🍷",
+          category: "Wines",
           subcategory: "glass",
           wineType: item.variants.find((v: any) => v.bottleSubcategory)?.bottleSubcategory,
         })) || [];
 
-      const staticBottles = (MENU as any)["Wines 🍷"]?.map((item: any) => ({
+      const staticBottles = (MENU as any)["Wines"]?.map((item: any) => ({
         ...item,
-        category: "Wines 🍷",
+        category: "Wines",
         subcategory: "bottle",
         wineType: item.subcategory,
       })) || [];
@@ -162,8 +162,8 @@ export function OrderView() {
     }
 
     // Special handling for Drinks category: exclude wines entirely, hide bottle variants on others
-    if (activeCategory === "Drinks🍷") {
-      let items = (MENU as any)["Drinks🍷"]?.map((item: any) => {
+    if (activeCategory === "Drinks") {
+      let items = (MENU as any)["Drinks"]?.map((item: any) => {
         // Exclude wine items — they now live in the Bottles tab
         if (item.subcategory === "wine") return null;
         // If item has variants, filter out bottle variants
@@ -173,14 +173,14 @@ export function OrderView() {
           if (filteredVariants.length > 0) {
             return {
               ...item,
-              category: "Drinks🍷",
+              category: "Drinks",
               variants: filteredVariants
             };
           }
           return null;
         }
         // Regular items without variants
-        return { ...item, category: "Drinks🍷" };
+        return { ...item, category: "Drinks" };
       }).filter(Boolean) || [];
 
       if (selectedSubcategory) {
@@ -268,14 +268,6 @@ export function OrderView() {
               {category}
             </button>
           ))}
-          <div style={{
-            ...S.tabIndicator,
-            transform: activeCategory === "Drinks🍷"
-              ? "translateX(100%)"
-              : activeCategory === "Wines 🍷"
-              ? "translateX(200%)"
-              : "translateX(0)",
-          }} />
         </div>
       </div>
 

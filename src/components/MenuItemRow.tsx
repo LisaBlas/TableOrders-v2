@@ -19,7 +19,7 @@ export function MenuItemRow({ item, unsent, showCategory = false, onAddItem }: M
           </span>
         </div>
         <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" as const }}>
-          {(item.category === "Wines 🍷" ? item.variants.slice().reverse() : item.variants).map((variant: any) => {
+          {(item.category === "Wines" ? item.variants.slice().reverse() : item.variants).map((variant: any) => {
             const variantId = `${item.id}-${variant.type}`;
             const unsentQty = unsent.find((o) => o.id === variantId)?.qty || 0;
             return (

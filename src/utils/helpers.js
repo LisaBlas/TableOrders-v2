@@ -51,8 +51,8 @@ export function getItemDestination(item) {
     item.id.startsWith("te") || // Teas
     item.id.startsWith("co") || // Coffee
     item.id.endsWith("_bottle") || // All bottles
-    item.category === "Wines 🍷" || // Bottles category
-    item.category === "Drinks🍷" || // Drinks category
+    item.category === "Wines" || // Bottles category
+    item.category === "Drinks" || // Drinks category
     // Schnaps items
     ["cognac", "calvados", "mirabelle", "jameson", "creme_calvados"].includes(item.id.split("-")[0]) ||
     // Juices and water items

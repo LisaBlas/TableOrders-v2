@@ -1708,7 +1708,8 @@ export const S = {
     paddingBottom: 8,
     fontSize: 14,
     fontWeight: 600,
-    color: "#555"
+    color: "#555",
+    textAlign: "center"
   },
 
   // Variant bottom sheet

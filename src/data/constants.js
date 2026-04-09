@@ -56,7 +56,284 @@ export const MENU = {
     { id: "f20", name: "Olives + Grissini", price: 5.5, subcategory: "snacks", posId: "0000", posName: "Oliven Grissini?" },
     { id: "f26", name: "Cornichons", price: 2.5, subcategory: "snacks", posId: "0000", posName: "Cornichons?" },
   ],
-  "Drinks🍷": [
+  "Wines": [
+    // White wines WITH LOCATION VARIANTS (Here / To Go)
+    {
+      id: "sancerre_bottle",
+      name: "Sancerre Fl.",
+      subcategory: "white",
+      variants: [
+        { type: "here", price: 38, label: "Here", posId: "3107", posName: "Sanc Fl H" },
+        { type: "togo", price: 27.5, label: "To Go", posId: "3108", posName: "Sanc Fl TG" }
+      ]
+    },
+    {
+      id: "chablis_bottle",
+      name: "Chablis Fl.",
+      subcategory: "white",
+      variants: [
+        { type: "here", price: 38, label: "Here", posId: "3109", posName: "Chab Fl H" },
+        { type: "togo", price: 27.5, label: "To Go", posId: "3109", posName: "Chab Fl TG" }
+      ]
+    },
+    {
+      id: "riesling_bottle",
+      name: "Riesling Fl.",
+      subcategory: "white",
+      variants: [
+        { type: "here", price: 24.5, label: "Here", posId: "3110", posName: "Riesl Fl H" },
+        { type: "togo", price: 13, label: "To Go", posId: "3111", posName: "Riesl Fl TG" }
+      ]
+    },
+    {
+      id: "entre_deux_mers_bottle",
+      name: "Entre-Deux-Mers Fl.",
+      subcategory: "white",
+      variants: [
+        { type: "here", price: 23, label: "Here", posId: "3112", posName: "EdM Fl H" },
+        { type: "togo", price: 12.5, label: "To Go", posId: "3113", posName: "EdM Fl TG" }
+      ]
+    },
+    {
+      id: "zotz_bottle",
+      name: "Zotz Fl.",
+      subcategory: "white",
+      variants: [
+        { type: "here", price: 25.5, label: "Here", posId: "3114", posName: "Zotz Fl H" },
+        { type: "togo", price: 14, label: "To Go", posId: "3115", posName: "Zotz Fl TG" }
+      ]
+    },
+    {
+      id: "rocailles_bottle",
+      name: "Rocailles Fl.",
+      subcategory: "white",
+      variants: [
+        { type: "here", price: 25.5, label: "Here", posId: "3116", posName: "Roca Fl H" },
+        { type: "togo", price: 14, label: "To Go", posId: "3116", posName: "Roca Fl TG" }
+      ]
+    },
+    {
+      id: "divin_sauv_bottle",
+      name: "Divin Sauvignon Blanc Fl.",
+      subcategory: "white",
+      variants: [
+        { type: "here", price: 25.5, label: "Here", posId: "152", posName: "DivSauB Fl H" },
+        { type: "togo", price: 14, label: "To Go", posId: "152", posName: "DivSauB Fl TG" }
+      ]
+    },
+    // Rosé
+    {
+      id: "aurore_boreale_bottle",
+      name: "Aurore Boréale Fl.",
+      subcategory: "rosé",
+      variants: [
+        { type: "here", price: 28, label: "Here", posId: "3203", posName: "AurBor Fl H" },
+        { type: "togo", price: 17.5, label: "To Go", posId: "3204", posName: "AurBor Fl TG" }
+      ]
+    },
+    {
+      id: "petnat_rose_bottle",
+      name: "PetNat Rosé Fl.",
+      subcategory: "rosé",
+      variants: [
+        { type: "here", price: 33, label: "Here", posId: "3205", posName: "PetNatR Fl H" },
+        { type: "togo", price: 20, label: "To Go", posId: "3206", posName: "PetNatR Fl TG" }
+      ]
+    },
+    // Sparkling wines
+    {
+      id: "cremant_bottle",
+      name: "Crémant Fl.",
+      subcategory: "sparkling",
+      variants: [
+        { type: "here", price: 35, label: "Here", posId: "3303", posName: "Crem Fl H" },
+        { type: "togo", price: 26.5, label: "To Go", posId: "3304", posName: "Crem Fl TG" }
+      ]
+    },
+    {
+      id: "prosecco_bottle",
+      name: "Prosecco Fl.",
+      subcategory: "sparkling",
+      variants: [
+        { type: "here", price: 23, label: "Here", posId: "3305", posName: "Prosc Fl H" },
+        { type: "togo", price: 12.5, label: "To Go", posId: "3306", posName: "Prosc Fl TG" }
+      ]
+    },
+    // Red wines
+    {
+      id: "graves_bottle",
+      name: "Graves Fl.",
+      subcategory: "red",
+      variants: [
+        { type: "here", price: 32, label: "Here", posId: "3407", posName: "Grav Fl H" },
+        { type: "togo", price: 21.5, label: "To Go", posId: "3408", posName: "Grav Fl TG" }
+      ]
+    },
+    {
+      id: "malbec_bottle",
+      name: "Malbec Fl.",
+      subcategory: "red",
+      variants: [
+        { type: "here", price: 29, label: "Here", posId: "3409", posName: "Malb Fl H" },
+        { type: "togo", price: 18.5, label: "To Go", posId: "3410", posName: "Malb Fl TG" }
+      ]
+    },
+    {
+      id: "crozes_hermitage_bottle",
+      name: "Crozes Hermitage Fl.",
+      subcategory: "red",
+      variants: [
+        { type: "here", price: 48, label: "Here", posId: "3411", posName: "CrozHer Fl H" },
+        { type: "togo", price: 24.5, label: "To Go", posId: "3412", posName: "CrozHer Fl TG" }
+      ]
+    },
+    {
+      id: "der_roth_bottle",
+      name: "Der Roth Fl.",
+      subcategory: "red",
+      variants: [
+        { type: "here", price: 26, label: "Here", posId: "3413", posName: "DerRoth Fl H" },
+        { type: "togo", price: 15.5, label: "To Go", posId: "3414", posName: "DerRoth Fl TG" }
+      ]
+    },
+    {
+      id: "primitivo_bottle",
+      name: "Primitivo Fl.",
+      subcategory: "red",
+      variants: [
+        { type: "here", price: 32, label: "Here", posId: "3415", posName: "Primit Fl H" },
+        { type: "togo", price: 21.5, label: "To Go", posId: "3416", posName: "Primit Fl TG" }
+      ]
+    },
+    // Natural & Other wines
+    {
+      id: "pinot_grisant_bottle",
+      name: "Pinot Grisant Fl.",
+      subcategory: "natural",
+      variants: [
+        { type: "here", price: 30, label: "Here", posId: "3501", posName: "PinGri Fl H" },
+        { type: "togo", price: 17, label: "To Go", posId: "3502", posName: "PinGri Fl TG" }
+      ]
+    },
+    {
+      id: "ca_va_le_faire_bottle",
+      name: "Ca va le faire Fl.",
+      subcategory: "natural",
+      variants: [
+        { type: "here", price: 30, label: "Here", posId: "3503", posName: "CavFaire Fl H" },
+        { type: "togo", price: 17, label: "To Go", posId: "3504", posName: "CavFaire Fl TG" }
+      ]
+    },
+    {
+      id: "bonne_mine_bottle",
+      name: "Bonne Mine Fl.",
+      subcategory: "natural",
+      variants: [
+        { type: "here", price: 32, label: "Here", posId: "3505", posName: "BonMin Fl H" },
+        { type: "togo", price: 17, label: "To Go", posId: "3506", posName: "BonMin Fl TG" }
+      ]
+    },
+    {
+      id: "clairette_bottle",
+      name: "Clairette Fl.",
+      subcategory: "natural",
+      variants: [
+        { type: "here", price: 30, label: "Here", posId: "3509", posName: "Clair Fl H" },
+        { type: "togo", price: 17, label: "To Go", posId: "3510", posName: "Clair Fl TG" }
+      ]
+    },
+    {
+      id: "infrarouge_bottle",
+      name: "Infrarouge Fl.",
+      subcategory: "natural",
+      variants: [
+        { type: "here", price: 29, label: "Here", posId: "3511", posName: "Infra Fl H" },
+        { type: "togo", price: 19, label: "To Go", posId: "3512", posName: "Infra Fl TG" }
+      ]
+    },
+    {
+      id: "grenache_bottle",
+      name: "Grenache Fl.",
+      subcategory: "natural",
+      variants: [
+        { type: "here", price: 30, label: "Here", posId: "3513", posName: "Gren Fl H" },
+        { type: "togo", price: 17, label: "To Go", posId: "3514", posName: "Gren Fl TG" }
+      ]
+    },
+    {
+      id: "tete_claques_bottle",
+      name: "Tête à Claques Fl.",
+      subcategory: "natural",
+      variants: [
+        { type: "here", price: 30, label: "Here", posId: "3515", posName: "TeteCla Fl H" },
+        { type: "togo", price: 17, label: "To Go", posId: "3516", posName: "TeteCla Fl TG" }
+      ]
+    },
+    {
+      id: "deferlante_rouge_bottle",
+      name: "Deferlante Rouge Fl.",
+      subcategory: "natural",
+      variants: [
+        { type: "here", price: 30, label: "Here", posId: "3517", posName: "DefRouge Fl H" },
+        { type: "togo", price: 17, label: "To Go", posId: "3518", posName: "DefRouge Fl TG" }
+      ]
+    },
+    {
+      id: "ya_plus_qua_bottle",
+      name: "Y'a plus qu'à Fl.",
+      subcategory: "natural",
+      variants: [
+        { type: "here", price: 29, label: "Here", posId: "3519", posName: "YaPlusQ Fl H" },
+        { type: "togo", price: 16, label: "To Go", posId: "3520", posName: "YaPlusQ Fl TG" }
+      ]
+    },
+    {
+      id: "divin_rose_bottle",
+      name: "Divin Rosé Fl.",
+      subcategory: "natural",
+      variants: [
+        { type: "here", price: 25.5, label: "Here", posId: "3521", posName: "DivRose Fl H" },
+        { type: "togo", price: 14, label: "To Go", posId: "3522", posName: "DivRose Fl TG" }
+      ]
+    },
+    {
+      id: "cremant_alsace_bottle",
+      name: "Crémant d'Alsace Fl.",
+      subcategory: "natural",
+      variants: [
+        { type: "here", price: 24, label: "Here", posId: "3523", posName: "CremAls Fl H" },
+        { type: "togo", price: 21, label: "To Go", posId: "3524", posName: "CremAls Fl TG" }
+      ]
+    },
+    {
+      id: "vi_no_bottle",
+      name: "Vi-No Fl.",
+      subcategory: "natural",
+      variants: [
+        { type: "here", price: 25.5, label: "Here", posId: "3525", posName: "ViNo Fl H" },
+        { type: "togo", price: 14, label: "To Go", posId: "3526", posName: "ViNo Fl TG" }
+      ]
+    },
+    {
+      id: "fritz_muller_bottle",
+      name: "Fritz Müller Fl.",
+      subcategory: "natural",
+      variants: [
+        { type: "here", price: 25.5, label: "Here", posId: "3527", posName: "FritzM Fl H" },
+        { type: "togo", price: 14, label: "To Go", posId: "3528", posName: "FritzM Fl TG" }
+      ]
+    },
+    {
+      id: "divin_pinot_noir_bottle",
+      name: "Divin Pinot Noir Fl.",
+      subcategory: "natural",
+      variants: [
+        { type: "here", price: 29, label: "Here", posId: "3529", posName: "DivPinNoir Fl H" },
+        { type: "togo", price: 18.5, label: "To Go", posId: "3530", posName: "DivPinNoir Fl TG" }
+      ]
+    },
+  ],
+  "Drinks": [
     // Wines by Glass - White WITH SIZE VARIANTS
     {
       id: "wg1",
@@ -348,283 +625,6 @@ export const MENU = {
     { id: "co1", name: "Espresso", price: 1.9, subcategory: "warm", posId: "91", posName: "Espr" },
     { id: "co2", name: "Cafe Crema", price: 2.6, subcategory: "warm", posId: "90", posName: "CafCr" },
   ],
-  "Wines 🍷": [
-    // White wines WITH LOCATION VARIANTS (Here / To Go)
-    {
-      id: "sancerre_bottle",
-      name: "Sancerre Fl.",
-      subcategory: "white",
-      variants: [
-        { type: "here", price: 38, label: "Here", posId: "3107", posName: "Sanc Fl H" },
-        { type: "togo", price: 27.5, label: "To Go", posId: "3108", posName: "Sanc Fl TG" }
-      ]
-    },
-    {
-      id: "chablis_bottle",
-      name: "Chablis Fl.",
-      subcategory: "white",
-      variants: [
-        { type: "here", price: 38, label: "Here", posId: "3109", posName: "Chab Fl H" },
-        { type: "togo", price: 27.5, label: "To Go", posId: "3109", posName: "Chab Fl TG" }
-      ]
-    },
-    {
-      id: "riesling_bottle",
-      name: "Riesling Fl.",
-      subcategory: "white",
-      variants: [
-        { type: "here", price: 24.5, label: "Here", posId: "3110", posName: "Riesl Fl H" },
-        { type: "togo", price: 13, label: "To Go", posId: "3111", posName: "Riesl Fl TG" }
-      ]
-    },
-    {
-      id: "entre_deux_mers_bottle",
-      name: "Entre-Deux-Mers Fl.",
-      subcategory: "white",
-      variants: [
-        { type: "here", price: 23, label: "Here", posId: "3112", posName: "EdM Fl H" },
-        { type: "togo", price: 12.5, label: "To Go", posId: "3113", posName: "EdM Fl TG" }
-      ]
-    },
-    {
-      id: "zotz_bottle",
-      name: "Zotz Fl.",
-      subcategory: "white",
-      variants: [
-        { type: "here", price: 25.5, label: "Here", posId: "3114", posName: "Zotz Fl H" },
-        { type: "togo", price: 14, label: "To Go", posId: "3115", posName: "Zotz Fl TG" }
-      ]
-    },
-    {
-      id: "rocailles_bottle",
-      name: "Rocailles Fl.",
-      subcategory: "white",
-      variants: [
-        { type: "here", price: 25.5, label: "Here", posId: "3116", posName: "Roca Fl H" },
-        { type: "togo", price: 14, label: "To Go", posId: "3116", posName: "Roca Fl TG" }
-      ]
-    },
-    {
-      id: "divin_sauv_bottle",
-      name: "Divin Sauvignon Blanc Fl.",
-      subcategory: "white",
-      variants: [
-        { type: "here", price: 25.5, label: "Here", posId: "152", posName: "DivSauB Fl H" },
-        { type: "togo", price: 14, label: "To Go", posId: "152", posName: "DivSauB Fl TG" }
-      ]
-    },
-    // Rosé
-    {
-      id: "aurore_boreale_bottle",
-      name: "Aurore Boréale Fl.",
-      subcategory: "rosé",
-      variants: [
-        { type: "here", price: 28, label: "Here", posId: "3203", posName: "AurBor Fl H" },
-        { type: "togo", price: 17.5, label: "To Go", posId: "3204", posName: "AurBor Fl TG" }
-      ]
-    },
-    {
-      id: "petnat_rose_bottle",
-      name: "PetNat Rosé Fl.",
-      subcategory: "rosé",
-      variants: [
-        { type: "here", price: 33, label: "Here", posId: "3205", posName: "PetNatR Fl H" },
-        { type: "togo", price: 20, label: "To Go", posId: "3206", posName: "PetNatR Fl TG" }
-      ]
-    },
-    // Sparkling wines
-    {
-      id: "cremant_bottle",
-      name: "Crémant Fl.",
-      subcategory: "sparkling",
-      variants: [
-        { type: "here", price: 35, label: "Here", posId: "3303", posName: "Crem Fl H" },
-        { type: "togo", price: 26.5, label: "To Go", posId: "3304", posName: "Crem Fl TG" }
-      ]
-    },
-    {
-      id: "prosecco_bottle",
-      name: "Prosecco Fl.",
-      subcategory: "sparkling",
-      variants: [
-        { type: "here", price: 23, label: "Here", posId: "3305", posName: "Prosc Fl H" },
-        { type: "togo", price: 12.5, label: "To Go", posId: "3306", posName: "Prosc Fl TG" }
-      ]
-    },
-    // Red wines
-    {
-      id: "graves_bottle",
-      name: "Graves Fl.",
-      subcategory: "red",
-      variants: [
-        { type: "here", price: 32, label: "Here", posId: "3407", posName: "Grav Fl H" },
-        { type: "togo", price: 21.5, label: "To Go", posId: "3408", posName: "Grav Fl TG" }
-      ]
-    },
-    {
-      id: "malbec_bottle",
-      name: "Malbec Fl.",
-      subcategory: "red",
-      variants: [
-        { type: "here", price: 29, label: "Here", posId: "3409", posName: "Malb Fl H" },
-        { type: "togo", price: 18.5, label: "To Go", posId: "3410", posName: "Malb Fl TG" }
-      ]
-    },
-    {
-      id: "crozes_hermitage_bottle",
-      name: "Crozes Hermitage Fl.",
-      subcategory: "red",
-      variants: [
-        { type: "here", price: 48, label: "Here", posId: "3411", posName: "CrozHer Fl H" },
-        { type: "togo", price: 24.5, label: "To Go", posId: "3412", posName: "CrozHer Fl TG" }
-      ]
-    },
-    {
-      id: "der_roth_bottle",
-      name: "Der Roth Fl.",
-      subcategory: "red",
-      variants: [
-        { type: "here", price: 26, label: "Here", posId: "3413", posName: "DerRoth Fl H" },
-        { type: "togo", price: 15.5, label: "To Go", posId: "3414", posName: "DerRoth Fl TG" }
-      ]
-    },
-    {
-      id: "primitivo_bottle",
-      name: "Primitivo Fl.",
-      subcategory: "red",
-      variants: [
-        { type: "here", price: 32, label: "Here", posId: "3415", posName: "Primit Fl H" },
-        { type: "togo", price: 21.5, label: "To Go", posId: "3416", posName: "Primit Fl TG" }
-      ]
-    },
-    // Natural & Other wines
-    {
-      id: "pinot_grisant_bottle",
-      name: "Pinot Grisant Fl.",
-      subcategory: "natural",
-      variants: [
-        { type: "here", price: 30, label: "Here", posId: "3501", posName: "PinGri Fl H" },
-        { type: "togo", price: 17, label: "To Go", posId: "3502", posName: "PinGri Fl TG" }
-      ]
-    },
-    {
-      id: "ca_va_le_faire_bottle",
-      name: "Ca va le faire Fl.",
-      subcategory: "natural",
-      variants: [
-        { type: "here", price: 30, label: "Here", posId: "3503", posName: "CavFaire Fl H" },
-        { type: "togo", price: 17, label: "To Go", posId: "3504", posName: "CavFaire Fl TG" }
-      ]
-    },
-    {
-      id: "bonne_mine_bottle",
-      name: "Bonne Mine Fl.",
-      subcategory: "natural",
-      variants: [
-        { type: "here", price: 32, label: "Here", posId: "3505", posName: "BonMin Fl H" },
-        { type: "togo", price: 17, label: "To Go", posId: "3506", posName: "BonMin Fl TG" }
-      ]
-    },
-    {
-      id: "clairette_bottle",
-      name: "Clairette Fl.",
-      subcategory: "natural",
-      variants: [
-        { type: "here", price: 30, label: "Here", posId: "3509", posName: "Clair Fl H" },
-        { type: "togo", price: 17, label: "To Go", posId: "3510", posName: "Clair Fl TG" }
-      ]
-    },
-    {
-      id: "infrarouge_bottle",
-      name: "Infrarouge Fl.",
-      subcategory: "natural",
-      variants: [
-        { type: "here", price: 29, label: "Here", posId: "3511", posName: "Infra Fl H" },
-        { type: "togo", price: 19, label: "To Go", posId: "3512", posName: "Infra Fl TG" }
-      ]
-    },
-    {
-      id: "grenache_bottle",
-      name: "Grenache Fl.",
-      subcategory: "natural",
-      variants: [
-        { type: "here", price: 30, label: "Here", posId: "3513", posName: "Gren Fl H" },
-        { type: "togo", price: 17, label: "To Go", posId: "3514", posName: "Gren Fl TG" }
-      ]
-    },
-    {
-      id: "tete_claques_bottle",
-      name: "Tête à Claques Fl.",
-      subcategory: "natural",
-      variants: [
-        { type: "here", price: 30, label: "Here", posId: "3515", posName: "TeteCla Fl H" },
-        { type: "togo", price: 17, label: "To Go", posId: "3516", posName: "TeteCla Fl TG" }
-      ]
-    },
-    {
-      id: "deferlante_rouge_bottle",
-      name: "Deferlante Rouge Fl.",
-      subcategory: "natural",
-      variants: [
-        { type: "here", price: 30, label: "Here", posId: "3517", posName: "DefRouge Fl H" },
-        { type: "togo", price: 17, label: "To Go", posId: "3518", posName: "DefRouge Fl TG" }
-      ]
-    },
-    {
-      id: "ya_plus_qua_bottle",
-      name: "Y'a plus qu'à Fl.",
-      subcategory: "natural",
-      variants: [
-        { type: "here", price: 29, label: "Here", posId: "3519", posName: "YaPlusQ Fl H" },
-        { type: "togo", price: 16, label: "To Go", posId: "3520", posName: "YaPlusQ Fl TG" }
-      ]
-    },
-    {
-      id: "divin_rose_bottle",
-      name: "Divin Rosé Fl.",
-      subcategory: "natural",
-      variants: [
-        { type: "here", price: 25.5, label: "Here", posId: "3521", posName: "DivRose Fl H" },
-        { type: "togo", price: 14, label: "To Go", posId: "3522", posName: "DivRose Fl TG" }
-      ]
-    },
-    {
-      id: "cremant_alsace_bottle",
-      name: "Crémant d'Alsace Fl.",
-      subcategory: "natural",
-      variants: [
-        { type: "here", price: 24, label: "Here", posId: "3523", posName: "CremAls Fl H" },
-        { type: "togo", price: 21, label: "To Go", posId: "3524", posName: "CremAls Fl TG" }
-      ]
-    },
-    {
-      id: "vi_no_bottle",
-      name: "Vi-No Fl.",
-      subcategory: "natural",
-      variants: [
-        { type: "here", price: 25.5, label: "Here", posId: "3525", posName: "ViNo Fl H" },
-        { type: "togo", price: 14, label: "To Go", posId: "3526", posName: "ViNo Fl TG" }
-      ]
-    },
-    {
-      id: "fritz_muller_bottle",
-      name: "Fritz Müller Fl.",
-      subcategory: "natural",
-      variants: [
-        { type: "here", price: 25.5, label: "Here", posId: "3527", posName: "FritzM Fl H" },
-        { type: "togo", price: 14, label: "To Go", posId: "3528", posName: "FritzM Fl TG" }
-      ]
-    },
-    {
-      id: "divin_pinot_noir_bottle",
-      name: "Divin Pinot Noir Fl.",
-      subcategory: "natural",
-      variants: [
-        { type: "here", price: 29, label: "Here", posId: "3529", posName: "DivPinNoir Fl H" },
-        { type: "togo", price: 18.5, label: "To Go", posId: "3530", posName: "DivPinNoir Fl TG" }
-      ]
-    },
-  ]
 };
 
 export const STATUS_CONFIG = {
