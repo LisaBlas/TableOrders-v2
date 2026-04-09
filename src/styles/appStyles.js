@@ -1792,7 +1792,12 @@ export const S = {
     cursor: "pointer",
     marginLeft: 8
   },
+  sentSectionPending: {
+    background: "#fdf5f5",
+    border: "1px solid #f0bfbf"
+  },
   sentSectionMarked: {
-    background: "#e3f2fd"
+    background: "#f4fbf6",
+    border: "1px solid #b8e6c8"
   }
 };
