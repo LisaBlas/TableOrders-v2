@@ -270,8 +270,8 @@ export const MENU = {
       ]
     },
     {
-      id: "wasser_sprudel",
-      name: "Wasser Sprudel",
+      id: "wasser_sprudel_bottle",
+      name: "Sprudel Wasser Fl.",
       subcategory: "soft",
       variants: [
         { type: "small", price: 1.5, label: "0,2", posId: "50-1", posName: "WassSprud klein" },
@@ -279,8 +279,8 @@ export const MENU = {
       ]
     },
     {
-      id: "wasser",
-      name: "Wasser",
+      id: "wasser_bottle",
+      name: "Wasser Fl.",
       subcategory: "soft",
       variants: [
         { type: "small", price: 1.5, label: "0,2", posId: "50-2", posName: "Wass klein" },
@@ -620,25 +620,6 @@ export const MENU = {
       variants: [
         { type: "here", price: 29, label: "Here", posId: "3529", posName: "DivPinNoir Fl H" },
         { type: "togo", price: 18.5, label: "To Go", posId: "3530", posName: "DivPinNoir Fl TG" }
-      ]
-    },
-    // Water bottles WITH LOCATION VARIANTS
-    {
-      id: "wasser_sprudel_bottle",
-      name: "Sprudel Wasser Fl.",
-      subcategory: "water",
-      variants: [
-        { type: "here", price: 5.5, label: "Here", posId: "3601", posName: "SprudWass Fl H" },
-        { type: "togo", price: 5, label: "To Go", posId: "3602", posName: "SprudWass Fl TG" }
-      ]
-    },
-    {
-      id: "wasser_bottle",
-      name: "Wasser Fl.",
-      subcategory: "water",
-      variants: [
-        { type: "here", price: 5.5, label: "Here", posId: "3603", posName: "Wass Fl H" },
-        { type: "togo", price: 5, label: "To Go", posId: "3604", posName: "Wass Fl TG" }
       ]
     },
   ]
