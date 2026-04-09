@@ -346,7 +346,7 @@ export const MENU = {
     { id: "co1", name: "Espresso", price: 1.9, subcategory: "warm", posId: "91", posName: "Espr" },
     { id: "co2", name: "Cafe Crema", price: 2.6, subcategory: "warm", posId: "90", posName: "CafCr" },
   ],
-  "Bottles 🍾": [
+  "Wines 🍷": [
     // White wines WITH LOCATION VARIANTS (Here / To Go)
     {
       id: "sancerre_bottle",

@@ -99,7 +99,7 @@ export function OrderView() {
   const getSelectedSubcategory = () => {
     if (activeCategory === "Food") return selectedFoodSubcategory;
     if (activeCategory === "Drinks🍷") return selectedDrinksSubcategory;
-    if (activeCategory === "Bottles 🍾") return selectedBottlesSubcategory;
+    if (activeCategory === "Wines 🍷") return selectedBottlesSubcategory;
     return null;
   };
 
@@ -112,13 +112,13 @@ export function OrderView() {
   const setSubcategoryForCategory = (sub: string) => {
     if (activeCategory === "Food") setSelectedFoodSubcategory(sub);
     else if (activeCategory === "Drinks🍷") setSelectedDrinksSubcategory(sub);
-    else if (activeCategory === "Bottles 🍾") setSelectedBottlesSubcategory(sub);
+    else if (activeCategory === "Wines 🍷") setSelectedBottlesSubcategory(sub);
   };
 
   const getSubcategoryConfig = () => {
     if (activeCategory === "Food") return FOOD_SUBCATEGORIES;
     if (activeCategory === "Drinks🍷") return DRINKS_SUBCATEGORIES;
-    if (activeCategory === "Bottles 🍾") return BOTTLES_SUBCATEGORIES;
+    if (activeCategory === "Wines 🍷") return BOTTLES_SUBCATEGORIES;
     return [];
   };
 
@@ -141,20 +141,20 @@ export function OrderView() {
     }
 
     // Special handling for Bottles category: wines with glass sizes first, then static bottles
-    if (activeCategory === "Bottles 🍾") {
+    if (activeCategory === "Wines 🍷") {
       // Wines that have glass sizes (0,1/0,2) AND bottle variants — shown first, all variants kept
       const winesWithGlasses = (MENU as any)["Drinks🍷"]
         ?.filter((item: any) => item.variants?.some((v: any) => v.bottleSubcategory))
         .map((item: any) => ({
           ...item,
-          category: "Bottles 🍾",
+          category: "Wines 🍷",
           // Use the bottleSubcategory for subcategory filtering
           subcategory: item.variants.find((v: any) => v.bottleSubcategory)?.bottleSubcategory
         })) || [];
 
-      const staticBottles = (MENU as any)["Bottles 🍾"]?.map((item: any) => ({
+      const staticBottles = (MENU as any)["Wines 🍷"]?.map((item: any) => ({
         ...item,
-        category: "Bottles 🍾"
+        category: "Wines 🍷"
       })) || [];
 
       // Wines with glass sizes appear first
@@ -278,7 +278,7 @@ export function OrderView() {
             ...S.tabIndicator,
             transform: activeCategory === "Drinks🍷"
               ? "translateX(100%)"
-              : activeCategory === "Bottles 🍾"
+              : activeCategory === "Wines 🍷"
               ? "translateX(200%)"
               : "translateX(0)",
           }} />
