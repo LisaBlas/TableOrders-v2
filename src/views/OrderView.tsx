@@ -140,27 +140,25 @@ export function OrderView() {
       return results;
     }
 
-    // Special handling for Bottles category: merge static bottles + drinks with bottle variants
+    // Special handling for Bottles category: wines with glass sizes first, then static bottles
     if (activeCategory === "Bottles 🍾") {
+      // Wines that have glass sizes (0,1/0,2) AND bottle variants — shown first, all variants kept
+      const winesWithGlasses = (MENU as any)["Drinks🍷"]
+        ?.filter((item: any) => item.variants?.some((v: any) => v.bottleSubcategory))
+        .map((item: any) => ({
+          ...item,
+          category: "Bottles 🍾",
+          // Use the bottleSubcategory for subcategory filtering
+          subcategory: item.variants.find((v: any) => v.bottleSubcategory)?.bottleSubcategory
+        })) || [];
+
       const staticBottles = (MENU as any)["Bottles 🍾"]?.map((item: any) => ({
         ...item,
         category: "Bottles 🍾"
       })) || [];
 
-      const drinksWithBottles = (MENU as any)["Drinks🍷"]
-        ?.filter((item: any) => item.variants?.some((v: any) => v.bottleSubcategory))
-        .map((item: any) => ({
-          ...item,
-          category: "Bottles 🍾",
-          // Filter variants to show only bottle variants, and map subcategory
-          variants: item.variants
-            .filter((v: any) => v.bottleSubcategory)
-            .map((v: any) => ({ ...v, subcategory: v.bottleSubcategory })),
-          // Use bottle subcategory for filtering
-          subcategory: item.variants.find((v: any) => v.bottleSubcategory)?.bottleSubcategory
-        })) || [];
-
-      let items = [...staticBottles, ...drinksWithBottles];
+      // Wines with glass sizes appear first
+      let items = [...winesWithGlasses, ...staticBottles];
 
       if (selectedSubcategory) {
         items = items.filter((item: any) => item.subcategory === selectedSubcategory);
@@ -169,9 +167,11 @@ export function OrderView() {
       return items;
     }
 
-    // Special handling for Drinks category: hide bottle variants
+    // Special handling for Drinks category: exclude wines entirely, hide bottle variants on others
     if (activeCategory === "Drinks🍷") {
       let items = (MENU as any)["Drinks🍷"]?.map((item: any) => {
+        // Exclude wine items — they now live in the Bottles tab
+        if (item.subcategory === "wine") return null;
         // If item has variants, filter out bottle variants
         if (item.variants) {
           const filteredVariants = item.variants.filter((v: any) => !v.bottleSubcategory);
@@ -183,7 +183,7 @@ export function OrderView() {
               variants: filteredVariants
             };
           }
-          return null; // Exclude items with only bottle variants
+          return null;
         }
         // Regular items without variants
         return { ...item, category: "Drinks🍷" };

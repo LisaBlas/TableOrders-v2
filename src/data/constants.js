@@ -659,7 +659,6 @@ export const FOOD_SUBCATEGORIES = [
 ];
 
 export const DRINKS_SUBCATEGORIES = [
-  { id: "wine", label: "🍷 Wine" },
   { id: "bier", label: "🍺 Bier" },
   { id: "cocktail", label: "🍸 Cocktail" },
   { id: "soft", label: "🥤 Soft" },
