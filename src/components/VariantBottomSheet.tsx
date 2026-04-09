@@ -27,29 +27,30 @@ export function VariantBottomSheet({ item, unsent, onSelectVariant, onClose }: V
       <div style={S.variantSheet}>
         <div style={S.variantSheetHeader}>{item.name}</div>
 
-        {item.variants.map((variant) => {
-          const unsentQty = getVariantUnsentQty(variant);
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
+          {item.variants.map((variant) => {
+            const unsentQty = getVariantUnsentQty(variant);
 
-          return (
-            <button
-              key={variant.type}
-              style={S.variantBtn}
-              onClick={() => {
-                onSelectVariant(variant);
-                onClose();
-              }}
-            >
-              <span style={S.variantBtnLabel}>{variant.label}</span>
-              <span style={S.variantBtnPrice}>{variant.price.toFixed(2)}€</span>
+            return (
+              <button
+                key={variant.type}
+                style={{ ...S.variantBtn, flex: "1 1 auto", justifyContent: "center", marginBottom: 0 }}
+                onClick={() => {
+                  onSelectVariant(variant);
+                  onClose();
+                }}
+              >
+                <span style={S.variantBtnLabel}>{variant.label}</span>
 
-              {unsentQty > 0 && (
-                <span style={{ ...S.menuCardBadge, position: "absolute", top: 8, right: 8 }}>
-                  ({unsentQty})
-                </span>
-              )}
-            </button>
-          );
-        })}
+                {unsentQty > 0 && (
+                  <span style={{ ...S.menuCardBadge, position: "absolute", top: 8, right: 8 }}>
+                    ({unsentQty})
+                  </span>
+                )}
+              </button>
+            );
+          })}
+        </div>
       </div>
     </>
   );
