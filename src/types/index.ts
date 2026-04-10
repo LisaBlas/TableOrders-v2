@@ -36,13 +36,20 @@ export interface MenuItemVariant {
   type: string;
   price: number;
   label: string;
+  shortName?: string;
+  posId?: string;
+  posName?: string;
+  bottleSubcategory?: string;
 }
 
 export interface MenuItem {
   id: string;
   name: string;
+  shortName?: string;
   price?: number;
   subcategory?: string;
+  posId?: string;
+  posName?: string;
   variants?: MenuItemVariant[];
   holdVariants?: MenuItemVariant[];
 }
@@ -59,11 +66,14 @@ export interface Subcategory {
 export interface OrderItem {
   id: string;
   name: string;
+  shortName?: string;
   price: number;
   qty: number;
   sentQty: number;
   category?: MenuCategory;
   subcategory?: string;
+  posId?: string;
+  posName?: string;
   _uid?: string;
   crossed?: boolean;
   note?: string;

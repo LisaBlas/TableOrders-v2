@@ -14,7 +14,7 @@ export function MenuItemRow({ item, unsent, showCategory = false, onAddItem }: M
       <div key={item.id} style={S.menuItem}>
         <div style={S.menuItemInfo}>
           <span style={S.menuItemName}>
-            {item.name}
+            {item.shortName || item.name}
             {showCategory && <span style={S.menuItemCategory}> · {item.category}</span>}
           </span>
         </div>
@@ -38,7 +38,7 @@ export function MenuItemRow({ item, unsent, showCategory = false, onAddItem }: M
     <div key={item.id} style={S.menuItem}>
       <div style={S.menuItemInfo}>
         <span style={S.menuItemName}>
-          {item.name}
+          {item.shortName || item.name}
           {showCategory && <span style={S.menuItemCategory}> · {item.category}</span>}
         </span>
         <span style={S.menuItemPrice}>{item.price.toFixed(2)}€</span>

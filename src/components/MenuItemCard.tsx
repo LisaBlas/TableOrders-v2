@@ -30,7 +30,7 @@ export function MenuItemCard({ item, unsent, showCategory, onTap, onLongPress }:
   };
 
   const unsentQty = getUnsentQty();
-  const displayName = (item as any).posName || item.name;
+  const displayName = item.shortName || item.name;
 
   const WINE_COLORS: Record<string, string> = {
     white: "#e8c84a",

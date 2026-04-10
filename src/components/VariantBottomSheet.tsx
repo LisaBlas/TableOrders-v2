@@ -27,7 +27,7 @@ export function VariantBottomSheet({ item, unsent, onSelectVariant, onClose, var
 
       {/* Bottom sheet */}
       <div style={S.variantSheet}>
-        <div style={S.variantSheetHeader}>{item.name}</div>
+        <div style={S.variantSheetHeader}>{item.shortName || item.name}</div>
 
         <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
           {variants.map((variant) => {

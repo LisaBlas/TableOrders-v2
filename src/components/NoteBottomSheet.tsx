@@ -28,7 +28,7 @@ export function NoteBottomSheet({ item, note, onNoteChange, onConfirm, onClose }
     <>
       <div style={S.variantSheetOverlay} onClick={onClose} />
       <div style={S.variantSheet}>
-        <div style={S.variantSheetHeader}>{item.name}</div>
+        <div style={S.variantSheetHeader}>{item.shortName || item.name}</div>
         <input
           ref={inputRef}
           type="text"
