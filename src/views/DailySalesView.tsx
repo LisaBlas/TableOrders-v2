@@ -71,67 +71,85 @@ export function DailySalesView() {
 
   // Total tab aggregation - by POS ID for easy POS entry
   const renderTotalTab = () => {
-    // Aggregate by POS ID
-    const posMap = new Map<string, { posId: string; posName: string; qty: number; revenue: number; items: string[] }>();
+    type PosEntry = { posId: string; posName: string; qty: number; revenue: number; items: string[] };
+    const activeMap = new Map<string, PosEntry>();
+    const removedMap = new Map<string, PosEntry>();
 
     paidBills.forEach((bill) => {
+      const billRemoved = !!(bill as any).addedToPOS;
       bill.items.forEach((item) => {
-        // Extract posId and posName from item metadata
         const posId = (item as any).posId || "NO_POS_ID";
         const posName = (item as any).posName || item.name;
+        const isRemoved = billRemoved || !!(item as any).crossed;
+        const map = isRemoved ? removedMap : activeMap;
 
-        if (!posMap.has(posId)) {
-          posMap.set(posId, { posId, posName, qty: 0, revenue: 0, items: [] });
+        if (!map.has(posId)) {
+          map.set(posId, { posId, posName, qty: 0, revenue: 0, items: [] });
         }
-        const entry = posMap.get(posId)!;
+        const entry = map.get(posId)!;
         entry.qty += item.qty;
         entry.revenue += item.price * item.qty;
-        if (!entry.items.includes(item.name)) {
-          entry.items.push(item.name);
-        }
+        if (!entry.items.includes(item.name)) entry.items.push(item.name);
       });
     });
 
-    // Convert to array and sort by quantity (most sold first)
-    const aggregated = Array.from(posMap.values()).sort((a, b) => b.qty - a.qty);
+    const sort = (m: Map<string, PosEntry>) =>
+      Array.from(m.values()).sort((a, b) => b.qty - a.qty);
 
-    // Separate items with missing POS IDs
-    const withPosId = aggregated.filter((item) => item.posId !== "NO_POS_ID" && item.posId !== "0000");
-    const missingPosId = aggregated.filter((item) => item.posId === "NO_POS_ID" || item.posId === "0000");
+    const isMissingPosId = (id: string) => id === "NO_POS_ID" || id === "0000";
 
-    const renderPosRow = (item: any, isMissing: boolean) => (
+    const activeAll = sort(activeMap);
+    const removedAll = sort(removedMap);
+
+    const withPosId = activeAll.filter((i) => !isMissingPosId(i.posId));
+    const missingPosId = activeAll.filter((i) => isMissingPosId(i.posId));
+    const removedWithPosId = removedAll.filter((i) => !isMissingPosId(i.posId));
+    const removedMissingPosId = removedAll.filter((i) => isMissingPosId(i.posId));
+
+    const renderPosRow = (item: PosEntry, color: string, badge?: boolean) => (
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8 }}>
-        <span style={{ fontSize: 22, fontWeight: 900, color: isMissing ? "#e07b5a" : "#1a1a1a", letterSpacing: 0.5, minWidth: 64 }}>
+        <span style={{ fontSize: 22, fontWeight: 900, color, letterSpacing: 0.5, minWidth: 64 }}>
           [{item.posId}]
         </span>
-        <span style={{ flex: 1, fontSize: 15, fontWeight: 600, color: "#555" }}>{item.posName}</span>
-        <span style={{ fontSize: 26, fontWeight: 900, color: "#1a1a1a" }}>×{item.qty}</span>
+        <span style={{ flex: 1, fontSize: 15, fontWeight: 600, color: badge ? "#c0392b" : "#555" }}>{item.posName}</span>
+        {badge && (
+          <span style={{ fontSize: 11, fontWeight: 700, color: "#fff", background: "#c0392b", borderRadius: 4, padding: "2px 6px", marginRight: 4 }}>
+            Removed
+          </span>
+        )}
+        <span style={{ fontSize: 26, fontWeight: 900, color }}>{badge ? "-" : "×"}{item.qty}</span>
       </div>
     );
 
+    const renderGroup = (items: PosEntry[], isMissing: boolean, removed: boolean) => {
+      if (items.length === 0) return null;
+      const color = removed ? "#c0392b" : isMissing ? "#e07b5a" : "#1a1a1a";
+      return (
+        <div style={{ ...S.billCard, ...(removed ? { borderLeft: "4px solid #c0392b", opacity: 0.75 } : isMissing ? { borderLeft: "4px solid #e07b5a" } : {}) }}>
+          {items.map((item, idx) => (
+            <div key={idx}>
+              {idx > 0 && <div style={S.divider} />}
+              {renderPosRow(item, color, removed)}
+            </div>
+          ))}
+        </div>
+      );
+    };
+
     return (
       <div style={S.billsList}>
-        {withPosId.length > 0 && (
-          <div style={S.billCard}>
-            {withPosId.map((item, idx) => (
-              <div key={idx}>
-                {idx > 0 && <div style={S.divider} />}
-                {renderPosRow(item, false)}
-              </div>
-            ))}
-          </div>
-        )}
+        {renderGroup(withPosId, false, false)}
         {missingPosId.length > 0 && (
           <>
             <div style={{ ...S.subcategorySeparator, color: "#e07b5a" } as React.CSSProperties}>⚠️ Missing POS IDs</div>
-            <div style={{ ...S.billCard, borderLeft: "4px solid #e07b5a" }}>
-              {missingPosId.map((item, idx) => (
-                <div key={idx}>
-                  {idx > 0 && <div style={S.divider} />}
-                  {renderPosRow(item, true)}
-                </div>
-              ))}
-            </div>
+            {renderGroup(missingPosId, true, false)}
+          </>
+        )}
+        {(removedWithPosId.length > 0 || removedMissingPosId.length > 0) && (
+          <>
+            <div style={{ ...S.subcategorySeparator, color: "#c0392b" } as React.CSSProperties}>Removed</div>
+            {renderGroup(removedWithPosId, false, true)}
+            {removedMissingPosId.length > 0 && renderGroup(removedMissingPosId, true, true)}
           </>
         )}
       </div>
