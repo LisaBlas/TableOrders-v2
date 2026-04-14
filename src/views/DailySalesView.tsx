@@ -29,7 +29,9 @@ export function DailySalesView() {
       const bills = [...prev];
       const bill = { ...bills[billIndex] };
       bill.items = bill.items.map((o) =>
-        o.id === itemId ? { ...o, crossed: !o.crossed } : o
+        o.id === itemId
+          ? { ...o, crossedQty: Math.min((o.crossedQty || 0) + 1, o.qty) }
+          : o
       );
       bills[billIndex] = bill;
       return bills;
@@ -75,21 +77,25 @@ export function DailySalesView() {
     const activeMap = new Map<string, PosEntry>();
     const removedMap = new Map<string, PosEntry>();
 
+    const addToMap = (map: Map<string, PosEntry>, posId: string, posName: string, item: typeof paidBills[0]["items"][0], qty: number) => {
+      if (qty <= 0) return;
+      if (!map.has(posId)) map.set(posId, { posId, posName, qty: 0, revenue: 0, items: [] });
+      const entry = map.get(posId)!;
+      entry.qty += qty;
+      entry.revenue += item.price * qty;
+      if (!entry.items.includes(item.name)) entry.items.push(item.name);
+    };
+
     paidBills.forEach((bill) => {
       const billRemoved = !!(bill as any).addedToPOS;
       bill.items.forEach((item) => {
         const posId = (item as any).posId || "NO_POS_ID";
         const posName = (item as any).posName || item.name;
-        const isRemoved = billRemoved || !!(item as any).crossed;
-        const map = isRemoved ? removedMap : activeMap;
-
-        if (!map.has(posId)) {
-          map.set(posId, { posId, posName, qty: 0, revenue: 0, items: [] });
-        }
-        const entry = map.get(posId)!;
-        entry.qty += item.qty;
-        entry.revenue += item.price * item.qty;
-        if (!entry.items.includes(item.name)) entry.items.push(item.name);
+        const crossedCount = (item as any).crossedQty ?? ((item as any).crossed ? item.qty : 0);
+        const activeCount = billRemoved ? 0 : item.qty - crossedCount;
+        const removedCount = billRemoved ? item.qty : crossedCount;
+        addToMap(activeMap, posId, posName, item, activeCount);
+        addToMap(removedMap, posId, posName, item, removedCount);
       });
     });
 

@@ -65,22 +65,53 @@ export function BillCard({ bill, isEditing, onEdit, onDone, onCancel, onDelete, 
           <div style={{ padding: "20px", textAlign: "center" as const, color: "#999", fontSize: 14, fontStyle: "italic" }}>
             No items in this bill
           </div>
-        ) : (
-          bill.items.map((item) => (
-            <div key={item.id} style={isEditing ? S.billItemEditable : S.billItem}>
-              {isEditing && (
-                <button style={S.billItemRemoveBtn} onClick={() => onRemoveItem(item.id)} title="Cross out item">−</button>
+        ) : (() => {
+          type DisplayItem = (typeof bill.items)[0] & { displayQty: number };
+          const activeItems: DisplayItem[] = [];
+          const crossedItems: DisplayItem[] = [];
+          bill.items.forEach((item) => {
+            const cQty = item.crossedQty ?? (item.crossed ? item.qty : 0);
+            const aQty = item.qty - cQty;
+            if (aQty > 0) activeItems.push({ ...item, displayQty: aQty });
+            if (cQty > 0) crossedItems.push({ ...item, displayQty: cQty });
+          });
+          return (
+            <>
+              {activeItems.map((item) => (
+                <div key={item.id} style={isEditing ? S.billItemEditable : S.billItem}>
+                  {isEditing && (
+                    <button style={S.billItemRemoveBtn} onClick={() => onRemoveItem(item.id)} title="Remove one">−</button>
+                  )}
+                  <span style={S.billItemName}>
+                    <span style={S.billItemQty}>{item.displayQty}×</span>
+                    {item.name}
+                  </span>
+                  <span style={S.billItemPrice}>
+                    {(item.price * item.displayQty).toFixed(2)}€
+                  </span>
+                </div>
+              ))}
+              {crossedItems.length > 0 && (
+                <>
+                  <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: 1, color: "#aaa", textTransform: "uppercase" as const, marginTop: 8, marginBottom: 2 }}>
+                    Added to POS
+                  </div>
+                  {crossedItems.map((item) => (
+                    <div key={`crossed-${item.id}`} style={S.billItem}>
+                      <span style={{ ...S.billItemName, ...S.billItemCrossed }}>
+                        <span style={S.billItemQty}>{item.displayQty}×</span>
+                        {item.name}
+                      </span>
+                      <span style={{ ...S.billItemPrice, ...S.billItemCrossed }}>
+                        {(item.price * item.displayQty).toFixed(2)}€
+                      </span>
+                    </div>
+                  ))}
+                </>
               )}
-              <span style={{ ...S.billItemName, ...(item.crossed ? S.billItemCrossed : {}) }}>
-                <span style={S.billItemQty}>{item.qty}×</span>
-                {item.name}
-              </span>
-              <span style={{ ...S.billItemPrice, ...(item.crossed ? S.billItemCrossed : {}) }}>
-                {(item.price * item.qty).toFixed(2)}€
-              </span>
-            </div>
-          ))
-        )}
+            </>
+          );
+        })()}
       </div>
       <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 8 }}>
         <span style={S.billTotal}>{bill.total.toFixed(2)}€</span>

@@ -76,6 +76,7 @@ export interface OrderItem {
   posName?: string;
   _uid?: string;
   crossed?: boolean;
+  crossedQty?: number;
   note?: string;
 }
 
