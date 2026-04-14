@@ -680,6 +680,15 @@ export const MENU = {
     { id: "co1", name: "Espresso", shortName: "Espr", price: 1.9, subcategory: "warm", posId: "91", posName: "Espr" },
     { id: "co2", name: "Café Crème", shortName: "CafCr", price: 2.6, subcategory: "warm", posId: "90", posName: "CafCr" },
   ],
+  "Shop": [
+    { id: "sh1", name: "Rillettes Lachs", shortName: "Rill Lachs", price: 5.8, posId: "965", posName: "Rillettes Lachs / Thunfisch" },
+    { id: "sh2", name: "Rillettes Thunfisch", shortName: "Rill Thunfisch", price: 5.8, posId: "965", posName: "Rillettes Lachs / Thunfisch" },
+    { id: "sh3", name: "Cornichons Glass", shortName: "Corni Glass", price: 5.9, posId: "939", posName: "Cornichons Glass" },
+    { id: "sh4", name: "Biovette Meersalz", shortName: "Biovette", price: 4.8, posId: "973", posName: "Biovette Meersalz" },
+    { id: "sh5", name: "Sardines", shortName: "Sardines", price: 5.8, posId: "967", posName: "Sardines" },
+    { id: "sh6", name: "Makrele Sancerre", shortName: "Makrele", price: 6.7, posId: "968", posName: "Makrele Sancerre" },
+    { id: "sh7", name: "Terrine / Rillettes 100g", shortName: "Terrine 100g", price: 4.8 },
+  ],
 };
 
 export const STATUS_CONFIG = {

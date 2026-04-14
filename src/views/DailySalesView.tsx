@@ -79,7 +79,7 @@ export function DailySalesView() {
 
     const addToMap = (map: Map<string, PosEntry>, posId: string, posName: string, item: typeof paidBills[0]["items"][0], qty: number) => {
       if (qty <= 0) return;
-      const key = `${posId}::${posName}`;
+      const key = `${posId}::${posName}::${item.name}`;
       if (!map.has(key)) map.set(key, { posId, posName, qty: 0, revenue: 0, items: [] });
       const entry = map.get(key)!;
       entry.qty += qty;
@@ -126,7 +126,12 @@ export function DailySalesView() {
         <span style={{ fontFamily: "monospace", fontSize: 20, fontWeight: 900, color, width: "8ch", flexShrink: 0 }}>
           [{item.posId}]
         </span>
-        <span style={{ flex: 1, fontSize: 15, fontWeight: 600, color: badge ? "#c0392b" : "#555" }}>{item.posName}</span>
+        <span style={{ flex: 1, fontSize: 15, fontWeight: 600, color: badge ? "#c0392b" : "#555" }}>
+          {item.posName}
+          {item.items[0] && item.items[0] !== item.posName && (
+            <span style={{ display: "block", fontSize: 12, fontWeight: 400, color: "#999" }}>{item.items[0]}</span>
+          )}
+        </span>
         {badge && (
           <span style={{ fontSize: 11, fontWeight: 700, color: "#fff", background: "#c0392b", borderRadius: 4, padding: "2px 6px", marginRight: 4 }}>
             Removed

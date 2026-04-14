@@ -30,7 +30,7 @@ export interface StatusConfig {
 
 // ── Menu ──
 
-export type MenuCategory = "Food" | "Drinks\u{1F377}" | "Bottles \u{1F37E}";
+export type MenuCategory = "Food" | "Drinks\u{1F377}" | "Bottles \u{1F37E}" | "Shop";
 
 export interface MenuItemVariant {
   type: string;

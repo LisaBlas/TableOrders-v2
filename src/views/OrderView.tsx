@@ -221,7 +221,7 @@ export function OrderView() {
 
           return (
             <div key={subcategoryId} style={{ gridColumn: "1 / -1", display: "contents" }}>
-              <div style={S.subcategoryDivider}>{subcategoryLabel}</div>
+              {subcategoryConfig.length > 0 && <div style={S.subcategoryDivider}>{subcategoryLabel}</div>}
               {items.map((item: any) => (
                 <MenuItemCard
                   key={item.id}
