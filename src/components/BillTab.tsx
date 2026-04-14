@@ -141,7 +141,7 @@ export function BillTab({ tableId, sent }: BillTabProps) {
       </div>
 
       {confirmingClose && (
-        <div style={{ ...S.splitOptions, marginBottom: "280px" }}>
+        <div style={{ ...S.splitOptions, marginBottom: "220px" }}>
           <div style={S.splitOptionsLabel}>Split the bill</div>
           <div style={S.splitBtns}>
             <button
