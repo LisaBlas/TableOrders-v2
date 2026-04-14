@@ -285,7 +285,7 @@ export function OrderView() {
         )}
       </div>
 
-      <div style={{ ...S.orderContent, paddingBottom: (unsent.length > 0 || batches.length > 0) ? 160 : 16 }}>
+      <div style={{ ...S.orderContent, paddingBottom: (unsent.length > 0 || batches.length > 0) ? 180 : 36 }}>
         {renderMenuGrid()}
       </div>
 

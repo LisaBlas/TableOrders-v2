@@ -42,7 +42,11 @@ export const S = {
   headerTitle: {
     fontWeight: 700,
     fontSize: 18,
-    letterSpacing: "-0.3px"
+    letterSpacing: "-0.3px",
+    position: "absolute",
+    left: "50%",
+    transform: "translateX(-50%)",
+    whiteSpace: "nowrap"
   },
   headerSub: {
     fontSize: 13,
