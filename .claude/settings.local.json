@@ -19,7 +19,9 @@
       "Bash(\"C:\\\\Users\\\\alviz\\\\AppData\\\\Local\\\\Python\\\\pythoncore-3.14-64\\\\python.exe\" \"c:\\\\Users\\\\alviz\\\\Desktop\\\\TableOrders\\\\test_quick.py\")",
       "Bash(\"C:\\\\Users\\\\alviz\\\\AppData\\\\Local\\\\Python\\\\pythoncore-3.14-64\\\\python.exe\" \"c:\\\\Users\\\\alviz\\\\Desktop\\\\TableOrders\\\\test_lifecycle.py\")",
       "Bash(npx vite build)",
-      "Bash(git stash drop:*)"
+      "Bash(git stash drop:*)",
+      "Bash(npm run dev:*)",
+      "Bash(timeout 5 tail:*)"
     ]
   }
 }

@@ -1,10 +1,13 @@
 import { useApp } from "../contexts/AppContext";
+import { useTable } from "../contexts/TableContext";
 import { useSplit } from "../contexts/SplitContext";
 import { Receipt } from "../components/Receipt";
 import { S } from "../styles/appStyles";
+import type { ExpandedItem } from "../types";
 
 export function SplitConfirmView() {
   const app = useApp();
+  const table = useTable();
   const { state, dispatch, remainingTotal, lastPayment } = useSplit();
   const tableId = app.ticketTable!;
 
@@ -15,6 +18,63 @@ export function SplitConfirmView() {
   const nextSplitGuest = () => {
     dispatch({ type: "NEXT_GUEST" });
     app.setView("split");
+  };
+
+  const settlePartialPayment = () => {
+    // Calculate tip
+    const guestsWithPayment = state.payments.filter((p) => state.itemPayments[p.guestNum]?.confirmed);
+    const totalTip = guestsWithPayment.reduce((sum, p) => {
+      const paid = parseFloat(state.itemPayments[p.guestNum].amount);
+      return sum + (paid - p.total);
+    }, 0);
+
+    // Get paid items from split payments
+    const paidItems = state.payments.flatMap(p => p.items) as ExpandedItem[];
+    const paidTotal = state.payments.reduce((s, p) => s + p.total, 0);
+
+    // Create bill record (NO gutschein for partial payments)
+    const bill = {
+      tableId,
+      items: paidItems.map(i => ({ ...i })),
+      total: paidTotal,
+      timestamp: new Date().toISOString(),
+      paymentMode: "partial" as const,
+      splitData: { payments: state.payments },
+      tip: totalTip !== 0 ? totalTip : undefined,
+    };
+
+    // Save bill
+    app.addPaidBill(bill);
+
+    // Calculate what will remain after removing paid items
+    const currentOrders = table.orders[tableId] || [];
+    const paidCounts = new Map<string, number>();
+    paidItems.forEach((item) => {
+      paidCounts.set(item.id, (paidCounts.get(item.id) || 0) + 1);
+    });
+
+    const willHaveRemainingItems = currentOrders.some((o) => {
+      const paidCount = paidCounts.get(o.id) || 0;
+      const remainingQty = o.qty - paidCount;
+      return remainingQty > 0;
+    });
+
+    // Remove ONLY paid items from table orders
+    table.removePaidItems(tableId, paidItems);
+
+    // Reset split state
+    dispatch({ type: "RESET" });
+
+    // Close table if no items will remain
+    if (!willHaveRemainingItems) {
+      table.cleanupTable(tableId);
+      app.showToast(`Table ${tableId} closed`);
+    } else {
+      app.showToast(`${paidItems.length} item${paidItems.length > 1 ? 's' : ''} paid — Table ${tableId} still open`);
+    }
+
+    // Return to tables view
+    app.setView("tables");
   };
 
   return (
@@ -83,7 +143,41 @@ export function SplitConfirmView() {
           </div>
         )}
 
-        {state.remaining.length > 0 ? (
+        {state.isPartialPayment && state.remaining.length > 0 ? (
+          <div style={{ display: "flex", gap: 10 }}>
+            <button
+              style={{
+                ...S.closeBtn,
+                ...(guestPayment?.amount && !guestPayment?.confirmed ? { opacity: 0.5, cursor: "not-allowed" } : {}),
+              }}
+              onClick={settlePartialPayment}
+              disabled={!!guestPayment?.amount && !guestPayment?.confirmed}
+            >
+              Done
+            </button>
+            <button
+              style={{
+                ...S.sendBtn,
+                ...(guestPayment?.amount && !guestPayment?.confirmed ? { opacity: 0.5, cursor: "not-allowed" } : {}),
+              }}
+              onClick={nextSplitGuest}
+              disabled={!!guestPayment?.amount && !guestPayment?.confirmed}
+            >
+              Next guest →
+            </button>
+          </div>
+        ) : state.isPartialPayment && state.remaining.length === 0 ? (
+          <button
+            style={{
+              ...S.sendBtn,
+              ...(guestPayment?.amount && !guestPayment?.confirmed ? { opacity: 0.5, cursor: "not-allowed" } : {}),
+            }}
+            onClick={settlePartialPayment}
+            disabled={!!guestPayment?.amount && !guestPayment?.confirmed}
+          >
+            Done
+          </button>
+        ) : state.remaining.length > 0 ? (
           <button
             style={{
               ...S.sendBtn,

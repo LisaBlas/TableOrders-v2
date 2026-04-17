@@ -2,7 +2,7 @@ import { createContext, useContext, useState, useCallback, type ReactNode } from
 import { useLocalStorage } from "../hooks/useLocalStorage";
 import { useApp } from "./AppContext";
 import { MENU, MIN_QTY_2_IDS } from "../data/constants";
-import type { Orders, OrderItem, SentBatches, Batch, GutscheinAmounts, TableId, MenuItem, MenuItemVariant, MenuCategory } from "../types";
+import type { Orders, OrderItem, SentBatches, Batch, GutscheinAmounts, TableId, MenuItem, MenuItemVariant, MenuCategory, ExpandedItem } from "../types";
 
 interface TableContextValue {
   // State
@@ -27,6 +27,7 @@ interface TableContextValue {
   applyGutschein: (tableId: TableId, amount: number) => void;
   removeGutschein: (tableId: TableId) => void;
   cleanupTable: (tableId: TableId) => void;
+  removePaidItems: (tableId: TableId, paidItems: ExpandedItem[]) => void;
   toggleMarkBatch: (tableId: TableId, batchIndex: number) => void;
   swapTables: (fromTableId: TableId, toTableId: TableId) => void;
 }
@@ -295,6 +296,35 @@ export function TableProvider({ children }: { children: ReactNode }) {
     });
   }, [setOrders, setSeatedTablesArr, setSentBatches, setMarkedBatches]);
 
+  const removePaidItems = useCallback((tableId: TableId, paidItems: ExpandedItem[]) => {
+    setOrders((prev) => {
+      const current = prev[tableId] || [];
+
+      // Build map: itemId → how many of that item were paid
+      const paidCounts = new Map<string, number>();
+      paidItems.forEach((item) => {
+        paidCounts.set(item.id, (paidCounts.get(item.id) || 0) + 1);
+      });
+
+      return {
+        ...prev,
+        [tableId]: current
+          .map((o: OrderItem) => {
+            const paidCount = paidCounts.get(o.id) || 0;
+            if (paidCount > 0) {
+              return {
+                ...o,
+                qty: o.qty - paidCount,
+                sentQty: (o.sentQty || 0) - paidCount,
+              };
+            }
+            return o;
+          })
+          .filter((o: OrderItem) => o.qty > 0),  // Remove if qty reaches 0
+      };
+    });
+  }, [setOrders]);
+
   return (
     <TableContext.Provider value={{
       orders, setOrders,
@@ -305,7 +335,7 @@ export function TableProvider({ children }: { children: ReactNode }) {
       addItem, removeItem, removeItemFromBill, addItemToBill,
       sendOrder, seatTable,
       applyGutschein, removeGutschein,
-      cleanupTable, toggleMarkBatch, swapTables,
+      cleanupTable, removePaidItems, toggleMarkBatch, swapTables,
     }}>
       {children}
     </TableContext.Provider>

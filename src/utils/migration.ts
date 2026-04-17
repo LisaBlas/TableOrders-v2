@@ -29,23 +29,26 @@ export function migratePaidBills(bills: Bill[]): Bill[] {
 }
 
 function findMenuItem(itemId: string, itemName: string): { posId: string; posName: string } | null {
+  // Extract base id from variant ids (e.g., "wg13-large" -> "wg13")
+  const baseId = itemId.includes('-') ? itemId.split('-')[0] : itemId;
+
   // Search all categories
   for (const category of Object.values(MENU)) {
     for (const item of category) {
       // Simple items (no variants)
       if ("posId" in item && item.id === itemId) {
-        return { posId: item.posId, posName: item.posName };
+        return { posId: item.posId, posName: (item as any).posName || item.shortName };
       }
 
-      // Items with variants
-      if ("variants" in item && item.id === itemId) {
+      // Items with variants (check both full itemId and baseId)
+      if ("variants" in item && (item.id === itemId || item.id === baseId)) {
         // Try to match by item name pattern (e.g., "Picpoul (0,2)" -> find variant with "0,2" label)
         const variantMatch = itemName.match(/\(([^)]+)\)/);
         if (variantMatch) {
           const labelPart = variantMatch[1]; // e.g., "0,2", "Here", "To Go"
           const variant = item.variants.find((v: any) => v.label === labelPart);
           if (variant && variant.posId) {
-            return { posId: variant.posId, posName: variant.posName };
+            return { posId: variant.posId, posName: variant.posName || (variant as any).shortName };
           }
         }
 
@@ -53,7 +56,7 @@ function findMenuItem(itemId: string, itemName: string): { posId: string; posNam
         for (const variant of item.variants) {
           const expectedName = `${item.name} (${variant.label})`;
           if (itemName === expectedName && (variant as any).posId) {
-            return { posId: (variant as any).posId, posName: (variant as any).posName };
+            return { posId: (variant as any).posId, posName: (variant as any).posName || (variant as any).shortName };
           }
         }
       }

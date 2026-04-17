@@ -578,6 +578,18 @@ export const S = {
     cursor: "pointer",
     animation: "fadeIn 0.25s ease-out"
   },
+  continueBtn: {
+    flex: 1,
+    padding: "13px",
+    borderRadius: 10,
+    border: "none",
+    background: "#3498db",
+    color: "#fff",
+    fontSize: 15,
+    fontWeight: 600,
+    cursor: "pointer",
+    animation: "fadeIn 0.25s ease-out"
+  },
 
   splitOptions: {
     margin: "0 16px 100px",

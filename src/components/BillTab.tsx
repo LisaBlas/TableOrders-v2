@@ -170,6 +170,19 @@ export function BillTab({ tableId, sent }: BillTabProps) {
               <span style={S.splitOptionTitle}>By item</span>
               <span style={S.splitOptionSub}>Pay round by round</span>
             </button>
+            <button
+              style={S.splitOptionBtn}
+              onClick={() => {
+                app.setTicketTable(tableId);
+                const sentItems = sent.map((o: OrderItem) => ({ ...o }));
+                splitDispatch({ type: "INITIATE_ITEM_PARTIAL", items: sentItems });
+                app.setView("split");
+              }}
+            >
+              <span style={S.splitOptionIcon}>💳</span>
+              <span style={S.splitOptionTitle}>Partial payment</span>
+              <span style={S.splitOptionSub}>Keep table open</span>
+            </button>
           </div>
         </div>
       )}

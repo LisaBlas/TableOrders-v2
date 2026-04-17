@@ -123,7 +123,7 @@ export function DailySalesView() {
 
       bill.items.forEach((item) => {
         const posId = (item as any).posId || "NO_POS_ID";
-        const posName = (item as any).posName || item.name;
+        const posName = (item as any).posName || (item as any).shortName || item.name;
         const crossedCount = (item as any).crossedQty ?? ((item as any).crossed ? item.qty : 0);
         const activeCount = billRemoved ? 0 : item.qty - crossedCount;
         const removedCount = billRemoved ? item.qty : crossedCount;
