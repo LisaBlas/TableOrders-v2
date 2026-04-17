@@ -623,6 +623,7 @@ export const MENU = {
         { type: "large", price: 2.8, label: "0,4", posId: "51-2", posName: "Wass groß" }
       ]
     },
+    { id: "leitungswasser", name: "Leitungswasser", shortName: "LW", price: 0, subcategory: "soft", posId: "0" },
     // Schnaps WITH SIZE VARIANTS
     {
       id: "cognac",
@@ -681,8 +682,8 @@ export const MENU = {
     { id: "te4", name: "Kräuter", shortName: "Kraut", price: 3, subcategory: "warm", posId: "93-4" },
     { id: "te5", name: "Bergtee", shortName: "BergT", price: 3.7, subcategory: "warm", posId: "94-1" },
     { id: "te6", name: "Thymian", shortName: "Thym", price: 3.7, subcategory: "warm", posId: "94-2" },
-    { id: "te7", name: "Heiße Zitrone", shortName: "HeissZ", price: 3.7, subcategory: "warm", posId: "94-3", posName: "H. Zitrone" },
-    { id: "te8", name: "Heiße Orange", shortName: "Hot Orange", price: 5, subcategory: "warm", posId: "95", posName: "H. Orange" },
+    { id: "te7", name: "Heiße Zitrone", shortName: "H. Zitrone", price: 3.7, subcategory: "warm", posId: "94-3", posName: "H. Zitrone" },
+    { id: "te8", name: "Heiße Orange", shortName: "H. Orange", price: 5, subcategory: "warm", posId: "95", posName: "H. Orange" },
     // Coffee (posName differs from shortName - kept)
     { id: "co1", name: "Espresso", shortName: "Espresso", price: 1.9, subcategory: "warm", posId: "91", posName: "Espr" },
     { id: "co2", name: "Café Crème", shortName: "Café Crema", price: 2.6, subcategory: "warm", posId: "90", posName: "CafCr" },

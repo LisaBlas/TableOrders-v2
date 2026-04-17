@@ -119,7 +119,7 @@ export function DailySalesView() {
 
     paidBills.forEach((bill) => {
       const billRemoved = !!(bill as any).addedToPOS;
-      const billRemovedItems: PosEntry[] = [];
+      const billRemovedMap = new Map<string, PosEntry>();
 
       bill.items.forEach((item) => {
         const posId = (item as any).posId || "NO_POS_ID";
@@ -130,24 +130,18 @@ export function DailySalesView() {
 
         addToMap(activeMap, posId, posName, item, activeCount);
 
-        // Track removed items by bill
+        // Add removed items to bill-scoped map (aggregates by posId within this bill)
         if (removedCount > 0) {
-          billRemovedItems.push({
-            posId,
-            posName,
-            qty: removedCount,
-            revenue: item.price * removedCount,
-            items: [item.name]
-          });
+          addToMap(billRemovedMap, posId, posName, item, removedCount);
         }
       });
 
-      // Group removed items by bill
-      if (billRemovedItems.length > 0) {
+      // Convert aggregated map to array for this bill
+      if (billRemovedMap.size > 0) {
         removedBillGroups.push({
           tableId: bill.tableId as number,
           timestamp: bill.timestamp,
-          items: billRemovedItems
+          items: Array.from(billRemovedMap.values())
         });
       }
     });
