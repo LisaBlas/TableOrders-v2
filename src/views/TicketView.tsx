@@ -61,8 +61,7 @@ export function TicketView() {
           setShowSplitOptions(false);
           setConfirmingClose(false);
         }}>
-          <BackIcon size={16} />
-          <span style={{ marginLeft: 6 }}>Back</span>
+          <BackIcon size={22} />
         </button>
         <span style={S.headerTitle}>Table {tableId} — Bill</span>
         <span />

@@ -14,8 +14,7 @@ export function BillView({ tableId, sent, onClose }: BillViewProps) {
     <div style={S.page}>
       <header style={S.billViewHeader}>
         <button style={S.back} onClick={onClose}>
-          <BackIcon size={16} />
-          <span style={{ marginLeft: 6 }}>Back to Order</span>
+          <BackIcon size={22} />
         </button>
         <span style={S.headerTitle}>Table {tableId}</span>
         <span />

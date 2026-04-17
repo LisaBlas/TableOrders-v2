@@ -49,8 +49,7 @@ export function SplitEqualView() {
     <div style={S.page}>
       <header style={S.header}>
         <button style={S.back} onClick={() => { dispatch({ type: "RESET" }); app.setView("order"); }}>
-          <BackIcon size={16} />
-          <span style={{ marginLeft: 6 }}>Back</span>
+          <BackIcon size={22} />
         </button>
         <span style={S.headerTitle}>Equal Split — Table {tableId}</span>
         <span />

@@ -299,8 +299,7 @@ export function DailySalesView() {
     <div style={S.page}>
       <header style={S.header}>
         <button style={S.back} onClick={() => app.setView("tables")}>
-          <BackIcon size={16} />
-          <span style={{ marginLeft: 6 }}>Back</span>
+          <BackIcon size={22} />
         </button>
         <span style={S.headerTitle}>Daily Sales</span>
         <span />

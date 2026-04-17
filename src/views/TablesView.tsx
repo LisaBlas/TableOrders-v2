@@ -5,7 +5,6 @@ import { useApp } from "../contexts/AppContext";
 import { useTable } from "../contexts/TableContext";
 import { S } from "../styles/appStyles";
 import { Modal } from "../components/Modal";
-import { SalesIcon } from "../components/icons";
 
 const LONG_PRESS_MS = 500;
 
@@ -108,7 +107,6 @@ export function TablesView() {
           }}
           onClick={() => setView("dailySales")}
         >
-          <SalesIcon size={18} />
           <span>Daily Sales</span>
         </button>
       </header>

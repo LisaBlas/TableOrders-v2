@@ -255,13 +255,11 @@ export function OrderView() {
     <div style={{ ...S.page, height: "100vh", overflow: "hidden" }}>
       <header style={S.header}>
         <button style={S.back} onClick={() => app.setView("tables")}>
-          <BackIcon size={16} />
-          <span style={{ marginLeft: 6 }}>Back</span>
+          <BackIcon size={22} />
         </button>
         <span style={S.headerTitle}>Table {tableId}</span>
         <button style={S.ticketBtn} onClick={() => setShowBillView(true)}>
-          <BillIcon size={16} />
-          <span style={{ marginLeft: 6 }}>Bill</span>
+          <BillIcon size={22} />
         </button>
       </header>
 
