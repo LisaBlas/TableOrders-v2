@@ -1,5 +1,6 @@
 import { useApp } from "../contexts/AppContext";
 import { useSplit } from "../contexts/SplitContext";
+import { BackIcon } from "../components/icons";
 import { S } from "../styles/appStyles";
 
 export function SplitItemView() {
@@ -22,7 +23,8 @@ export function SplitItemView() {
     <div style={S.page}>
       <header style={S.header}>
         <button style={S.back} onClick={() => { dispatch({ type: "RESET" }); app.setView("order"); }}>
-          ← Back
+          <BackIcon size={16} />
+          <span style={{ marginLeft: 6 }}>Back</span>
         </button>
         <span style={S.headerTitle}>Guest {currentGuestNum}</span>
         <button style={S.selectAllBtn} onClick={() => dispatch({ type: "SELECT_ALL" })}>All</button>

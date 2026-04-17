@@ -2,6 +2,7 @@ import { useApp } from "../contexts/AppContext";
 import { useTable } from "../contexts/TableContext";
 import { useTableOrder } from "../hooks/useTableOrder";
 import { useSplit } from "../contexts/SplitContext";
+import { BackIcon } from "../components/icons";
 import { S } from "../styles/appStyles";
 import type { OrderItem } from "../types";
 
@@ -48,7 +49,8 @@ export function SplitEqualView() {
     <div style={S.page}>
       <header style={S.header}>
         <button style={S.back} onClick={() => { dispatch({ type: "RESET" }); app.setView("order"); }}>
-          ← Back
+          <BackIcon size={16} />
+          <span style={{ marginLeft: 6 }}>Back</span>
         </button>
         <span style={S.headerTitle}>Equal Split — Table {tableId}</span>
         <span />

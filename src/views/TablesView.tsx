@@ -5,6 +5,7 @@ import { useApp } from "../contexts/AppContext";
 import { useTable } from "../contexts/TableContext";
 import { S } from "../styles/appStyles";
 import { Modal } from "../components/Modal";
+import { SalesIcon } from "../components/icons";
 
 const LONG_PRESS_MS = 500;
 
@@ -95,17 +96,20 @@ export function TablesView() {
             background: "none",
             border: "1.5px solid #ddd",
             borderRadius: 8,
-            fontSize: 20,
+            fontSize: 14,
+            fontWeight: 600,
             cursor: "pointer",
-            padding: "6px 10px",
+            padding: "8px 12px",
             lineHeight: 1,
             display: "flex",
             alignItems: "center",
-            justifyContent: "center"
+            justifyContent: "center",
+            gap: 6
           }}
           onClick={() => setView("dailySales")}
         >
-          📊
+          <SalesIcon size={18} />
+          <span>Daily Sales</span>
         </button>
       </header>
       <div style={{ ...S.grid, paddingBottom: swapSourceTable !== null ? 160 : 16 }}>

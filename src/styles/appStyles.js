@@ -58,7 +58,9 @@ export const S = {
     fontSize: 14,
     color: "#555",
     cursor: "pointer",
-    padding: 0
+    padding: 0,
+    display: "flex",
+    alignItems: "center"
   },
   ticketBtn: {
     background: "none",
@@ -66,7 +68,9 @@ export const S = {
     fontSize: 14,
     color: "#555",
     cursor: "pointer",
-    padding: 0
+    padding: 0,
+    display: "flex",
+    alignItems: "center"
   },
   selectAllBtn: {
     background: "none",
@@ -1050,7 +1054,7 @@ export const S = {
   // Tab styles
   tabs: {
     position: "sticky",
-    top: 54,
+    top: 48,
     zIndex: 99,
     background: "#fff",
     borderBottom: "1px solid #ebe9e3"

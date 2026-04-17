@@ -4,6 +4,7 @@ import { S } from "../styles/appStyles";
 import { Modal } from "../components/Modal";
 import { BillCard } from "../components/BillCard";
 import { SalesSummary } from "../components/SalesSummary";
+import { BackIcon } from "../components/icons";
 
 export function DailySalesView() {
   const app = useApp();
@@ -297,7 +298,10 @@ export function DailySalesView() {
   return (
     <div style={S.page}>
       <header style={S.header}>
-        <button style={S.back} onClick={() => app.setView("tables")}>← Back</button>
+        <button style={S.back} onClick={() => app.setView("tables")}>
+          <BackIcon size={16} />
+          <span style={{ marginLeft: 6 }}>Back</span>
+        </button>
         <span style={S.headerTitle}>Daily Sales</span>
         <span />
       </header>

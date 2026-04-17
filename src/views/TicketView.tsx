@@ -4,6 +4,7 @@ import { useTable } from "../contexts/TableContext";
 import { useTableOrder } from "../hooks/useTableOrder";
 import { useSplit } from "../contexts/SplitContext";
 import { Receipt } from "../components/Receipt";
+import { BackIcon } from "../components/icons";
 import { S } from "../styles/appStyles";
 import type { OrderItem } from "../types";
 
@@ -60,7 +61,8 @@ export function TicketView() {
           setShowSplitOptions(false);
           setConfirmingClose(false);
         }}>
-          ← Back
+          <BackIcon size={16} />
+          <span style={{ marginLeft: 6 }}>Back</span>
         </button>
         <span style={S.headerTitle}>Table {tableId} — Bill</span>
         <span />

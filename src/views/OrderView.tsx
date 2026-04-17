@@ -11,6 +11,7 @@ import { VariantBottomSheet } from "../components/VariantBottomSheet";
 import { NoteBottomSheet } from "../components/NoteBottomSheet";
 import { OrderBar } from "../components/OrderBar";
 import { BillView } from "../components/BillView";
+import { BackIcon, BillIcon } from "../components/icons";
 import type { MenuCategory, MenuItem, MenuItemVariant } from "../types";
 
 export function OrderView() {
@@ -254,11 +255,13 @@ export function OrderView() {
     <div style={{ ...S.page, height: "100vh", overflow: "hidden" }}>
       <header style={S.header}>
         <button style={S.back} onClick={() => app.setView("tables")}>
-          ← Back
+          <BackIcon size={16} />
+          <span style={{ marginLeft: 6 }}>Back</span>
         </button>
         <span style={S.headerTitle}>Table {tableId}</span>
         <button style={S.ticketBtn} onClick={() => setShowBillView(true)}>
-          Bill →
+          <BillIcon size={16} />
+          <span style={{ marginLeft: 6 }}>Bill</span>
         </button>
       </header>
 
