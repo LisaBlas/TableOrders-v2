@@ -20,7 +20,7 @@ export function SplitConfirmView() {
     app.setView("split");
   };
 
-  const settlePartialPayment = () => {
+  const settleItemPayment = () => {
     // Calculate tip
     const guestsWithPayment = state.payments.filter((p) => state.itemPayments[p.guestNum]?.confirmed);
     const totalTip = guestsWithPayment.reduce((sum, p) => {
@@ -32,13 +32,13 @@ export function SplitConfirmView() {
     const paidItems = state.payments.flatMap(p => p.items) as ExpandedItem[];
     const paidTotal = state.payments.reduce((s, p) => s + p.total, 0);
 
-    // Create bill record (NO gutschein for partial payments)
+    // Create bill record
     const bill = {
       tableId,
       items: paidItems.map(i => ({ ...i })),
       total: paidTotal,
       timestamp: new Date().toISOString(),
-      paymentMode: "partial" as const,
+      paymentMode: "item" as const,
       splitData: { payments: state.payments },
       tip: totalTip !== 0 ? totalTip : undefined,
     };
@@ -143,14 +143,14 @@ export function SplitConfirmView() {
           </div>
         )}
 
-        {state.isPartialPayment && state.remaining.length > 0 ? (
+        {state.remaining.length > 0 ? (
           <div style={{ display: "flex", gap: 10 }}>
             <button
               style={{
                 ...S.closeBtn,
                 ...(guestPayment?.amount && !guestPayment?.confirmed ? { opacity: 0.5, cursor: "not-allowed" } : {}),
               }}
-              onClick={settlePartialPayment}
+              onClick={settleItemPayment}
               disabled={!!guestPayment?.amount && !guestPayment?.confirmed}
             >
               Done
@@ -166,38 +166,16 @@ export function SplitConfirmView() {
               Next guest →
             </button>
           </div>
-        ) : state.isPartialPayment && state.remaining.length === 0 ? (
-          <button
-            style={{
-              ...S.sendBtn,
-              ...(guestPayment?.amount && !guestPayment?.confirmed ? { opacity: 0.5, cursor: "not-allowed" } : {}),
-            }}
-            onClick={settlePartialPayment}
-            disabled={!!guestPayment?.amount && !guestPayment?.confirmed}
-          >
-            Done
-          </button>
-        ) : state.remaining.length > 0 ? (
-          <button
-            style={{
-              ...S.sendBtn,
-              ...(guestPayment?.amount && !guestPayment?.confirmed ? { opacity: 0.5, cursor: "not-allowed" } : {}),
-            }}
-            onClick={nextSplitGuest}
-            disabled={!!guestPayment?.amount && !guestPayment?.confirmed}
-          >
-            Next guest →
-          </button>
         ) : (
           <button
             style={{
               ...S.sendBtn,
               ...(guestPayment?.amount && !guestPayment?.confirmed ? { opacity: 0.5, cursor: "not-allowed" } : {}),
             }}
-            onClick={() => app.setView("splitDone")}
+            onClick={settleItemPayment}
             disabled={!!guestPayment?.amount && !guestPayment?.confirmed}
           >
-            Confirm
+            Done
           </button>
         )}
       </div>

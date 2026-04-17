@@ -3,7 +3,7 @@ import { useTable } from "../contexts/TableContext";
 import { useTableOrder } from "../hooks/useTableOrder";
 import { useSplit } from "../contexts/SplitContext";
 import { S } from "../styles/appStyles";
-import type { OrderItem, ExpandedItem } from "../types";
+import type { OrderItem } from "../types";
 
 export function SplitDoneView() {
   const app = useApp();
@@ -42,43 +42,6 @@ export function SplitDoneView() {
     dispatch({ type: "RESET" });
     app.showToast(`Table ${tableId} closed — ${total.toFixed(2)}€`);
     app.setView("tables");
-  };
-
-  const settlePartialPayment = () => {
-    // Calculate tip same as closeSplitTable
-    const guestsWithPayment = state.payments.filter((p) => state.itemPayments[p.guestNum]?.confirmed);
-    const totalTip = guestsWithPayment.reduce((sum, p) => {
-      const paid = parseFloat(state.itemPayments[p.guestNum].amount);
-      return sum + (paid - p.total);
-    }, 0);
-
-    // Get paid items from split payments
-    const paidItems = state.payments.flatMap(p => p.items) as ExpandedItem[];
-    const paidTotal = state.payments.reduce((s, p) => s + p.total, 0);
-
-    // Create bill record (NO gutschein for partial payments)
-    const bill = {
-      tableId,
-      items: paidItems.map(i => ({ ...i })),
-      total: paidTotal,
-      timestamp: new Date().toISOString(),
-      paymentMode: "partial" as const,
-      splitData: { payments: state.payments },
-      tip: totalTip !== 0 ? totalTip : undefined,
-    };
-
-    // Save bill
-    app.addPaidBill(bill);
-
-    // Remove ONLY paid items from table orders
-    table.removePaidItems(tableId, paidItems);
-
-    // Reset split state
-    dispatch({ type: "RESET" });
-
-    // Return to order view (table stays open)
-    app.showToast(`${paidItems.length} item${paidItems.length > 1 ? 's' : ''} paid — Table ${tableId} still open`);
-    app.setView("order");
   };
 
   return (
@@ -133,15 +96,9 @@ export function SplitDoneView() {
         })()}
       </div>
       <div style={S.ticketActions}>
-        {state.isPartialPayment ? (
-          <button style={S.continueBtn} onClick={settlePartialPayment}>
-            Done
-          </button>
-        ) : (
-          <button style={S.closeBtn} onClick={closeSplitTable}>
-            Close table
-          </button>
-        )}
+        <button style={S.closeBtn} onClick={closeSplitTable}>
+          Close table
+        </button>
       </div>
     </div>
   );

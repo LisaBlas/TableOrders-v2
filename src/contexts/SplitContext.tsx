@@ -6,7 +6,6 @@ import type { OrderItem, SplitPayment, PaymentInput, ExpandedItem } from "../typ
 
 interface SplitState {
   mode: "equal" | "item" | null;
-  isPartialPayment: boolean;
   remaining: ExpandedItem[];
   selected: Set<string>;
   payments: SplitPayment[];
@@ -17,7 +16,6 @@ interface SplitState {
 
 const initialState: SplitState = {
   mode: null,
-  isPartialPayment: false,
   remaining: [],
   selected: new Set(),
   payments: [],
@@ -31,7 +29,6 @@ const initialState: SplitState = {
 type SplitAction =
   | { type: "INITIATE_EQUAL"; items: OrderItem[] }
   | { type: "INITIATE_ITEM"; items: OrderItem[] }
-  | { type: "INITIATE_ITEM_PARTIAL"; items: OrderItem[] }
   | { type: "TOGGLE_ITEM"; uid: string }
   | { type: "SELECT_ALL" }
   | { type: "SET_EQUAL_GUESTS"; count: number }
@@ -56,14 +53,6 @@ function splitReducer(state: SplitState, action: SplitAction): SplitState {
       return {
         ...initialState,
         mode: "item",
-        remaining: expandItems(action.items) as ExpandedItem[],
-      };
-
-    case "INITIATE_ITEM_PARTIAL":
-      return {
-        ...initialState,
-        mode: "item",
-        isPartialPayment: true,
         remaining: expandItems(action.items) as ExpandedItem[],
       };
 

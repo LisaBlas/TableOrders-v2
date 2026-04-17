@@ -104,7 +104,7 @@ export interface Bill {
   subtotal?: number;
   gutschein?: number;
   timestamp: string;
-  paymentMode: "full" | "equal" | "item" | "partial";
+  paymentMode: "full" | "equal" | "item";
   splitData?: EqualSplitData | ItemSplitData;
   addedToPOS?: boolean;
 }

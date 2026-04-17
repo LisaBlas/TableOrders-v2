@@ -44,9 +44,7 @@ export function BillCard({ bill, isEditing, onEdit, onDone, onCancel, onDelete, 
                 : "Full payment"
               : bill.paymentMode === "equal"
               ? `Split ${(bill.splitData as any)?.guests} ways`
-              : bill.paymentMode === "partial"
-              ? `Partial payment (${(bill.splitData as any)?.payments?.length} guest${(bill.splitData as any)?.payments?.length > 1 ? 's' : ''})`
-              : `Split by item (${(bill.splitData as any)?.payments?.length} guests)`}
+              : `Split by item (${(bill.splitData as any)?.payments?.length} guest${(bill.splitData as any)?.payments?.length > 1 ? 's' : ''})`}
             {bill.paymentMode !== "full" && bill.gutschein && bill.gutschein > 0 && (
               <div style={{ color: "#2d7a3a", fontWeight: 600 }}>
                 Gutschein: -{bill.gutschein.toFixed(2)}€
