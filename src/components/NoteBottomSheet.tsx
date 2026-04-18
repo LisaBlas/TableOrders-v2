@@ -1,4 +1,4 @@
-import { useRef, useEffect } from "react";
+import { useRef } from "react";
 import { S } from "../styles/appStyles";
 import type { MenuItem } from "../types";
 
@@ -11,13 +11,16 @@ interface NoteBottomSheetProps {
 }
 
 export function NoteBottomSheet({ item, note, onNoteChange, onConfirm, onClose }: NoteBottomSheetProps) {
-  const inputRef = useRef<HTMLInputElement>(null);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
-  useEffect(() => {
-    // Delay focus so the slide-up animation doesn't fight the keyboard
-    const t = setTimeout(() => inputRef.current?.focus(), 150);
-    return () => clearTimeout(t);
-  }, []);
+  // Callback ref: delay focus so slide-up animation doesn't fight keyboard
+  const inputRef = (el: HTMLInputElement | null) => {
+    if (el) {
+      timeoutRef.current = setTimeout(() => el.focus(), 150);
+    } else {
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    }
+  };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") onConfirm();

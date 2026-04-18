@@ -32,12 +32,15 @@ export function OrderView() {
   const [customName, setCustomName] = useState("");
   const [customPrice, setCustomPrice] = useState("");
   const [customQty, setCustomQty] = useState("1");
-  const [showBillView, setShowBillView] = useState(false);
+  const [userViewPreference, setUserViewPreference] = useState<'order' | 'bill' | null>(null);
   const [showVariantSheet, setShowVariantSheet] = useState(false);
   const [selectedItemForVariant, setSelectedItemForVariant] = useState<MenuItem | null>(null);
   const [showNoteSheet, setShowNoteSheet] = useState(false);
   const [noteSheetItem, setNoteSheetItem] = useState<MenuItem | null>(null);
   const [noteText, setNoteText] = useState("");
+
+  // Computed: show bill view if user explicitly chose it, or auto-show if sent items exist
+  const showBillView = userViewPreference === 'bill' || (userViewPreference === null && sent.length > 0);
 
   // Clear subcategories when searching
   if (searchQuery) {
@@ -62,7 +65,7 @@ export function OrderView() {
   };
 
   const handleCardLongPress = (item: MenuItem) => {
-    if ((item.holdVariants && item.holdVariants.length > 0) || (item.variants && item.variants.length > 0)) {
+    if (item.variants && item.variants.length > 0) {
       setSelectedItemForVariant(item);
       setShowVariantSheet(true);
     } else {
@@ -248,7 +251,7 @@ export function OrderView() {
 
   // Show BillView if active
   if (showBillView) {
-    return <BillView tableId={tableId} sent={sent} onClose={() => setShowBillView(false)} />;
+    return <BillView tableId={tableId} sent={sent} onClose={() => setUserViewPreference('order')} />;
   }
 
   return (
@@ -258,7 +261,7 @@ export function OrderView() {
           <BackIcon size={22} />
         </button>
         <span style={S.headerTitle}>Table {tableId}</span>
-        <button style={S.ticketBtn} onClick={() => setShowBillView(true)}>
+        <button style={S.ticketBtn} onClick={() => setUserViewPreference('bill')}>
           <BillIcon size={22} />
         </button>
       </header>
@@ -348,7 +351,7 @@ export function OrderView() {
             setShowVariantSheet(false);
             setSelectedItemForVariant(null);
           }}
-          variants={selectedItemForVariant.holdVariants ?? selectedItemForVariant.variants}
+          variants={selectedItemForVariant.variants!}
         />
       )}
 

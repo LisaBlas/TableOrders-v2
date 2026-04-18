@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from "react";
+import { createContext, useContext, useState, useCallback, useMemo, type ReactNode } from "react";
 import { useLocalStorage } from "../hooks/useLocalStorage";
 import { migratePaidBills } from "../utils/migration";
 import type { View, Bill, DailySalesTab, TableId } from "../types";
@@ -39,11 +39,25 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [activeTable, setActiveTable] = useState<TableId | null>(null);
   const [ticketTable, setTicketTable] = useState<TableId | null>(null);
   const [toast, setToast] = useState<string | null>(null);
-  const [paidBills, setPaidBills] = useLocalStorage<Bill[]>("paidBills", []);
+  const [rawPaidBills, setRawPaidBills] = useLocalStorage<Bill[]>("paidBills", []);
   const [dailySalesTab, setDailySalesTab] = useState<DailySalesTab>("chronological");
   const [editingBillIndex, setEditingBillIndex] = useState<number | null>(null);
   const [billSnapshot, setBillSnapshot] = useState<Bill | null>(null);
   const [deletingBillIndex, setDeletingBillIndex] = useState<number | null>(null);
+
+  // Migrate legacy bills on first access (computed, no effect)
+  const paidBills = useMemo(() => {
+    if (rawPaidBills.length === 0) return rawPaidBills;
+    const needsMigration = rawPaidBills.some((bill) =>
+      bill.items.some((item) => !(item as any).posId)
+    );
+    return needsMigration ? migratePaidBills(rawPaidBills) : rawPaidBills;
+  }, [rawPaidBills]);
+
+  const setPaidBills = useCallback((update: React.SetStateAction<Bill[]>) => {
+    const resolved = typeof update === 'function' ? update(paidBills) : update;
+    setRawPaidBills(resolved);
+  }, [paidBills, setRawPaidBills]);
 
   const showToast = useCallback((msg: string) => {
     setToast(msg);
@@ -53,20 +67,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const addPaidBill = useCallback((bill: Bill) => {
     setPaidBills((prev) => [...prev, bill]);
   }, [setPaidBills]);
-
-  // Migrate legacy paid bills on mount
-  useEffect(() => {
-    if (paidBills.length > 0) {
-      const needsMigration = paidBills.some((bill) =>
-        bill.items.some((item) => !(item as any).posId)
-      );
-      if (needsMigration) {
-        const migrated = migratePaidBills(paidBills);
-        setPaidBills(migrated);
-      }
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Run once on mount
 
   return (
     <AppContext.Provider value={{

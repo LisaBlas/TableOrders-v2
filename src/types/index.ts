@@ -51,7 +51,6 @@ export interface MenuItem {
   posId?: string;
   posName?: string;
   variants?: MenuItemVariant[];
-  holdVariants?: MenuItemVariant[];
 }
 
 export type MenuData = Record<MenuCategory, MenuItem[]>;
