@@ -543,11 +543,13 @@ export const MENU = {
     {
       id: "wg15",
       name: "Vino Verde",
-      shortName: "VinVerd",
+      shortName: "VV",
       subcategory: "wine",
       variants: [
-        { type: "small", price: 3.5, label: "0,1", posId: "253-1", posName: "VinVerd 0,1" },
-        { type: "large", price: 7, label: "0,2", posId: "253-2", posName: "VinVerd 0,2" },
+        { type: "small", price: 3.5, label: "0,1", posId: "253-1", posName: "VV 0,1" },
+        { type: "large", price: 7, label: "0,2", posId: "253-2", posName: "VV 0,2" },
+        { type: "here", price: 24, label: "Fl.", posId: "253", posName: "VV Fl.", bottleSubcategory: "white" },
+        { type: "togo", price: 12.5, label: "Fl. To Go", posId: "253", posName: "VV Fl. To Go", bottleSubcategory: "white" }
       ]
     },
     // Weinschorle WITH SIZE VARIANTS
