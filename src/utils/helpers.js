@@ -61,8 +61,8 @@ export function getItemDestination(item) {
     return "bar";
   }
 
-  // Counter: Cheese & Charcuterie
-  if (item.subcategory === "cheese") {
+  // Counter: Cheese & Charcuterie + Shop items
+  if (item.subcategory === "cheese" || item.category === "Shop" || item.id.startsWith("sh")) {
     return "counter";
   }
 
