@@ -79,8 +79,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
         } catch { return []; }
       }
     },
-    staleTime: Infinity,
-    refetchOnWindowFocus: false,
+    staleTime: 30_000,
+    refetchOnWindowFocus: true,
   });
 
   // Migrate legacy bills (bills created before posId field existed)
