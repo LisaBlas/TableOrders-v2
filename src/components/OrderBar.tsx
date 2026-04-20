@@ -1,4 +1,4 @@
-import { MENU } from "../data/constants";
+import { useMenu } from "../contexts/MenuContext";
 import { useTable } from "../contexts/TableContext";
 import { getItemDestination } from "../utils/helpers";
 import { S } from "../styles/appStyles";
@@ -16,6 +16,7 @@ interface OrderBarProps {
 
 export function OrderBar({ tableId, unsent, batches, expanded, onToggleExpand, onAddItem, onSendOrder }: OrderBarProps) {
   const table = useTable();
+  const { menu } = useMenu();
   const sentMode = unsent.length === 0;
 
   const allMarked = batches.length > 0 && batches.every((_, i) => table.markedBatches[tableId]?.has(i));
@@ -147,7 +148,7 @@ export function OrderBar({ tableId, unsent, batches, expanded, onToggleExpand, o
                       style={S.orderBarQtyBtn}
                       onClick={() => {
                         const baseItem = (o as any).baseId
-                          ? (MENU as any)[o.category]?.find((i: any) => i.id === (o as any).baseId) || o
+                          ? (menu as any)[o.category]?.find((i: any) => i.id === (o as any).baseId) || o
                           : o;
                         const variant = (o as any).variantType
                           ? baseItem.variants?.find((v: any) => v.type === (o as any).variantType)

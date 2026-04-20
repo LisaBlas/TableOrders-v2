@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { MENU, FOOD_SUBCATEGORIES, DRINKS_SUBCATEGORIES, BOTTLES_SUBCATEGORIES, SHOP_SUBCATEGORIES } from "../data/constants";
+import { FOOD_SUBCATEGORIES, DRINKS_SUBCATEGORIES, BOTTLES_SUBCATEGORIES, SHOP_SUBCATEGORIES } from "../data/constants";
+import { useMenu } from "../contexts/MenuContext";
 import { useApp } from "../contexts/AppContext";
 import { useTable } from "../contexts/TableContext";
 import { useTableOrder } from "../hooks/useTableOrder";
@@ -17,6 +18,7 @@ import type { MenuCategory, MenuItem, MenuItemVariant } from "../types";
 export function OrderView() {
   const app = useApp();
   const table = useTable();
+  const { menu: MENU } = useMenu();
   const tableId = app.activeTable!;
   const { unsent, sent, unsentTotal, batches } = useTableOrder(tableId);
 

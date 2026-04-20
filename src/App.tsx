@@ -1,3 +1,4 @@
+import { MenuProvider } from "./contexts/MenuContext";
 import { AppProvider, useApp } from "./contexts/AppContext";
 import { TableProvider } from "./contexts/TableContext";
 import { SplitProvider, useSplit } from "./contexts/SplitContext";
@@ -42,12 +43,14 @@ function SplitRouter() {
 
 export default function App() {
   return (
-    <AppProvider>
-      <TableProvider>
-        <SplitProvider>
-          <Router />
-        </SplitProvider>
-      </TableProvider>
-    </AppProvider>
+    <MenuProvider>
+      <AppProvider>
+        <TableProvider>
+          <SplitProvider>
+            <Router />
+          </SplitProvider>
+        </TableProvider>
+      </AppProvider>
+    </MenuProvider>
   );
 }

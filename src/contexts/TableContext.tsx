@@ -1,7 +1,7 @@
 import { createContext, useContext, useState, useCallback, type ReactNode } from "react";
 import { useLocalStorage } from "../hooks/useLocalStorage";
 import { useApp } from "./AppContext";
-import { MENU, MIN_QTY_2_IDS } from "../data/constants";
+import { useMenu } from "./MenuContext";
 import type { Orders, OrderItem, SentBatches, Batch, GutscheinAmounts, TableId, MenuItem, MenuItemVariant, MenuCategory, ExpandedItem } from "../types";
 
 interface TableContextValue {
@@ -36,6 +36,7 @@ const TableContext = createContext<TableContextValue | null>(null);
 
 export function TableProvider({ children }: { children: ReactNode }) {
   const { showToast } = useApp();
+  const { minQty2Ids } = useMenu();
 
   const [orders, setOrders] = useLocalStorage<Orders>("orders", {});
   const [seatedTablesArr, setSeatedTablesArr] = useLocalStorage<(string | number)[]>("seatedTables", []);
@@ -98,11 +99,11 @@ export function TableProvider({ children }: { children: ReactNode }) {
           ],
         };
       }
-      const initialQty = MIN_QTY_2_IDS.has(item.id) ? 2 : 1;
+      const initialQty = minQty2Ids.has(item.id) ? 2 : 1;
       return { ...prev, [tableId]: [...current, { ...orderItem, qty: initialQty, sentQty: 0 }] };
     });
     showToast(`+ ${baseOrderItem.name}`);
-  }, [setOrders, showToast]);
+  }, [setOrders, showToast, minQty2Ids]);
 
   const removeItem = useCallback((tableId: TableId, itemId: string) => {
     setOrders((prev) => {
@@ -116,7 +117,7 @@ export function TableProvider({ children }: { children: ReactNode }) {
               if (unsent > 0) {
                 const newQty = o.qty - 1;
                 // Min-2 items can't land on qty=1; skip straight to 0 (full removal)
-                if (newQty === 1 && MIN_QTY_2_IDS.has(o.id)) return { ...o, qty: 0 };
+                if (newQty === 1 && minQty2Ids.has(o.id)) return { ...o, qty: 0 };
                 return { ...o, qty: newQty };
               }
             }
@@ -125,7 +126,7 @@ export function TableProvider({ children }: { children: ReactNode }) {
           .filter((o: OrderItem) => o.qty > 0),
       };
     });
-  }, [setOrders]);
+  }, [setOrders, minQty2Ids]);
 
   const removeItemFromBill = useCallback((tableId: TableId, itemId: string) => {
     setOrders((prev) => {
@@ -136,7 +137,7 @@ export function TableProvider({ children }: { children: ReactNode }) {
           .map((o: OrderItem) => {
             if (o.id === itemId && (o.sentQty || 0) > 0) {
               // Min-2 items can't be decremented below 2
-              if (o.qty <= 2 && MIN_QTY_2_IDS.has(o.id)) return o;
+              if (o.qty <= 2 && minQty2Ids.has(o.id)) return o;
               return { ...o, qty: o.qty - 1, sentQty: (o.sentQty || 0) - 1 };
             }
             return o;
@@ -144,7 +145,7 @@ export function TableProvider({ children }: { children: ReactNode }) {
           .filter((o: OrderItem) => o.qty > 0),
       };
     });
-  }, [setOrders]);
+  }, [setOrders, minQty2Ids]);
 
   const addItemToBill = useCallback((tableId: TableId, itemId: string) => {
     setOrders((prev) => {

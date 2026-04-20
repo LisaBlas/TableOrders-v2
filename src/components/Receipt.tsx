@@ -1,5 +1,5 @@
 import { S } from "../styles/appStyles";
-import { MIN_QTY_2_IDS } from "../data/constants";
+import { useMenu } from "../contexts/MenuContext";
 import { consolidateItems } from "../utils/helpers";
 import type { ReceiptProps } from "../types";
 
@@ -14,6 +14,7 @@ export function Receipt({
   onRemoveGutschein = null,
   skipHeader = false,
 }: ReceiptProps) {
+  const { minQty2Ids } = useMenu();
   const consolidatedItems = consolidateItems(items);
   const subtotal = items.reduce((s, o) => s + o.price * o.qty, 0);
   const total = Math.max(0, subtotal - gutschein);
@@ -46,7 +47,7 @@ export function Receipt({
               style={S.closeRemoveBtn}
               onClick={() => onRemoveItem(o.id)}
               title="Remove one"
-              disabled={o.qty <= 2 && MIN_QTY_2_IDS.has(o.id)}
+              disabled={o.qty <= 2 && minQty2Ids.has(o.id)}
             >
               −
             </button>
