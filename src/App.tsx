@@ -3,6 +3,7 @@ import { MenuProvider, useMenu } from "./contexts/MenuContext";
 import { AppProvider, useApp } from "./contexts/AppContext";
 import { TableProvider } from "./contexts/TableContext";
 import { SplitProvider, useSplit } from "./contexts/SplitContext";
+import { useBreakpoint } from "./hooks/useBreakpoint";
 import { TablesView } from "./views/TablesView";
 import { OrderView } from "./views/OrderView";
 import { TicketView } from "./views/TicketView";
@@ -16,8 +17,11 @@ import { ErrorBoundary } from "./components/ErrorBoundary";
 import { S } from "./styles/appStyles";
 
 function LoadingScreen() {
+  const { isTabletLandscape, isTablet, isDesktop } = useBreakpoint();
+  const rootStyle = isDesktop || isTabletLandscape ? S.rootTabletLandscape : isTablet ? S.rootTablet : S.root;
+
   return (
-    <div style={S.root}>
+    <div style={rootStyle}>
       <div
         style={{
           display: "flex",
@@ -52,11 +56,14 @@ function LoadingScreen() {
 function Router() {
   const { view, toast } = useApp();
   const { menuLoading } = useMenu();
+  const { isTabletLandscape, isTablet, isDesktop } = useBreakpoint();
 
   if (menuLoading) return <LoadingScreen />;
 
+  const rootStyle = isDesktop || isTabletLandscape ? S.rootTabletLandscape : isTablet ? S.rootTablet : S.root;
+
   return (
-    <div style={S.root}>
+    <div style={rootStyle}>
       {toast && <Toast message={toast} />}
 
       {view === "tables" && <TablesView />}

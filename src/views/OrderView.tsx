@@ -5,6 +5,7 @@ import { useApp } from "../contexts/AppContext";
 import { useTable } from "../contexts/TableContext";
 import { useTableOrder } from "../hooks/useTableOrder";
 import { useMenuItems } from "../hooks/useMenuItems";
+import { useBreakpoint } from "../hooks/useBreakpoint";
 import { groupBy } from "../utils/helpers";
 import { S } from "../styles/appStyles";
 import { Modal } from "../components/Modal";
@@ -20,6 +21,7 @@ export function OrderView() {
   const app = useApp();
   const table = useTable();
   const { menu: MENU } = useMenu();
+  const { isTablet, isTabletLandscape, isDesktop } = useBreakpoint();
   const tableId = app.activeTable!;
   const { unsent, sent, unsentTotal, batches } = useTableOrder(tableId);
 
@@ -146,6 +148,8 @@ export function OrderView() {
   });
 
   const renderMenuGrid = () => {
+    // Responsive grid style
+    const menuGridStyle = isDesktop || isTabletLandscape ? S.grid4TabletLandscape : isTablet ? S.grid4Tablet : S.grid4;
 
     if (filteredItems.length === 0) {
       return (
@@ -159,7 +163,7 @@ export function OrderView() {
     const grouped = groupBy(filteredItems, "subcategory");
 
     return (
-      <div style={S.grid4}>
+      <div style={menuGridStyle}>
         {Object.entries(grouped).map(([subcategoryId, items]: [string, any]) => {
           // Find subcategory label
           const subcategoryObj = subcategoryConfig.find((s: any) => s.id === subcategoryId);
@@ -190,9 +194,12 @@ export function OrderView() {
     return <BillView tableId={tableId} sent={sent} onClose={() => setUserViewPreference('order')} />;
   }
 
+  // Responsive styles
+  const headerStyle = isTablet || isTabletLandscape || isDesktop ? S.headerTablet : S.header;
+
   return (
     <div style={{ ...S.page, height: "100vh", overflow: "hidden" }}>
-      <header style={S.header}>
+      <header style={headerStyle}>
         <button style={S.back} onClick={() => app.setView("tables")}>
           <BackIcon size={22} />
         </button>

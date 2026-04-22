@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useApp } from "../contexts/AppContext";
 import { useTable } from "../contexts/TableContext";
 import { useSplit } from "../contexts/SplitContext";
+import { useBreakpoint } from "../hooks/useBreakpoint";
 import { Receipt } from "./Receipt";
 import { Modal } from "./Modal";
 import { S } from "../styles/appStyles";
@@ -16,6 +17,8 @@ export function BillTab({ tableId, sent }: BillTabProps) {
   const app = useApp();
   const table = useTable();
   const { dispatch: splitDispatch } = useSplit();
+  const { isTablet, isTabletLandscape, isDesktop } = useBreakpoint();
+  const isLargeScreen = isTablet || isTabletLandscape || isDesktop;
 
   const [editingBill, setEditingBill] = useState(false);
   const [billEditSnapshot, setBillEditSnapshot] = useState<OrderItem[] | null>(null);
@@ -102,9 +105,39 @@ export function BillTab({ tableId, sent }: BillTabProps) {
   const gutschein = table.gutscheinAmounts[tableId] || 0;
   const total = Math.max(0, sentSubtotal - gutschein);
 
-  return (
-    <>
-      <div style={S.ticket}>
+  const handleSplitEqual = () => {
+    app.setTicketTable(tableId);
+    const sentItems = sent.map((o: OrderItem) => ({ ...o }));
+    splitDispatch({ type: "INITIATE_EQUAL", items: sentItems });
+    app.setView("split");
+  };
+
+  const handleSplitItem = () => {
+    app.setTicketTable(tableId);
+    const sentItems = sent.map((o: OrderItem) => ({ ...o }));
+    splitDispatch({ type: "INITIATE_ITEM", items: sentItems });
+    app.setView("split");
+  };
+
+  const handleCloseClick = () => {
+    if (confirmingClose) {
+      confirmClose();
+    } else {
+      app.setTicketTable(tableId);
+      setConfirmingClose(true);
+      setPaymentAmount("");
+      setPaymentConfirmed(false);
+      if (!isLargeScreen) {
+        setTimeout(() => window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" }), 80);
+      }
+    }
+  };
+
+  // Mobile layout (original single-column)
+  if (!isLargeScreen) {
+    return (
+      <>
+        <div style={S.ticket}>
         <div style={S.billHeader}>
           <div>
             <div style={S.closeReceiptBrand}>Käserei Camidi</div>
@@ -144,28 +177,12 @@ export function BillTab({ tableId, sent }: BillTabProps) {
         <div style={{ ...S.splitOptions, marginBottom: "220px" }}>
           <div style={S.splitOptionsLabel}>Split the bill</div>
           <div style={S.splitBtns}>
-            <button
-              style={S.splitOptionBtn}
-              onClick={() => {
-                app.setTicketTable(tableId);
-                const sentItems = sent.map((o: OrderItem) => ({ ...o }));
-                splitDispatch({ type: "INITIATE_EQUAL", items: sentItems });
-                app.setView("split");
-              }}
-            >
+            <button style={S.splitOptionBtn} onClick={handleSplitEqual}>
               <span style={S.splitOptionIcon}>⚖</span>
               <span style={S.splitOptionTitle}>Equal split</span>
               <span style={S.splitOptionSub}>Total ÷ guests</span>
             </button>
-            <button
-              style={S.splitOptionBtn}
-              onClick={() => {
-                app.setTicketTable(tableId);
-                const sentItems = sent.map((o: OrderItem) => ({ ...o }));
-                splitDispatch({ type: "INITIATE_ITEM", items: sentItems });
-                app.setView("split");
-              }}
-            >
+            <button style={S.splitOptionBtn} onClick={handleSplitItem}>
               <span style={S.splitOptionIcon}>☰</span>
               <span style={S.splitOptionTitle}>By item</span>
               <span style={S.splitOptionSub}>Pay round by round</span>
@@ -211,17 +228,7 @@ export function BillTab({ tableId, sent }: BillTabProps) {
             ...(confirmingClose ? S.confirmCloseBtn : S.closeBtn),
             ...(confirmingClose && paymentAmount && !paymentConfirmed ? { opacity: 0.5, cursor: "not-allowed" } : {}),
           }}
-          onClick={() => {
-            if (confirmingClose) {
-              confirmClose();
-            } else {
-              app.setTicketTable(tableId);
-              setConfirmingClose(true);
-              setPaymentAmount("");
-              setPaymentConfirmed(false);
-              setTimeout(() => window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" }), 80);
-            }
-          }}
+          onClick={handleCloseClick}
           disabled={confirmingClose && !!paymentAmount && !paymentConfirmed}
         >
           {confirmingClose ? "Confirm close" : "Close table"}
@@ -246,5 +253,132 @@ export function BillTab({ tableId, sent }: BillTabProps) {
         </Modal>
       )}
     </>
+    );
+  }
+
+  // Tablet+ layout (two-column)
+  return (
+    <div style={isDesktop ? S.billContainerTabletLandscape : S.billContainerTablet}>
+      {/* Left column: Receipt */}
+      <div style={S.billReceiptColumn}>
+        <div style={isDesktop ? S.billActionsCardLandscape : S.billActionsCard}>
+          <div style={S.billHeader}>
+            <div>
+              <div style={S.closeReceiptBrand}>Käserei Camidi</div>
+              <div style={S.closeReceiptMeta}>
+                Table {tableId} · {new Date().toLocaleString("en-GB", {
+                  day: "2-digit", month: "2-digit", year: "numeric",
+                  hour: "2-digit", minute: "2-digit",
+                })}
+              </div>
+            </div>
+            <div style={S.billHeaderActions}>
+              <button
+                style={editingBill ? S.billIconBtnActive : S.billIconBtn}
+                onClick={() => editingBill ? confirmBillEdit() : startBillEdit()}
+                title={editingBill ? "Done" : "Edit"}
+              >
+                {editingBill ? "✓" : "✏️"}
+              </button>
+              <button style={S.billIconBtn} onClick={() => setShowGutscheinModal(true)} title="Apply Gutschein">
+                🎫
+              </button>
+            </div>
+          </div>
+          <Receipt
+            tableId={tableId}
+            items={sent}
+            editMode={editingBill}
+            gutschein={gutschein}
+            onRemoveItem={(id: string) => table.removeItemFromBill(tableId, id)}
+            onAddItem={(id: string) => table.addItemToBill(tableId, id)}
+            onRemoveGutschein={() => table.removeGutschein(tableId)}
+            skipHeader
+          />
+        </div>
+      </div>
+
+      {/* Right column: Actions sidebar */}
+      <div style={isDesktop ? S.billActionsColumnLandscape : S.billActionsColumn}>
+        {/* Split options card */}
+        <div style={isDesktop ? S.billActionsCardLandscape : S.billActionsCard}>
+          <div style={S.billActionsLabel}>Split the bill</div>
+          <button style={S.splitOptionBtn} onClick={handleSplitEqual}>
+            <span style={S.splitOptionIcon}>⚖</span>
+            <span style={S.splitOptionTitle}>Equal split</span>
+            <span style={S.splitOptionSub}>Total ÷ guests</span>
+          </button>
+          <button style={S.splitOptionBtn} onClick={handleSplitItem}>
+            <span style={S.splitOptionIcon}>☰</span>
+            <span style={S.splitOptionTitle}>By item</span>
+            <span style={S.splitOptionSub}>Pay round by round</span>
+          </button>
+        </div>
+
+        {/* Payment card (when confirming) */}
+        {confirmingClose && (
+          <div style={isDesktop ? S.billActionsCardLandscape : S.billActionsCard}>
+            <div style={S.paymentLabel}>Amount Paid</div>
+            <div style={S.paymentInputRow}>
+              <input
+                type="number"
+                placeholder={total.toFixed(2)}
+                value={paymentAmount}
+                onChange={(e) => setPaymentAmount(e.target.value)}
+                step="0.01" min="0"
+                style={S.paymentInput}
+                disabled={paymentConfirmed}
+              />
+              <button
+                style={paymentConfirmed ? S.paymentCheckConfirmed : S.paymentCheck}
+                onClick={() => {
+                  const amount = paymentAmount && parseFloat(paymentAmount) > 0
+                    ? parseFloat(paymentAmount) : total;
+                  setPaymentAmount(amount.toString());
+                  setPaymentConfirmed(true);
+                }}
+                disabled={paymentConfirmed}
+              >✓</button>
+            </div>
+            {paymentConfirmed && (() => {
+              const paid = parseFloat(paymentAmount);
+              const tip = paid - total;
+              return <div style={S.paymentTip}>Tip: {tip >= 0 ? `+${tip.toFixed(2)}€` : `${tip.toFixed(2)}€`}</div>;
+            })()}
+          </div>
+        )}
+
+        {/* Primary action button */}
+        <button
+          style={{
+            ...(confirmingClose ? S.billPrimaryActionConfirm : S.billPrimaryAction),
+            ...(confirmingClose && paymentAmount && !paymentConfirmed ? { opacity: 0.5, cursor: "not-allowed" } : {}),
+          }}
+          onClick={handleCloseClick}
+          disabled={confirmingClose && !!paymentAmount && !paymentConfirmed}
+        >
+          {confirmingClose ? "Confirm close" : "Close table"}
+        </button>
+      </div>
+
+      {/* Gutschein modal */}
+      {showGutscheinModal && (
+        <Modal
+          title="Apply Gutschein"
+          onClose={() => { setShowGutscheinModal(false); setGutscheinInput(""); }}
+          onConfirm={applyGutschein}
+          confirmText="Apply"
+        >
+          <div style={S.customModalForm}>
+            <div style={S.customModalField}>
+              <label style={S.customModalLabel}>Amount (€)</label>
+              <input type="number" placeholder="0.00" value={gutscheinInput}
+                onChange={(e) => setGutscheinInput(e.target.value)} step="0.01" min="0"
+                style={S.customModalInput} autoFocus />
+            </div>
+          </div>
+        </Modal>
+      )}
+    </div>
   );
 }

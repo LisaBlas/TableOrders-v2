@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useApp } from "../contexts/AppContext";
+import { useBreakpoint } from "../hooks/useBreakpoint";
 import { S } from "../styles/appStyles";
 import { Modal } from "../components/Modal";
 import { BillCard } from "../components/BillCard";
@@ -8,6 +9,7 @@ import { BackIcon } from "../components/icons";
 
 export function DailySalesView() {
   const app = useApp();
+  const { isTablet, isTabletLandscape, isDesktop } = useBreakpoint();
   const {
     paidBills,
     clearTodayBills,
@@ -118,53 +120,71 @@ export function DailySalesView() {
       );
     };
 
-    const renderRemovedBillGroups = () => {
-      if (removedBillGroups.length === 0) return null;
-      return (
-        <div style={{ ...S.billCard, borderLeft: "3px solid #c0392b", background: "#fff5f5", padding: "12px" }}>
-          <div style={{ fontSize: 13, fontWeight: 700, color: "#1a1a1a", marginBottom: 10, paddingBottom: 8, borderBottom: "1px solid #f5c2c2" }}>
-            Already added
-          </div>
-          {removedBillGroups.map((group, groupIdx) => {
-            const timeStr = new Date(group.timestamp).toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" });
-            return (
-              <div key={groupIdx}>
-                {groupIdx > 0 && (
-                  <div style={{ ...S.divider, margin: "10px -12px", borderTopWidth: 2, borderTopStyle: "dashed", borderTopColor: "#f5c2c2" }} />
-                )}
-                <div style={{ fontSize: 11, fontWeight: 600, color: "#666", marginBottom: 6, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <span>Table {group.tableId}</span>
-                  <span style={{ fontSize: 10, fontWeight: 400 }}>{timeStr}</span>
-                </div>
-                {group.items.map((item, idx) => (
-                  <div key={idx}>
-                    {idx > 0 && <div style={{ ...S.divider, margin: "4px 0" }} />}
-                    {renderPosRow(item, "#555", true)}
-                  </div>
-                ))}
-              </div>
-            );
-          })}
-        </div>
-      );
+    const isWideScreen = isDesktop || isTabletLandscape || isTablet;
+
+    // Find bills that have been added to POS
+    const addedToPOSBills = paidBills.filter(bill => bill.addedToPOS);
+
+    // Sales items grid style - multiple columns on larger screens
+    const salesGridStyle = isWideScreen ? {
+      display: "grid",
+      gridTemplateColumns: isDesktop ? "repeat(3, 1fr)" : "repeat(2, 1fr)",
+      gap: 12,
+      marginBottom: 16
+    } : {
+      display: "flex",
+      flexDirection: "column" as const,
+      gap: 12,
+      marginBottom: 16
     };
 
     return (
-      <div style={S.billsList}>
-        {renderRemovedBillGroups()}
+      <div style={totalTabContainerStyle}>
+        {/* Already added to POS bills */}
+        {addedToPOSBills.length > 0 && (
+          <>
+            <div style={{ fontSize: 13, fontWeight: 700, color: "#c0392b", marginTop: 16, marginBottom: 12 }}>
+              Already added to POS
+            </div>
+            <div style={billsListStyle}>
+              {addedToPOSBills.map((bill, idx) => {
+                const billIndex = paidBills.indexOf(bill);
+                return (
+                  <BillCard
+                    key={idx}
+                    bill={bill}
+                    isEditing={editingBillIndex === billIndex}
+                    onEdit={() => enterBillEditMode(billIndex)}
+                    onDone={exitBillEditMode}
+                    onCancel={cancelBillEditMode}
+                    onDelete={() => markBillAddedToPOS(billIndex)}
+                    onRestore={() => restoreBillFromPOS(billIndex)}
+                    onRemoveItem={(itemId) => removePaidBillItem(billIndex, itemId)}
+                    onRestoreItem={(itemId) => restorePaidBillItem(billIndex, itemId)}
+                  />
+                );
+              })}
+            </div>
+          </>
+        )}
+
+        {/* Sales section */}
         {withPosId.length > 0 && (
-          <div style={S.billCard}>
-            <div style={{ fontSize: 13, fontWeight: 700, color: "#1a1a1a", marginBottom: 10, paddingBottom: 8, borderBottom: "1px solid #ebe9e3" }}>
+          <>
+            <div style={{ fontSize: 13, fontWeight: 700, color: "#1a1a1a", marginTop: addedToPOSBills.length > 0 ? 24 : 16, marginBottom: 12 }}>
               Sales
             </div>
-            {withPosId.map((item, idx) => (
-              <div key={idx}>
-                {idx > 0 && <div style={S.divider} />}
-                {renderPosRow(item, "#1a1a1a")}
-              </div>
-            ))}
-          </div>
+            <div style={salesGridStyle}>
+              {withPosId.map((item, idx) => (
+                <div key={idx} style={{ ...S.billCard, padding: "12px 16px" }}>
+                  {renderPosRow(item, "#1a1a1a")}
+                </div>
+              ))}
+            </div>
+          </>
         )}
+
+        {/* Missing POS IDs */}
         {missingPosId.length > 0 && (
           <>
             <div style={{ ...S.subcategorySeparator, color: "#e07b5a" } as React.CSSProperties}>⚠️ Missing POS IDs</div>
@@ -175,9 +195,18 @@ export function DailySalesView() {
     );
   };
 
+  // Responsive styles
+  const headerStyle = isTablet || isTabletLandscape || isDesktop ? S.headerTablet : S.header;
+  const billsListStyle = isDesktop || isTabletLandscape ? S.billsListTabletLandscape : isTablet ? S.billsListTablet : S.billsList;
+  const totalTabContainerStyle = {
+    flex: 1,
+    overflowY: "auto" as const,
+    padding: isDesktop || isTabletLandscape ? "0 24px 100px" : isTablet ? "0 20px 100px" : "0 16px 100px"
+  };
+
   return (
     <div style={S.page}>
-      <header style={S.header}>
+      <header style={headerStyle}>
         <button style={S.back} onClick={() => app.setView("tables")}>
           <BackIcon size={22} />
         </button>
@@ -197,11 +226,11 @@ export function DailySalesView() {
               <button
                 style={{ ...S.tab, ...(dailySalesTab === "chronological" ? S.tabActive : {}) }}
                 onClick={() => setDailySalesTab("chronological")}
-              >Chronological</button>
+              >Tables</button>
               <button
                 style={{ ...S.tab, ...(dailySalesTab === "total" ? S.tabActive : {}) }}
                 onClick={() => setDailySalesTab("total")}
-              >Total</button>
+              >Articles</button>
               <div style={{ ...S.tabIndicator, transform: dailySalesTab === "total" ? "translateX(100%)" : "translateX(0)" }} />
             </div>
           </div>
@@ -209,7 +238,7 @@ export function DailySalesView() {
           <SalesSummary paidBills={paidBills} />
 
           {dailySalesTab === "chronological" && (
-            <div style={S.billsList}>
+            <div style={billsListStyle}>
               {[...paidBills].reverse().map((bill, reverseIdx) => {
                 const billIndex = paidBills.length - 1 - reverseIdx;
                 return (

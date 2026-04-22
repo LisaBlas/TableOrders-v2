@@ -21,7 +21,8 @@
       "Bash(npx vite build)",
       "Bash(git stash drop:*)",
       "Bash(npm run dev:*)",
-      "Bash(timeout 5 tail:*)"
+      "Bash(timeout 5 tail:*)",
+      "Bash(taskkill:*)"
     ]
   }
 }

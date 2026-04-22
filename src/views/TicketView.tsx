@@ -3,6 +3,7 @@ import { useApp } from "../contexts/AppContext";
 import { useTable } from "../contexts/TableContext";
 import { useTableOrder } from "../hooks/useTableOrder";
 import { useSplit } from "../contexts/SplitContext";
+import { useBreakpoint } from "../hooks/useBreakpoint";
 import { Receipt } from "../components/Receipt";
 import { BackIcon } from "../components/icons";
 import { S } from "../styles/appStyles";
@@ -12,6 +13,7 @@ export function TicketView() {
   const app = useApp();
   const table = useTable();
   const { dispatch } = useSplit();
+  const { isTablet, isTabletLandscape, isDesktop } = useBreakpoint();
   const tableId = app.ticketTable!;
   const { items: ticketItems, total: ticketTotal } = useTableOrder(tableId);
 
@@ -53,9 +55,13 @@ export function TicketView() {
     app.setView("split");
   };
 
+  // Responsive styles
+  const headerStyle = isTablet || isTabletLandscape || isDesktop ? S.headerTablet : S.header;
+  const ticketStyle = isTablet || isTabletLandscape || isDesktop ? S.ticketTablet : S.ticket;
+
   return (
     <div style={S.page}>
-      <header style={S.header}>
+      <header style={headerStyle}>
         <button style={S.back} onClick={() => {
           app.setView("tables");
           setShowSplitOptions(false);
@@ -66,7 +72,7 @@ export function TicketView() {
         <span style={S.headerTitle}>Table {tableId} — Bill</span>
         <span />
       </header>
-      <div style={S.ticket}>
+      <div style={ticketStyle}>
         <Receipt tableId={tableId} items={ticketItems} />
       </div>
 

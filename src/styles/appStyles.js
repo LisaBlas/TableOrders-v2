@@ -8,6 +8,24 @@ export const S = {
     margin: "0 auto",
     position: "relative"
   },
+  rootTablet: {
+    fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif",
+    background: "#f5f4f0",
+    minHeight: "100vh",
+    color: "#1a1a1a",
+    maxWidth: 768,
+    margin: "0 auto",
+    position: "relative"
+  },
+  rootTabletLandscape: {
+    fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif",
+    background: "#f5f4f0",
+    minHeight: "100vh",
+    color: "#1a1a1a",
+    maxWidth: 1024,
+    margin: "0 auto",
+    position: "relative"
+  },
   page: {
     display: "flex",
     flexDirection: "column",
@@ -37,6 +55,16 @@ export const S = {
     alignItems: "center",
     justifyContent: "space-between",
     padding: "18px 20px 12px",
+    background: "#fff"
+  },
+  headerTablet: {
+    position: "sticky",
+    top: 0,
+    zIndex: 100,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    padding: "20px 24px 14px",
     background: "#fff"
   },
   headerTitle: {
@@ -107,6 +135,18 @@ export const S = {
     gap: 12,
     padding: 16
   },
+  gridTablet: {
+    display: "grid",
+    gridTemplateColumns: "repeat(4, 1fr)",
+    gap: 14,
+    padding: 20
+  },
+  gridTabletLandscape: {
+    display: "grid",
+    gridTemplateColumns: "repeat(5, 1fr)",
+    gap: 16,
+    padding: 24
+  },
   subcategoryGrid: {
     display: "grid",
     gridTemplateColumns: "repeat(2, 1fr)",
@@ -143,6 +183,26 @@ export const S = {
     gap: 4,
     padding: "18px 8px",
     borderRadius: 12,
+    cursor: "pointer"
+  },
+  tableCardTablet: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 6,
+    padding: "22px 10px",
+    borderRadius: 14,
+    cursor: "pointer"
+  },
+  tableCardTabletLandscape: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    padding: "26px 12px",
+    borderRadius: 16,
     cursor: "pointer"
   },
   tableDot: {
@@ -479,6 +539,15 @@ export const S = {
     borderRadius: 12,
     border: "1px solid #ebe9e3",
     padding: "20px",
+    animation: "slideUpFade 0.3s ease-out"
+  },
+  ticketTablet: {
+    margin: "20px auto",
+    maxWidth: 600,
+    background: "#fff",
+    borderRadius: 14,
+    border: "1px solid #ebe9e3",
+    padding: "28px",
     animation: "slideUpFade 0.3s ease-out"
   },
   ticketHeader: {
@@ -1296,6 +1365,35 @@ export const S = {
     overflowY: "auto",
     padding: "0 16px 100px"
   },
+  billsListTablet: {
+    flex: 1,
+    overflowY: "auto",
+    padding: "0 20px 100px",
+    display: "grid",
+    gridTemplateColumns: "repeat(2, 1fr)",
+    gap: 12,
+    alignContent: "start"
+  },
+  billsListTabletLandscape: {
+    flex: 1,
+    overflowY: "auto",
+    padding: "0 24px 100px",
+    display: "grid",
+    gridTemplateColumns: "repeat(3, 1fr)",
+    gap: 16,
+    alignContent: "start"
+  },
+  totalTabSections: {
+    display: "flex",
+    flexDirection: "column",
+    gap: 16
+  },
+  totalTabSectionsTablet: {
+    display: "flex",
+    flexDirection: "row",
+    gap: 16,
+    alignItems: "start"
+  },
   billCard: {
     background: "#fff",
     borderRadius: 12,
@@ -1586,6 +1684,96 @@ export const S = {
     flexShrink: 0
   },
 
+  // Bill view responsive layout
+  billContainerTablet: {
+    display: "flex",
+    gap: 24,
+    padding: "20px",
+    alignItems: "flex-start",
+    flex: 1
+  },
+  billContainerTabletLandscape: {
+    display: "flex",
+    gap: 32,
+    padding: "24px",
+    alignItems: "flex-start",
+    flex: 1
+  },
+  billReceiptColumn: {
+    flex: "1 1 60%",
+    minWidth: 0
+  },
+  billActionsColumn: {
+    flex: "0 0 320px",
+    display: "flex",
+    flexDirection: "column",
+    gap: 16,
+    position: "sticky",
+    top: 80
+  },
+  billActionsColumnLandscape: {
+    flex: "0 0 360px",
+    display: "flex",
+    flexDirection: "column",
+    gap: 20,
+    position: "sticky",
+    top: 80
+  },
+  billActionsCard: {
+    background: "#fff",
+    borderRadius: 12,
+    border: "1px solid #ebe9e3",
+    padding: "16px",
+    display: "flex",
+    flexDirection: "column",
+    gap: 12
+  },
+  billActionsCardLandscape: {
+    background: "#fff",
+    borderRadius: 14,
+    border: "1px solid #ebe9e3",
+    padding: "20px",
+    display: "flex",
+    flexDirection: "column",
+    gap: 14
+  },
+  billActionsLabel: {
+    fontSize: 11,
+    fontWeight: 600,
+    color: "#aaa",
+    textTransform: "uppercase",
+    letterSpacing: "0.5px",
+    marginBottom: 4
+  },
+  billActionsButtons: {
+    display: "flex",
+    gap: 8
+  },
+  billPrimaryAction: {
+    padding: "14px",
+    borderRadius: 10,
+    border: "none",
+    background: "#1a1a1a",
+    color: "#fff",
+    fontSize: 15,
+    fontWeight: 700,
+    cursor: "pointer",
+    width: "100%",
+    transition: "background 0.2s ease-out"
+  },
+  billPrimaryActionConfirm: {
+    padding: "14px",
+    borderRadius: 10,
+    border: "none",
+    background: "#c0392b",
+    color: "#fff",
+    fontSize: 15,
+    fontWeight: 700,
+    cursor: "pointer",
+    width: "100%",
+    transition: "background 0.2s ease-out"
+  },
+
   // Payment/Tip section styles
   paymentSplitContainer: {
     marginBottom: "100px",
@@ -1670,6 +1858,18 @@ export const S = {
   grid4: {
     display: "grid",
     gridTemplateColumns: "repeat(4, 1fr)",
+    gap: 0,
+    padding: 0
+  },
+  grid4Tablet: {
+    display: "grid",
+    gridTemplateColumns: "repeat(5, 1fr)",
+    gap: 0,
+    padding: 0
+  },
+  grid4TabletLandscape: {
+    display: "grid",
+    gridTemplateColumns: "repeat(6, 1fr)",
     gap: 0,
     padding: 0
   },

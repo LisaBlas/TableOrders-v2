@@ -1,11 +1,13 @@
 import { useApp } from "../contexts/AppContext";
 import { useSplit } from "../contexts/SplitContext";
+import { useBreakpoint } from "../hooks/useBreakpoint";
 import { BackIcon } from "../components/icons";
 import { S } from "../styles/appStyles";
 
 export function SplitItemView() {
   const app = useApp();
   const { state, dispatch, selectedItems, selectedTotal, remainingTotal, currentGuestNum } = useSplit();
+  const { isTablet, isTabletLandscape, isDesktop } = useBreakpoint();
   const tableId = app.ticketTable!;
 
   const confirmSplitPayment = () => {
@@ -19,9 +21,82 @@ export function SplitItemView() {
     app.setView("splitConfirm");
   };
 
+  const headerStyle = isTablet || isTabletLandscape || isDesktop ? S.headerTablet : S.header;
+  const isLargeScreen = isTablet || isTabletLandscape || isDesktop;
+
+  // Mobile layout
+  if (!isLargeScreen) {
+    return (
+      <div style={S.page}>
+        <header style={headerStyle}>
+          <button style={S.back} onClick={() => { dispatch({ type: "RESET" }); app.setView("order"); }}>
+            <BackIcon size={22} />
+          </button>
+          <span style={S.headerTitle}>Guest {currentGuestNum}</span>
+          <button style={S.selectAllBtn} onClick={() => dispatch({ type: "SELECT_ALL" })}>All</button>
+        </header>
+
+        {state.payments.length > 0 && (
+          <div style={S.splitProgress}>
+            {state.payments.map((p) => (
+              <span key={p.guestNum} style={S.splitProgressChip}>
+                G{p.guestNum} — {p.total.toFixed(2)}€
+              </span>
+            ))}
+            <span style={S.splitProgressRemaining}>
+              Left: {remainingTotal.toFixed(2)}€
+            </span>
+          </div>
+        )}
+
+        <div style={S.splitItemList}>
+          {state.remaining.map((item) => {
+            const selected = state.selected.has(item._uid);
+            return (
+              <button
+                key={item._uid}
+                style={{
+                  ...S.splitItem,
+                  background: selected ? "#f0f7f1" : "#fff",
+                  border: selected ? "1.5px solid #a3c4a8" : "1.5px solid #ebe9e3",
+                }}
+                onClick={() => dispatch({ type: "TOGGLE_ITEM", uid: item._uid })}
+              >
+                <span style={{
+                  ...S.splitItemCheck,
+                  background: selected ? "#2d5a35" : "#e8e8e6",
+                  color: selected ? "#fff" : "transparent",
+                }}>✓</span>
+                <span style={S.splitItemName}>{item.name}</span>
+                <span style={S.splitItemPrice}>{item.price.toFixed(2)}€</span>
+              </button>
+            );
+          })}
+        </div>
+
+        {state.selected.size > 0 && (
+          <div style={S.orderBar}>
+            <div style={S.orderBarItems}>
+              <span style={S.orderBarChip}>
+                {state.selected.size} item{state.selected.size > 1 ? "s" : ""} selected
+              </span>
+              <span style={{ ...S.orderBarChip, background: "#e8f3e9", color: "#2d5a35" }}>
+                Remaining after: {(remainingTotal - selectedTotal).toFixed(2)}€
+              </span>
+            </div>
+            <button style={S.sendBtn} onClick={confirmSplitPayment}>
+              Guest {currentGuestNum} pays — {selectedTotal.toFixed(2)}€
+            </button>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // Tablet+ layout (two-column)
   return (
     <div style={S.page}>
-      <header style={S.header}>
+      <header style={headerStyle}>
         <button style={S.back} onClick={() => { dispatch({ type: "RESET" }); app.setView("order"); }}>
           <BackIcon size={22} />
         </button>
@@ -29,59 +104,82 @@ export function SplitItemView() {
         <button style={S.selectAllBtn} onClick={() => dispatch({ type: "SELECT_ALL" })}>All</button>
       </header>
 
-      {state.payments.length > 0 && (
-        <div style={S.splitProgress}>
-          {state.payments.map((p) => (
-            <span key={p.guestNum} style={S.splitProgressChip}>
-              G{p.guestNum} — {p.total.toFixed(2)}€
-            </span>
-          ))}
-          <span style={S.splitProgressRemaining}>
-            Left: {remainingTotal.toFixed(2)}€
-          </span>
-        </div>
-      )}
+      <div style={isDesktop ? S.billContainerTabletLandscape : S.billContainerTablet}>
+        {/* Left column: Item list */}
+        <div style={S.billReceiptColumn}>
+          <div style={isDesktop ? S.billActionsCardLandscape : S.billActionsCard}>
+            {state.payments.length > 0 && (
+              <div style={{ marginBottom: 16 }}>
+                <div style={{ fontSize: 13, fontWeight: 600, color: "#6a6862", marginBottom: 8 }}>
+                  Progress
+                </div>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                  {state.payments.map((p) => (
+                    <span key={p.guestNum} style={S.splitProgressChip}>
+                      G{p.guestNum} — {p.total.toFixed(2)}€
+                    </span>
+                  ))}
+                  <span style={S.splitProgressRemaining}>
+                    Left: {remainingTotal.toFixed(2)}€
+                  </span>
+                </div>
+                <div style={{ ...S.divider, margin: "16px 0" }} />
+              </div>
+            )}
 
-      <div style={S.splitItemList}>
-        {state.remaining.map((item) => {
-          const selected = state.selected.has(item._uid);
-          return (
-            <button
-              key={item._uid}
-              style={{
-                ...S.splitItem,
-                background: selected ? "#f0f7f1" : "#fff",
-                border: selected ? "1.5px solid #a3c4a8" : "1.5px solid #ebe9e3",
-              }}
-              onClick={() => dispatch({ type: "TOGGLE_ITEM", uid: item._uid })}
-            >
-              <span style={{
-                ...S.splitItemCheck,
-                background: selected ? "#2d5a35" : "#e8e8e6",
-                color: selected ? "#fff" : "transparent",
-              }}>✓</span>
-              <span style={S.splitItemName}>{item.name}</span>
-              <span style={S.splitItemPrice}>{item.price.toFixed(2)}€</span>
-            </button>
-          );
-        })}
-      </div>
-
-      {state.selected.size > 0 && (
-        <div style={S.orderBar}>
-          <div style={S.orderBarItems}>
-            <span style={S.orderBarChip}>
-              {state.selected.size} item{state.selected.size > 1 ? "s" : ""} selected
-            </span>
-            <span style={{ ...S.orderBarChip, background: "#e8f3e9", color: "#2d5a35" }}>
-              Remaining after: {(remainingTotal - selectedTotal).toFixed(2)}€
-            </span>
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              {state.remaining.map((item) => {
+                const selected = state.selected.has(item._uid);
+                return (
+                  <button
+                    key={item._uid}
+                    style={{
+                      ...S.splitItem,
+                      background: selected ? "#f0f7f1" : "#fff",
+                      border: selected ? "1.5px solid #a3c4a8" : "1.5px solid #ebe9e3",
+                    }}
+                    onClick={() => dispatch({ type: "TOGGLE_ITEM", uid: item._uid })}
+                  >
+                    <span style={{
+                      ...S.splitItemCheck,
+                      background: selected ? "#2d5a35" : "#e8e8e6",
+                      color: selected ? "#fff" : "transparent",
+                    }}>✓</span>
+                    <span style={S.splitItemName}>{item.name}</span>
+                    <span style={S.splitItemPrice}>{item.price.toFixed(2)}€</span>
+                  </button>
+                );
+              })}
+            </div>
           </div>
-          <button style={S.sendBtn} onClick={confirmSplitPayment}>
+        </div>
+
+        {/* Right column: Actions */}
+        <div style={isDesktop ? S.billActionsColumnLandscape : S.billActionsColumn}>
+          <div style={isDesktop ? S.billActionsCardLandscape : S.billActionsCard}>
+            <div style={S.billActionsLabel}>Selection</div>
+            <div style={{ fontSize: 14, color: state.selected.size > 0 ? "#6a6862" : "#b5b2ac", marginBottom: 8 }}>
+              {state.selected.size > 0
+                ? `${state.selected.size} item${state.selected.size > 1 ? "s" : ""} selected`
+                : "No items selected"
+              }
+            </div>
+            <div style={{ fontSize: 14, color: state.selected.size > 0 ? "#2d5a35" : "#b5b2ac", fontWeight: 600 }}>
+              Remaining after: {(remainingTotal - selectedTotal).toFixed(2)}€
+            </div>
+          </div>
+          <button
+            style={{
+              ...S.billPrimaryAction,
+              ...(state.selected.size === 0 ? { opacity: 0.5, cursor: "not-allowed" } : {})
+            }}
+            onClick={confirmSplitPayment}
+            disabled={state.selected.size === 0}
+          >
             Guest {currentGuestNum} pays — {selectedTotal.toFixed(2)}€
           </button>
         </div>
-      )}
+      </div>
     </div>
   );
 }

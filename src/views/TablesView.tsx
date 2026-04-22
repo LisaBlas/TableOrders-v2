@@ -3,6 +3,7 @@ import { TABLES, STATUS_CONFIG } from "../data/constants";
 import { getTableStatus } from "../utils/helpers";
 import { useApp } from "../contexts/AppContext";
 import { useTable } from "../contexts/TableContext";
+import { useBreakpoint } from "../hooks/useBreakpoint";
 import { S } from "../styles/appStyles";
 import { Modal } from "../components/Modal";
 
@@ -11,6 +12,7 @@ const LONG_PRESS_MS = 500;
 export function TablesView() {
   const { setView, setActiveTable, showToast } = useApp();
   const { orders, seatedTables, seatTable, sentBatches, markedBatches, swapTables } = useTable();
+  const { isMobile, isTablet, isTabletLandscape, isDesktop } = useBreakpoint();
   const [seatConfirmTable, setSeatConfirmTable] = useState<string | number | null>(null);
   const [swapSourceTable, setSwapSourceTable] = useState<string | number | null>(null);
   const [swapTargetTable, setSwapTargetTable] = useState<string | number | null>(null);
@@ -80,9 +82,14 @@ export function TablesView() {
     setSwapTargetTable(null);
   };
 
+  // Responsive styles
+  const headerStyle = isTablet || isTabletLandscape || isDesktop ? S.headerTablet : S.header;
+  const gridStyle = isDesktop || isTabletLandscape ? S.gridTabletLandscape : isTablet ? S.gridTablet : S.grid;
+  const tableCardBaseStyle = isDesktop || isTabletLandscape ? S.tableCardTabletLandscape : isTablet ? S.tableCardTablet : S.tableCard;
+
   return (
     <div style={S.page}>
-      <header style={S.header}>
+      <header style={headerStyle}>
         <span style={{ fontWeight: 700, fontSize: 18, letterSpacing: "-0.3px" }}>
           {new Date().toLocaleDateString("en-GB", {
             weekday: "short",
@@ -110,7 +117,7 @@ export function TablesView() {
           <span>Daily Sales</span>
         </button>
       </header>
-      <div style={{ ...S.grid, paddingBottom: swapSourceTable !== null ? 160 : 16 }}>
+      <div style={{ ...gridStyle, paddingBottom: swapSourceTable !== null ? 160 : (isTablet || isTabletLandscape || isDesktop ? 20 : 16) }}>
         {TABLES.map((t: any) => {
           if (t.isDivider) {
             return (
@@ -144,7 +151,7 @@ export function TablesView() {
             <button
               key={t.id}
               style={{
-                ...S.tableCard,
+                ...tableCardBaseStyle,
                 background: cardBg,
                 border: cardBorder,
                 opacity: cardOpacity,
