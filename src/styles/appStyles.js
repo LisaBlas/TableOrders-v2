@@ -176,6 +176,7 @@ export const S = {
     lineHeight: 1
   },
   tableCard: {
+    position: "relative",
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
@@ -186,6 +187,7 @@ export const S = {
     cursor: "pointer"
   },
   tableCardTablet: {
+    position: "relative",
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
@@ -196,6 +198,7 @@ export const S = {
     cursor: "pointer"
   },
   tableCardTabletLandscape: {
+    position: "relative",
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
