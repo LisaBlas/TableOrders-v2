@@ -51,13 +51,7 @@ export function BillTab({ tableId, sent }: BillTabProps) {
         }).filter((o: OrderItem) => o.qty > 0);
 
         if (batchItems.length > 0) {
-          table.setSentBatches((prev) => ({
-            ...prev,
-            [tableId]: [...(prev[tableId] || []), {
-              timestamp: new Date().toISOString(),
-              items: batchItems,
-            }],
-          }));
+          table.addBillEditBatch(tableId, batchItems);
         }
       }
     }

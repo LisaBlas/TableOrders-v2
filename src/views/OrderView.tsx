@@ -96,12 +96,9 @@ export function OrderView() {
 
     const customItem = {
       id: `custom-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-      name, price, qty: 0, sentQty: 0,
+      name, price, qty, sentQty: 0,
     };
-    table.setOrders((prev) => {
-      const current = prev[tableId] || [];
-      return { ...prev, [tableId]: [...current, { ...customItem, qty, sentQty: 0 }] };
-    });
+    table.addCustomItem(tableId, customItem);
     app.showToast(`+ ${name} (${qty}×)`);
     setCustomName(""); setCustomPrice(""); setCustomQty("1"); setShowCustomModal(false);
   };
