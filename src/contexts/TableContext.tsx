@@ -184,8 +184,7 @@ export function TableProvider({ children }: { children: ReactNode }) {
           .filter((o: OrderItem) => o.qty > 0),
       };
     });
-    scheduleWrite(tableId);
-  }, [minQty2Ids, scheduleWrite]);
+  }, [minQty2Ids]);
 
   const removeItemFromBill = useCallback((tableId: TableId, itemId: string) => {
     setOrders((prev) => {
@@ -203,8 +202,7 @@ export function TableProvider({ children }: { children: ReactNode }) {
           .filter((o: OrderItem) => o.qty > 0),
       };
     });
-    scheduleWrite(tableId);
-  }, [minQty2Ids, scheduleWrite]);
+  }, [minQty2Ids]);
 
   const addItemToBill = useCallback((tableId: TableId, itemId: string) => {
     setOrders((prev) => {
@@ -216,8 +214,7 @@ export function TableProvider({ children }: { children: ReactNode }) {
         ),
       };
     });
-    scheduleWrite(tableId);
-  }, [scheduleWrite]);
+  }, []);
 
   const sendOrder = useCallback((tableId: TableId) => {
     const current = ordersRef.current[String(tableId)] || [];
