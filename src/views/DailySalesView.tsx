@@ -4,7 +4,7 @@ import { S } from "../styles/appStyles";
 import { BillCard } from "../components/BillCard";
 import { SalesSummary } from "../components/SalesSummary";
 import { BackIcon } from "../components/icons";
-import { todayBerlinDate } from "../services/directusBills";
+import { todayBerlinDate } from "../utils/dateHelpers";
 
 export function DailySalesView() {
   const app = useApp();

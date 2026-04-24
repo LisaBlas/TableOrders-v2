@@ -17,6 +17,12 @@ REFACTOR_PLAN.md
 DETAILED_REFACTOR_PLAN.md
 DIRECTUS_SETUP.md
 
+# Directus integration (kept for reference, not used in v2)
+src/services/directusMenu.ts
+src/services/directusBills.ts
+src/services/directusSessions.ts
+src/utils/migration.ts
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

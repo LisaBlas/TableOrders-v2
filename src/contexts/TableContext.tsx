@@ -2,10 +2,8 @@ import {
   createContext, useContext, useState, useCallback, useEffect, useRef, useMemo,
   type ReactNode,
 } from "react";
-import { useQuery } from "@tanstack/react-query";
 import { useApp } from "./AppContext";
 import { useMenu } from "./MenuContext";
-import { fetchAllSessions, upsertSession, deleteSession, parseTableId } from "../services/directusSessions";
 import type {
   Orders, OrderItem, SentBatches, Batch, GutscheinAmounts,
   TableId, MenuItem, MenuItemVariant, MenuCategory, ExpandedItem,
@@ -42,124 +40,74 @@ export function TableProvider({ children }: { children: ReactNode }) {
   const { showToast } = useApp();
   const { minQty2Ids } = useMenu();
 
-  const [orders, setOrders] = useState<Orders>({});
-  const [seatedTablesArr, setSeatedTablesArr] = useState<TableId[]>([]);
-  const [sentBatches, setSentBatches] = useState<SentBatches>({});
-  const [gutscheinAmounts, setGutscheinAmounts] = useState<GutscheinAmounts>({});
-  const [markedBatches, setMarkedBatches] = useState<Record<string, Set<number>>>({});
+  // Load initial state from localStorage
+  const [orders, setOrders] = useState<Orders>(() => {
+    try {
+      return JSON.parse(localStorage.getItem("orders") || "{}");
+    } catch { return {}; }
+  });
+
+  const [seatedTablesArr, setSeatedTablesArr] = useState<TableId[]>(() => {
+    try {
+      return JSON.parse(localStorage.getItem("seatedTables") || "[]");
+    } catch { return []; }
+  });
+
+  const [sentBatches, setSentBatches] = useState<SentBatches>(() => {
+    try {
+      return JSON.parse(localStorage.getItem("sentBatches") || "{}");
+    } catch { return {}; }
+  });
+
+  const [gutscheinAmounts, setGutscheinAmounts] = useState<GutscheinAmounts>(() => {
+    try {
+      return JSON.parse(localStorage.getItem("gutscheinAmounts") || "{}");
+    } catch { return {}; }
+  });
+
+  const [markedBatches, setMarkedBatches] = useState<Record<string, Set<number>>>(() => {
+    try {
+      const stored = JSON.parse(localStorage.getItem("markedBatches") || "{}");
+      // Convert arrays back to Sets
+      const result: Record<string, Set<number>> = {};
+      for (const [key, val] of Object.entries(stored)) {
+        result[key] = new Set(val as number[]);
+      }
+      return result;
+    } catch { return {}; }
+  });
 
   const seatedTables = useMemo(() => new Set<TableId>(seatedTablesArr), [seatedTablesArr]);
 
-  // ── Refs for async reads in debounced writes ──────────────────────────────
+  // Ref for current orders (used in sendOrder to avoid stale closure)
   const ordersRef = useRef(orders);
-  const seatedTablesArrRef = useRef(seatedTablesArr);
-  const sentBatchesRef = useRef(sentBatches);
-  const gutscheinRef = useRef(gutscheinAmounts);
-  const markedBatchesRef = useRef(markedBatches);
-
   useEffect(() => { ordersRef.current = orders; }, [orders]);
-  useEffect(() => { seatedTablesArrRef.current = seatedTablesArr; }, [seatedTablesArr]);
-  useEffect(() => { sentBatchesRef.current = sentBatches; }, [sentBatches]);
-  useEffect(() => { gutscheinRef.current = gutscheinAmounts; }, [gutscheinAmounts]);
-  useEffect(() => { markedBatchesRef.current = markedBatches; }, [markedBatches]);
 
-  // ── Directus sync refs ────────────────────────────────────────────────────
-  const sessionIdMap = useRef<Record<string, number>>({});   // tableId → Directus record id
-  const lastWriteTime = useRef<Record<string, number>>({});  // tableId → epoch ms of last write
-  const pendingWrites = useRef(new Set<string>());           // tableIds with scheduled writes
-  const writeTimers = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
-
-  // ── Poll remote sessions ──────────────────────────────────────────────────
-  const { data: remoteSessions } = useQuery({
-    queryKey: ["table_sessions"],
-    queryFn: fetchAllSessions,
-    refetchInterval: 2000,
-    refetchOnWindowFocus: true,
-    staleTime: 1000,
-  });
-
-  // ── Merge remote state ────────────────────────────────────────────────────
+  // Save to localStorage whenever state changes
   useEffect(() => {
-    if (!remoteSessions) return;
+    localStorage.setItem("orders", JSON.stringify(orders));
+  }, [orders]);
 
-    const now = Date.now();
-    const remoteMap = new Map(remoteSessions.map((s) => [s.table_id, s]));
+  useEffect(() => {
+    localStorage.setItem("seatedTables", JSON.stringify(seatedTablesArr));
+  }, [seatedTablesArr]);
 
-    // Update Directus ID map
-    remoteSessions.forEach((s) => { sessionIdMap.current[s.table_id] = s.id; });
+  useEffect(() => {
+    localStorage.setItem("sentBatches", JSON.stringify(sentBatches));
+  }, [sentBatches]);
 
-    const isLocallyOwned = (key: string) =>
-      pendingWrites.current.has(key) || now - (lastWriteTime.current[key] ?? 0) < 3000;
+  useEffect(() => {
+    localStorage.setItem("gutscheinAmounts", JSON.stringify(gutscheinAmounts));
+  }, [gutscheinAmounts]);
 
-    // All table IDs known to either side
-    const allKeys = new Set([
-      ...remoteMap.keys(),
-      ...Object.keys(ordersRef.current),
-      ...seatedTablesArrRef.current.map(String),
-      ...Object.keys(sentBatchesRef.current),
-    ]);
-
-    const newOrders: Orders = {};
-    const newSeated = new Set<TableId>();
-    const newSentBatches: SentBatches = {};
-    const newGutschein: GutscheinAmounts = {};
-    const newMarkedBatches: Record<string, Set<number>> = {};
-
-    allKeys.forEach((key) => {
-      if (isLocallyOwned(key)) {
-        // Keep local state for this table
-        const tableId = parseTableId(key);
-        if (ordersRef.current[key]?.length) newOrders[key] = ordersRef.current[key];
-        if (seatedTablesArrRef.current.some((id) => String(id) === key)) newSeated.add(tableId);
-        if (sentBatchesRef.current[key]?.length) newSentBatches[key] = sentBatchesRef.current[key];
-        if (gutscheinRef.current[key] != null) newGutschein[key] = gutscheinRef.current[key];
-        if (markedBatchesRef.current[key]?.size) newMarkedBatches[key] = markedBatchesRef.current[key];
-      } else {
-        const session = remoteMap.get(key);
-        if (!session) return; // deleted remotely — exclude from new state
-
-        const tableId = parseTableId(key);
-        if (session.orders?.length) newOrders[key] = session.orders;
-        if (session.seated) newSeated.add(tableId);
-        if (session.sent_batches?.length) newSentBatches[key] = session.sent_batches;
-        if (session.gutschein != null) newGutschein[key] = session.gutschein;
-        if (session.marked_batches?.length) newMarkedBatches[key] = new Set(session.marked_batches);
-      }
-    });
-
-    setOrders(newOrders);
-    setSeatedTablesArr(Array.from(newSeated));
-    setSentBatches(newSentBatches);
-    setGutscheinAmounts(newGutschein);
-    setMarkedBatches(newMarkedBatches);
-  }, [remoteSessions]);
-
-  // ── Debounced write to Directus ───────────────────────────────────────────
-  const scheduleWrite = useCallback((tableId: TableId) => {
-    const key = String(tableId);
-    pendingWrites.current.add(key);
-    clearTimeout(writeTimers.current[key]);
-    writeTimers.current[key] = setTimeout(async () => {
-      pendingWrites.current.delete(key);
-      lastWriteTime.current[key] = Date.now();
-
-      const session = {
-        table_id: key,
-        seated: seatedTablesArrRef.current.some((id) => String(id) === key),
-        gutschein: gutscheinRef.current[key] ?? null,
-        orders: ordersRef.current[key] ?? [],
-        sent_batches: sentBatchesRef.current[key] ?? [],
-        marked_batches: Array.from(markedBatchesRef.current[key] ?? new Set<number>()),
-      };
-
-      try {
-        const newId = await upsertSession(sessionIdMap.current[key] ?? null, session);
-        sessionIdMap.current[key] = newId;
-      } catch (e) {
-        console.error("Session write failed:", e);
-      }
-    }, 500);
-  }, []);
+  useEffect(() => {
+    // Convert Sets to arrays for JSON serialization
+    const serializable: Record<string, number[]> = {};
+    for (const [key, val] of Object.entries(markedBatches)) {
+      serializable[key] = Array.from(val);
+    }
+    localStorage.setItem("markedBatches", JSON.stringify(serializable));
+  }, [markedBatches]);
 
   // ── Actions ───────────────────────────────────────────────────────────────
 
@@ -169,8 +117,7 @@ export function TableProvider({ children }: { children: ReactNode }) {
       s.add(tableId);
       return Array.from(s);
     });
-    scheduleWrite(tableId);
-  }, [scheduleWrite]);
+  }, []);
 
   const addItem = useCallback((tableId: TableId, item: MenuItem, variant: MenuItemVariant | null, category: MenuCategory, note?: string) => {
     const baseOrderItem = variant
@@ -208,16 +155,14 @@ export function TableProvider({ children }: { children: ReactNode }) {
       return { ...prev, [String(tableId)]: [...current, { ...orderItem, qty: initialQty, sentQty: 0 }] };
     });
     showToast(`+ ${baseOrderItem.name}`);
-    scheduleWrite(tableId);
-  }, [showToast, minQty2Ids, scheduleWrite]);
+  }, [showToast, minQty2Ids]);
 
   const addCustomItem = useCallback((tableId: TableId, item: OrderItem) => {
     setOrders((prev) => {
       const current = prev[String(tableId)] || [];
       return { ...prev, [String(tableId)]: [...current, item] };
     });
-    scheduleWrite(tableId);
-  }, [scheduleWrite]);
+  }, []);
 
   const removeItem = useCallback((tableId: TableId, itemId: string) => {
     setOrders((prev) => {
@@ -294,8 +239,7 @@ export function TableProvider({ children }: { children: ReactNode }) {
       [String(tableId)]: (prev[String(tableId)] || []).map((o: OrderItem) => ({ ...o, sentQty: o.qty })),
     }));
     showToast("Order sent!");
-    scheduleWrite(tableId);
-  }, [showToast, scheduleWrite]);
+  }, [showToast]);
 
   const addBillEditBatch = useCallback((tableId: TableId, batchItems: OrderItem[]) => {
     if (!batchItems.length) return;
@@ -304,14 +248,12 @@ export function TableProvider({ children }: { children: ReactNode }) {
       ...prev,
       [String(tableId)]: [...(prev[String(tableId)] || []), batch],
     }));
-    scheduleWrite(tableId);
-  }, [scheduleWrite]);
+  }, []);
 
   const applyGutschein = useCallback((tableId: TableId, amount: number) => {
     setGutscheinAmounts((prev) => ({ ...prev, [String(tableId)]: amount }));
     showToast(`Gutschein ${amount.toFixed(2)}€ applied`);
-    scheduleWrite(tableId);
-  }, [showToast, scheduleWrite]);
+  }, [showToast]);
 
   const removeGutschein = useCallback((tableId: TableId) => {
     setGutscheinAmounts((prev) => {
@@ -320,8 +262,7 @@ export function TableProvider({ children }: { children: ReactNode }) {
       return next;
     });
     showToast("Gutschein removed");
-    scheduleWrite(tableId);
-  }, [showToast, scheduleWrite]);
+  }, [showToast]);
 
   const toggleMarkBatch = useCallback((tableId: TableId, batchIndex: number) => {
     setMarkedBatches((prev) => {
@@ -330,8 +271,7 @@ export function TableProvider({ children }: { children: ReactNode }) {
       if (next.has(batchIndex)) next.delete(batchIndex); else next.add(batchIndex);
       return { ...prev, [String(tableId)]: next };
     });
-    scheduleWrite(tableId);
-  }, [scheduleWrite]);
+  }, []);
 
   const cleanupTable = useCallback((tableId: TableId) => {
     const key = String(tableId);
@@ -341,16 +281,6 @@ export function TableProvider({ children }: { children: ReactNode }) {
     setSentBatches((prev) => { const n = { ...prev }; delete n[key]; return n; });
     setGutscheinAmounts((prev) => { const n = { ...prev }; delete n[key]; return n; });
     setMarkedBatches((prev) => { const n = { ...prev }; delete n[key]; return n; });
-
-    // Cancel any pending write and delete from Directus
-    clearTimeout(writeTimers.current[key]);
-    pendingWrites.current.delete(key);
-    delete lastWriteTime.current[key];
-    const directusId = sessionIdMap.current[key];
-    if (directusId) {
-      delete sessionIdMap.current[key];
-      deleteSession(directusId).catch(console.error);
-    }
   }, []);
 
   const removePaidItems = useCallback((tableId: TableId, paidItems: ExpandedItem[]) => {
@@ -372,8 +302,7 @@ export function TableProvider({ children }: { children: ReactNode }) {
           .filter((o: OrderItem) => o.qty > 0),
       };
     });
-    scheduleWrite(tableId);
-  }, [scheduleWrite]);
+  }, []);
 
   const swapTables = useCallback((fromId: TableId, toId: TableId) => {
     const fk = String(fromId);
@@ -416,9 +345,7 @@ export function TableProvider({ children }: { children: ReactNode }) {
     });
 
     showToast(`Table ${fromId} ⇄ Table ${toId}`);
-    scheduleWrite(fromId);
-    scheduleWrite(toId);
-  }, [showToast, scheduleWrite]);
+  }, [showToast]);
 
   return (
     <TableContext.Provider value={{

@@ -1,13 +1,6 @@
-import { createContext, useContext, useState, useCallback, useMemo, type ReactNode } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { createContext, useContext, useState, useCallback, useMemo, useEffect, type ReactNode } from "react";
 import { migratePaidBills } from "../utils/migration";
-import {
-  fetchBillsByDate,
-  createBillInDirectus,
-  patchBill,
-  patchBillItem,
-  todayBerlinDate,
-} from "../services/directusBills";
+import { todayBerlinDate, filterBillsByDate } from "../utils/dateHelpers";
 import type { View, Bill, DailySalesTab, TableId } from "../types";
 
 interface AppContextValue {
@@ -30,7 +23,7 @@ interface AppContextValue {
   selectedDate: string;
   setSelectedDate: (date: string) => void;
 
-  // Bill actions (write — each syncs to Directus)
+  // Bill actions (write — localStorage only)
   addPaidBill: (bill: Bill) => void;
   markBillAddedToPOS: (billIndex: number) => void;
   restoreBillFromPOS: (billIndex: number) => void;
@@ -54,7 +47,6 @@ interface AppContextValue {
 const AppContext = createContext<AppContextValue | null>(null);
 
 export function AppProvider({ children }: { children: ReactNode }) {
-  const queryClient = useQueryClient();
   const [view, setView] = useState<View>("tables");
   const [activeTable, setActiveTable] = useState<TableId | null>(null);
   const [ticketTable, setTicketTable] = useState<TableId | null>(null);
@@ -63,170 +55,128 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [editingBillIndex, setEditingBillIndex] = useState<number | null>(null);
   const [billSnapshot, setBillSnapshot] = useState<Bill | null>(null);
   const [deletingBillIndex, setDeletingBillIndex] = useState<number | null>(null);
-  const [selectedDate, setSelectedDate] = useState<string>(todayBerlinDate);
+  const [selectedDate, setSelectedDate] = useState<string>(todayBerlinDate());
 
-  const BILLS_KEY = ["bills", selectedDate];
-  const isToday = selectedDate === todayBerlinDate();
-
-  const { data: rawPaidBills = [] } = useQuery<Bill[]>({
-    queryKey: BILLS_KEY,
-    queryFn: async () => {
-      try {
-        return await fetchBillsByDate(selectedDate);
-      } catch {
-        if (isToday) {
-          try {
-            return JSON.parse(localStorage.getItem("paidBills") || "[]");
-          } catch { return []; }
-        }
-        return [];
-      }
-    },
-    staleTime: 5_000,
-    refetchInterval: isToday ? 5_000 : false,
-    refetchOnWindowFocus: true,
+  // Load all bills from localStorage
+  const [allPaidBills, setAllPaidBills] = useState<Bill[]>(() => {
+    try {
+      const stored = localStorage.getItem("paidBills");
+      if (!stored) return [];
+      const bills = JSON.parse(stored);
+      // Migrate legacy bills if needed
+      const needsMigration = bills.some((bill: Bill) =>
+        bill.items.some((item) => !(item as any).posId)
+      );
+      return needsMigration ? migratePaidBills(bills) : bills;
+    } catch {
+      return [];
+    }
   });
 
-  // Migrate legacy bills (bills created before posId field existed)
-  const paidBills = useMemo(() => {
-    if (rawPaidBills.length === 0) return rawPaidBills;
-    const needsMigration = rawPaidBills.some((bill) =>
-      bill.items.some((item) => !(item as any).posId)
-    );
-    return needsMigration ? migratePaidBills(rawPaidBills) : rawPaidBills;
-  }, [rawPaidBills]);
+  // Save to localStorage whenever bills change
+  useEffect(() => {
+    localStorage.setItem("paidBills", JSON.stringify(allPaidBills));
+  }, [allPaidBills]);
 
-  const setCachedBills = useCallback((bills: Bill[]) => {
-    queryClient.setQueryData<Bill[]>(BILLS_KEY, bills);
-  }, [queryClient, selectedDate]);
+  // Filter bills by selected date
+  const paidBills = useMemo(() =>
+    filterBillsByDate(allPaidBills, selectedDate),
+    [allPaidBills, selectedDate]
+  );
 
   const showToast = useCallback((msg: string) => {
     setToast(msg);
     setTimeout(() => setToast(null), 2000);
   }, []);
 
-  // Add a new paid bill: optimistic add → create in Directus → update cache with IDs.
-  // Always targets today's cache key regardless of the selected date in Daily Sales.
+  // Add a new paid bill
   const addPaidBill = useCallback((bill: Bill) => {
-    const todayKey = ["bills", todayBerlinDate()];
-    const current = queryClient.getQueryData<Bill[]>(todayKey) ?? [];
-    queryClient.setQueryData<Bill[]>(todayKey, [...current, bill]);
-    createBillInDirectus(bill)
-      .then((savedBill) => {
-        const latest = queryClient.getQueryData<Bill[]>(todayKey) ?? [];
-        queryClient.setQueryData<Bill[]>(todayKey, latest.map((b) =>
-          b.timestamp === savedBill.timestamp && b.tableId === savedBill.tableId
-            ? savedBill
-            : b
-        ));
-      })
-      .catch((err) => console.warn("Failed to save bill to Directus:", err.message));
-  }, [queryClient]);
+    setAllPaidBills((prev) => [...prev, bill]);
+  }, []);
 
   const markBillAddedToPOS = useCallback((billIndex: number) => {
-    const updated = paidBills.map((b, i) =>
-      i === billIndex ? { ...b, addedToPOS: true } : b
+    const billToUpdate = paidBills[billIndex];
+    setAllPaidBills((prev) =>
+      prev.map((b) =>
+        b.timestamp === billToUpdate.timestamp && b.tableId === billToUpdate.tableId
+          ? { ...b, addedToPOS: true }
+          : b
+      )
     );
-    setCachedBills(updated);
     setEditingBillIndex(null);
     setBillSnapshot(null);
-    const bill = paidBills[billIndex];
-    if (bill?.directusId) {
-      patchBill(bill.directusId, { added_to_pos: true }).catch((err) =>
-        console.warn("Failed to patch bill:", err.message)
-      );
-    }
-  }, [paidBills, setCachedBills]);
+  }, [paidBills]);
 
   const restoreBillFromPOS = useCallback((billIndex: number) => {
-    const bill = paidBills[billIndex];
-    const restoredItems = bill.items.map(({ crossedQty: _, crossed: __, ...rest }) => rest);
-    const restoredBill = { ...bill, addedToPOS: false, items: restoredItems };
-    setCachedBills(paidBills.map((b, i) => i === billIndex ? restoredBill : b));
-    if (bill?.directusId) {
-      patchBill(bill.directusId, { added_to_pos: false }).catch((err) =>
-        console.warn("Failed to patch bill:", err.message)
-      );
-      restoredItems.forEach((item) => {
-        if (item.directusId) {
-          patchBillItem(item.directusId, { crossed_qty: 0 }).catch((err) =>
-            console.warn("Failed to patch bill item:", err.message)
-          );
-        }
-      });
-    }
-  }, [paidBills, setCachedBills]);
+    const billToUpdate = paidBills[billIndex];
+    const restoredItems = billToUpdate.items.map(({ crossedQty: _, crossed: __, ...rest }) => rest);
+    setAllPaidBills((prev) =>
+      prev.map((b) =>
+        b.timestamp === billToUpdate.timestamp && b.tableId === billToUpdate.tableId
+          ? { ...b, addedToPOS: false, items: restoredItems }
+          : b
+      )
+    );
+  }, [paidBills]);
 
   const removePaidBillItem = useCallback((billIndex: number, itemId: string) => {
-    const bill = paidBills[billIndex];
-    const updatedItems = bill.items.map((o) =>
+    const billToUpdate = paidBills[billIndex];
+    const updatedItems = billToUpdate.items.map((o) =>
       o.id === itemId
         ? { ...o, crossedQty: Math.min((o.crossedQty ?? 0) + 1, o.qty) }
         : o
     );
-    setCachedBills(paidBills.map((b, i) =>
-      i === billIndex ? { ...b, items: updatedItems } : b
-    ));
-    const item = updatedItems.find((o) => o.id === itemId);
-    if (item?.directusId) {
-      patchBillItem(item.directusId, { crossed_qty: item.crossedQty }).catch((err) =>
-        console.warn("Failed to patch bill item:", err.message)
-      );
-    }
-  }, [paidBills, setCachedBills]);
+    setAllPaidBills((prev) =>
+      prev.map((b) =>
+        b.timestamp === billToUpdate.timestamp && b.tableId === billToUpdate.tableId
+          ? { ...b, items: updatedItems }
+          : b
+      )
+    );
+  }, [paidBills]);
 
   const restorePaidBillItem = useCallback((billIndex: number, itemId: string) => {
-    const bill = paidBills[billIndex];
-    const updatedItems = bill.items.map((o) =>
+    const billToUpdate = paidBills[billIndex];
+    const updatedItems = billToUpdate.items.map((o) =>
       o.id === itemId
         ? { ...o, crossedQty: Math.max((o.crossedQty ?? 0) - 1, 0), crossed: false }
         : o
     );
-    setCachedBills(paidBills.map((b, i) =>
-      i === billIndex ? { ...b, items: updatedItems } : b
-    ));
-    const item = updatedItems.find((o) => o.id === itemId);
-    if (item?.directusId) {
-      patchBillItem(item.directusId, { crossed_qty: item.crossedQty }).catch((err) =>
-        console.warn("Failed to patch bill item:", err.message)
-      );
-    }
-  }, [paidBills, setCachedBills]);
+    setAllPaidBills((prev) =>
+      prev.map((b) =>
+        b.timestamp === billToUpdate.timestamp && b.tableId === billToUpdate.tableId
+          ? { ...b, items: updatedItems }
+          : b
+      )
+    );
+  }, [paidBills]);
 
-  // Edit mode: mutations during edit are local only; sync happens on exit
+  // Edit mode: mutations during edit are local only
   const enterBillEditMode = useCallback((billIndex: number) => {
     setBillSnapshot({ ...paidBills[billIndex] });
     setEditingBillIndex(billIndex);
   }, [paidBills]);
 
   const exitBillEditMode = useCallback(() => {
-    // Sync the current state of the edited bill to Directus
-    if (editingBillIndex !== null) {
-      const bill = paidBills[editingBillIndex];
-      if (bill?.directusId) {
-        patchBill(bill.directusId, { added_to_pos: bill.addedToPOS ?? false }).catch((err) =>
-          console.warn("Failed to sync bill on exit:", err.message)
-        );
-        bill.items.forEach((item) => {
-          if (item.directusId) {
-            patchBillItem(item.directusId, { crossed_qty: item.crossedQty ?? 0 }).catch((err) =>
-              console.warn("Failed to sync bill item on exit:", err.message)
-            );
-          }
-        });
-      }
-    }
+    // No sync needed - localStorage auto-saves
     setEditingBillIndex(null);
     setBillSnapshot(null);
-  }, [editingBillIndex, paidBills]);
+  }, []);
 
   const cancelBillEditMode = useCallback(() => {
     if (billSnapshot !== null && editingBillIndex !== null) {
-      setCachedBills(paidBills.map((b, i) => i === editingBillIndex ? billSnapshot : b));
+      const billToRestore = paidBills[editingBillIndex];
+      setAllPaidBills((prev) =>
+        prev.map((b) =>
+          b.timestamp === billToRestore.timestamp && b.tableId === billToRestore.tableId
+            ? billSnapshot
+            : b
+        )
+      );
     }
     setEditingBillIndex(null);
     setBillSnapshot(null);
-  }, [billSnapshot, editingBillIndex, paidBills, setCachedBills]);
+  }, [billSnapshot, editingBillIndex, paidBills]);
 
   return (
     <AppContext.Provider value={{

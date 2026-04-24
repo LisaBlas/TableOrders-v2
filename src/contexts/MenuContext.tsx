@@ -1,6 +1,5 @@
-import { createContext, useContext, useState, useEffect, type ReactNode } from "react";
+import { createContext, useContext, type ReactNode } from "react";
 import { MENU, MIN_QTY_2_IDS } from "../data/constants";
-import { fetchMenu } from "../services/directusMenu";
 
 interface MenuContextValue {
   menu: Record<string, any[]>;
@@ -11,21 +10,10 @@ interface MenuContextValue {
 const MenuContext = createContext<MenuContextValue | null>(null);
 
 export function MenuProvider({ children }: { children: ReactNode }) {
-  const [menu, setMenu] = useState<Record<string, any[]>>(MENU as any);
-  const [minQty2Ids, setMinQty2Ids] = useState<Set<string>>(MIN_QTY_2_IDS as Set<string>);
-  const [menuLoading, setMenuLoading] = useState(true);
-
-  useEffect(() => {
-    fetchMenu()
-      .then(({ menu, minQty2Ids }) => {
-        setMenu(menu);
-        setMinQty2Ids(minQty2Ids);
-      })
-      .catch((err) => {
-        console.warn("Directus unavailable, using static menu:", err.message);
-      })
-      .finally(() => setMenuLoading(false));
-  }, []);
+  // Use constants.js directly - no async loading
+  const menu = MENU as any;
+  const minQty2Ids = MIN_QTY_2_IDS as Set<string>;
+  const menuLoading = false;
 
   return (
     <MenuContext.Provider value={{ menu, minQty2Ids, menuLoading }}>

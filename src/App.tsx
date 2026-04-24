@@ -1,5 +1,4 @@
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { MenuProvider, useMenu } from "./contexts/MenuContext";
+import { MenuProvider } from "./contexts/MenuContext";
 import { AppProvider, useApp } from "./contexts/AppContext";
 import { TableProvider } from "./contexts/TableContext";
 import { SplitProvider, useSplit } from "./contexts/SplitContext";
@@ -16,49 +15,9 @@ import { Toast } from "./components/Toast";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { S } from "./styles/appStyles";
 
-function LoadingScreen() {
-  const { isTabletLandscape, isTablet, isDesktop } = useBreakpoint();
-  const rootStyle = isDesktop || isTabletLandscape ? S.rootTabletLandscape : isTablet ? S.rootTablet : S.root;
-
-  return (
-    <div style={rootStyle}>
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "center",
-          height: "100vh",
-          gap: "20px",
-        }}
-      >
-        <div
-          style={{
-            width: "40px",
-            height: "40px",
-            border: "3px solid #f3f3f3",
-            borderTop: "3px solid #000",
-            borderRadius: "50%",
-            animation: "spin 1s linear infinite",
-          }}
-        />
-        <style>{`
-          @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-          }
-        `}</style>
-      </div>
-    </div>
-  );
-}
-
 function Router() {
   const { view, toast } = useApp();
-  const { menuLoading } = useMenu();
   const { isTabletLandscape, isTablet, isDesktop } = useBreakpoint();
-
-  if (menuLoading) return <LoadingScreen />;
 
   const rootStyle = isDesktop || isTabletLandscape ? S.rootTabletLandscape : isTablet ? S.rootTablet : S.root;
 
@@ -87,11 +46,8 @@ function SplitRouter() {
   return <SplitItemView />;
 }
 
-const queryClient = new QueryClient();
-
 export default function App() {
   return (
-    <QueryClientProvider client={queryClient}>
     <ErrorBoundary>
       <MenuProvider>
         <AppProvider>
@@ -103,6 +59,5 @@ export default function App() {
         </AppProvider>
       </MenuProvider>
     </ErrorBoundary>
-    </QueryClientProvider>
   );
 }

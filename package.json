@@ -3,7 +3,7 @@
   "private": true,
   "version": "1.0.0",
   "type": "module",
-  "homepage": "https://LisaBlas.github.io/TableOrders",
+  "homepage": "https://LisaBlas.github.io/TableOrders-v2",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
@@ -12,7 +12,6 @@
     "deploy": "gh-pages -d dist"
   },
   "dependencies": {
-    "@tanstack/react-query": "^5.99.2",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },
