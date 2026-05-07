@@ -1,0 +1,201 @@
+import type { CSSProperties, ReactNode } from "react";
+
+// ── Table ──
+
+export type TableId = number | string;
+
+export interface TableEntry {
+  id: TableId;
+  label: string;
+  isDivider?: never;
+}
+
+export interface TableDivider {
+  isDivider: true;
+  label: string;
+  id?: never;
+}
+
+export type TableConfig = TableEntry | TableDivider;
+
+export interface DynamicTable {
+  id: string;
+  label: string;
+  location: "inside" | "outside";
+}
+
+export type TableStatus = "open" | "seated" | "unconfirmed" | "confirmed";
+
+export interface StatusConfig {
+  label: string;
+  dot: string;
+  bg: string;
+  border: string;
+  text: string;
+}
+
+// ── Menu ──
+
+export type MenuCategory = "Food" | "Drinks\u{1F377}" | "Bottles \u{1F37E}" | "Shop";
+
+export interface MenuItemVariant {
+  type: string;
+  price: number;
+  label: string;
+  shortName?: string;
+  posId?: string;
+  posName?: string;
+  bottleSubcategory?: string;
+  isDefault?: boolean;
+}
+
+export interface MenuItem {
+  id: string;
+  name: string;
+  shortName?: string;
+  price?: number;
+  subcategory?: string;
+  posId?: string;
+  posName?: string;
+  variants?: MenuItemVariant[];
+  category?: string;      // Added dynamically in useMenuItems
+  wineType?: string;      // Added dynamically for wines in useMenuItems
+}
+
+export type MenuData = Record<MenuCategory, MenuItem[]>;
+
+export interface Subcategory {
+  id: string;
+  label: string;
+}
+
+// ── Orders ──
+
+export interface OrderItem {
+  id: string;
+  directusId?: string;
+  name: string;
+  shortName?: string;
+  price: number;
+  qty: number;
+  sentQty: number;
+  category?: MenuCategory;
+  subcategory?: string;
+  posId?: string;
+  posName?: string;
+  baseId?: string;
+  variantType?: string;
+  _uid?: string;
+  crossed?: boolean;
+  crossedQty?: number;
+  note?: string;
+  destination?: string;
+}
+
+export type Orders = Record<string, OrderItem[]>;
+
+export interface Batch {
+  id?: string;
+  timestamp: string;
+  items: OrderItem[];
+}
+
+export type SentBatches = Record<string, Batch[]>;
+export type MarkedBatchId = string;
+
+export type Destination = "bar" | "counter" | "kitchen";
+
+// ── Gutschein ──
+
+export type GutscheinAmounts = Record<string, number>;
+
+// ── Bill ──
+
+export interface Bill {
+  tempId?: string;      // Client-only optimistic ID (not persisted to Directus)
+  directusId?: string;
+  tableId: TableId;
+  items: OrderItem[];
+  total: number;
+  subtotal?: number;
+  gutschein?: number;
+  tip?: number;
+  timestamp: string;
+  paymentMode: "full" | "equal" | "item";
+  splitData?: EqualSplitData | ItemSplitData;
+  addedToPOS?: boolean;
+}
+
+export interface EqualSplitData {
+  guests: number;
+}
+
+export interface ItemSplitData {
+  payments: SplitPayment[];
+}
+
+// ── Split Payment ──
+
+export type SplitMode = "equal" | "item" | null;
+
+export interface ExpandedItem extends OrderItem {
+  _uid: string;
+  qty: 1;
+  isGutschein?: boolean;
+}
+
+export interface SplitPayment {
+  guestNum: number;
+  items: OrderItem[];
+  total: number;
+  amountPaid?: number;
+  tip?: number;
+}
+
+export interface PaymentInput {
+  amount: string;
+  confirmed: boolean;
+}
+
+// ── Views ──
+
+export type View =
+  | "tables"
+  | "order"
+  | "ticket"
+  | "split"
+  | "splitConfirm"
+  | "splitDone"
+  | "dailySales";
+
+export type DailySalesTab = "chronological" | "total";
+export type OrderTab = "order" | "bill";
+
+// ── Styles ──
+
+export type StyleMap = Record<string, CSSProperties>;
+
+// ── Component Props ──
+
+export interface ReceiptProps {
+  tableId: TableId;
+  items: OrderItem[];
+  guestNum?: number | null;
+  editMode?: boolean;
+  gutschein?: number;
+  onRemoveItem?: ((id: string) => void) | null;
+  onAddItem?: ((id: string) => void) | null;
+  onRemoveGutschein?: (() => void) | null;
+  skipHeader?: boolean;
+}
+
+export interface ModalProps {
+  title: string;
+  children?: ReactNode;
+  onClose: () => void;
+  onConfirm: () => void;
+  cancelText?: string;
+  confirmText?: string;
+  confirmStyle?: CSSProperties | null;
+  closeOnBackdrop?: boolean;
+}

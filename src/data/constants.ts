@@ -1,4 +1,6 @@
-export const TABLES = [
+import type { TableConfig, MenuItem, StatusConfig, Subcategory, TableStatus } from "../types";
+
+export const TABLES: TableConfig[] = [
   { isDivider: true, label: "Inside" },
   { id: 1, label: "Table 1" },
   { id: 2, label: "Table 2" },
@@ -21,7 +23,7 @@ export const TABLES = [
   { id: "Right", label: "Right" },
 ];
 
-export const MENU = {
+export const MENU: Record<string, MenuItem[]> = {
   Food: [
     // Cheese & Charcuterie (posName omitted where it equals shortName)
     { id: "f1", name: "Small Cheese Plate", shortName: "CP KL", price: 10, subcategory: "cheese", posId: "11" },
@@ -630,7 +632,7 @@ export const MENU = {
       variants: [
         { type: "small", price: 1.5, label: "0,2", posId: "50-1", posName: "Sprudel klein" },
         { type: "large", price: 2.8, label: "0,4", posId: "51-1", posName: "Sprudel groß" },
-        { type: "bottle", price: 5.5, label: "Fl.", posId: "52", posName: "Sprudel Fl." }
+        { type: "bottle", price: 5.5, label: "Fl.", posId: "52", posName: "Sprudel Fl.", isDefault: true }
       ]
     },
     {
@@ -773,14 +775,14 @@ export const MENU = {
   ],
 };
 
-export const STATUS_CONFIG = {
+export const STATUS_CONFIG: Record<TableStatus, StatusConfig> = {
   open:        { label: "Open",      dot: "#5b9bd5", bg: "#f0f6fd", border: "#b8d4ef", text: "#1a4a7a" },
   seated:      { label: "Seated",    dot: "#f5c84a", bg: "#fffdf0", border: "#f0e0a0", text: "#7a5c00" },
   unconfirmed: { label: "Ordered",   dot: "#e05252", bg: "#fdf5f5", border: "#f0bfbf", text: "#7a1a1a" },
   confirmed:   { label: "Confirmed", dot: "#52b87a", bg: "#f4fbf6", border: "#b8e6c8", text: "#1a5c35" },
 };
 
-export const FOOD_SUBCATEGORIES = [
+export const FOOD_SUBCATEGORIES: Subcategory[] = [
   { id: "cheese", label: "🧀 Cheese Counter" },
   { id: "salads", label: "🥗 Salads" },
   { id: "warm", label: "🍽️ Warm Dishes" },
@@ -788,7 +790,7 @@ export const FOOD_SUBCATEGORIES = [
   { id: "snacks", label: "🫒 Snacks" },
 ];
 
-export const DRINKS_SUBCATEGORIES = [
+export const DRINKS_SUBCATEGORIES: Subcategory[] = [
   { id: "bier", label: "🍺 Bier" },
   { id: "cocktail", label: "🍸 Cocktail" },
   { id: "soft", label: "🥤 Soft" },
@@ -796,12 +798,12 @@ export const DRINKS_SUBCATEGORIES = [
   { id: "warm", label: "☕ Warm" },
 ];
 
-export const BOTTLES_SUBCATEGORIES = [
+export const BOTTLES_SUBCATEGORIES: Subcategory[] = [
   { id: "glass", label: "By the glass" },
   { id: "bottle", label: "Bottle only" },
 ];
 
-export const SHOP_SUBCATEGORIES = [
+export const SHOP_SUBCATEGORIES: Subcategory[] = [
   { id: "fish", label: "🐟 Fish" },
   { id: "spreads", label: "🍯 Spreads" },
   { id: "snacks", label: "🍪 Snacks" },
@@ -809,4 +811,4 @@ export const SHOP_SUBCATEGORIES = [
 ];
 
 // Items that must always be ordered in multiples of 2 (minimum 2 per order)
-export const MIN_QTY_2_IDS = new Set(["f2", "f11", "f12", "f28"]);
+export const MIN_QTY_2_IDS: Set<string> = new Set(["f2", "f11", "f12", "f28"]);

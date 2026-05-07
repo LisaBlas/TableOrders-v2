@@ -1,22 +1,29 @@
-export function getTableStatus(tableId, orders, seatedTables = new Set(), sentBatches = {}, markedBatches = {}) {
-  const order = orders[tableId];
-  const batches = sentBatches[tableId] || [];
-  const marked = markedBatches[tableId]; // Set<string> | undefined
+import type { OrderItem, Orders, SentBatches, TableId, TableStatus, ExpandedItem, Destination, MarkedBatchId } from "../types";
+import { batchMarkId } from "./batchMarks";
+
+export function getTableStatus(
+  tableId: TableId,
+  orders: Orders,
+  seatedTables: Set<TableId> = new Set(),
+  sentBatches: SentBatches = {},
+  markedBatches: Record<string, Set<MarkedBatchId>> = {}
+): TableStatus {
+  const order = orders[tableId as string];
+  const batches = sentBatches[tableId as string] || [];
+  const marked = markedBatches[tableId as string];
 
   if (batches.length > 0) {
-    const allMarked = batches.every((batch) => marked?.has(batch.id ?? batch.timestamp));
+    const allMarked = batches.every((batch) => marked?.has(batchMarkId(batch)));
     return allMarked ? "confirmed" : "unconfirmed";
   }
 
-  // No sent batches — check if table is active (seated or has pending items)
   if (seatedTables.has(tableId) || (order && order.length > 0)) return "seated";
 
   return "open";
 }
 
-// Expand items so qty > 1 becomes N individual lines for per-item splitting
-export function expandItems(items) {
-  const expanded = [];
+export function expandItems(items: OrderItem[]): ExpandedItem[] {
+  const expanded: ExpandedItem[] = [];
   let uniqueCounter = 0;
   items.forEach((item, itemIndex) => {
     for (let i = 0; i < item.qty; i++) {
@@ -26,13 +33,12 @@ export function expandItems(items) {
   return expanded;
 }
 
-// Consolidate items with same ID by summing their quantities
-export function consolidateItems(items) {
-  const consolidated = new Map();
+export function consolidateItems(items: OrderItem[]): OrderItem[] {
+  const consolidated = new Map<string, OrderItem>();
 
   items.forEach((item) => {
     if (consolidated.has(item.id)) {
-      const existing = consolidated.get(item.id);
+      const existing = consolidated.get(item.id)!;
       existing.qty += item.qty;
     } else {
       consolidated.set(item.id, { ...item });
@@ -42,12 +48,14 @@ export function consolidateItems(items) {
   return Array.from(consolidated.values());
 }
 
-// Determine destination for an item (Bar, Counter, Kitchen)
-export function getItemDestination(item) {
-  // Use destination field from Directus if available
-  if (item.destination) return item.destination;
+export function getItemDestination(item: {
+  id?: string | number;
+  destination?: string;
+  category?: string;
+  subcategory?: string;
+}): Destination {
+  if (item.destination) return item.destination as Destination;
 
-  // Legacy fallback for static menu items with string IDs
   const id = String(item.id ?? "");
   if (
     id.startsWith("wg") || id.startsWith("dr") || id.startsWith("te") || id.startsWith("co") ||
@@ -63,11 +71,10 @@ export function getItemDestination(item) {
   return "kitchen";
 }
 
-// Group items by a property (e.g., subcategory)
-export function groupBy(items, key) {
-  const grouped = {};
+export function groupBy<T>(items: T[], key: keyof T): Record<string, T[]> {
+  const grouped: Record<string, T[]> = {};
   items.forEach((item) => {
-    const value = item[key];
+    const value = String(item[key]);
     if (!grouped[value]) {
       grouped[value] = [];
     }

@@ -1,5 +1,9 @@
+import { useTable } from "../contexts/TableContext";
 import { S } from "../styles/appStyles";
+import { useMenu } from "../contexts/MenuContext";
 import { consolidateItems } from "../utils/helpers";
+import { RESTAURANT_NAME } from "../config/appConfig";
+import type { ReceiptProps } from "../types";
 
 export function Receipt({
   tableId,
@@ -11,7 +15,9 @@ export function Receipt({
   onAddItem = null,
   onRemoveGutschein = null,
   skipHeader = false,
-}) {
+}: ReceiptProps) {
+  const { minQty2Ids } = useMenu();
+  const { resolveTableDisplayId } = useTable();
   const consolidatedItems = consolidateItems(items);
   const subtotal = items.reduce((s, o) => s + o.price * o.qty, 0);
   const total = Math.max(0, subtotal - gutschein);
@@ -20,9 +26,9 @@ export function Receipt({
     <>
       {!skipHeader && (
         <>
-          <div style={S.closeReceiptBrand}>Käserei Camidi</div>
+          <div style={S.closeReceiptBrand}>{RESTAURANT_NAME}</div>
           <div style={S.closeReceiptMeta}>
-            Table {tableId}
+            Table {resolveTableDisplayId(tableId)}
             {guestNum && ` · Guest ${guestNum}`}
             {' · '}
             {new Date().toLocaleString("en-GB", {
@@ -44,6 +50,7 @@ export function Receipt({
               style={S.closeRemoveBtn}
               onClick={() => onRemoveItem(o.id)}
               title="Remove one"
+              disabled={o.qty <= 2 && minQty2Ids.has(o.id)}
             >
               −
             </button>
@@ -74,14 +81,14 @@ export function Receipt({
             <span>{subtotal.toFixed(2)}€</span>
           </div>
           <div style={S.closeGutscheinRow}>
-            <span>Gutschein</span>
+            <span>Voucher</span>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <span>-{gutschein.toFixed(2)}€</span>
               {editMode && onRemoveGutschein && (
                 <button
                   style={S.removeGutscheinBtn}
                   onClick={onRemoveGutschein}
-                  title="Remove gutschein"
+                  title="Remove voucher"
                 >
                   ✕
                 </button>

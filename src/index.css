@@ -39,15 +39,15 @@ button:active {
   0% {
     opacity: 0;
     transform: translateY(10px);
-    background: transparent;
+    background: #a5d6a7;
   }
-  20% {
+  15% {
     opacity: 1;
     transform: translateY(0);
-    background: transparent;
-  }
-  30% {
     background: #a5d6a7;
+  }
+  50% {
+    background: transparent;
   }
   100% {
     opacity: 1;
@@ -88,5 +88,39 @@ button:active {
     opacity: 1;
     transform: translateY(0);
     max-height: 1000px;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulseRed {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(224, 82, 82, 0.5); }
+  55%       { box-shadow: 0 0 0 5px rgba(224, 82, 82, 0); }
+}
+
+/* OrderBar exit on confirm — mirrors slideUpFromBottom */
+@keyframes slideDownOut {
+  from {
+    transform: translateX(-50%) translateY(0);
+  }
+  to {
+    transform: translateX(-50%) translateY(110%);
+  }
+}
+
+/* OrderBar entrance — preserves translateX(-50%) centering during slide */
+@keyframes slideUpFromBottom {
+  from {
+    transform: translateX(-50%) translateY(100%);
+  }
+  to {
+    transform: translateX(-50%) translateY(0);
   }
 }

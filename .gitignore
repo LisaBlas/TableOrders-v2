@@ -9,11 +9,17 @@ lerna-debug.log*
 
 node_modules
 dist
+dist-demo
 dist-ssr
 *.local
+.claude/
 
-CLAUDE.md
-REFACTOR_PLAN.md
+# Environment variables
+.env
+.env.local
+
+DETAILED_REFACTOR_PLAN.md
+DIRECTUS_SETUP.md
 
 # Editor directories and files
 .vscode/*

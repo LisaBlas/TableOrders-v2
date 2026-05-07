@@ -1,114 +1,190 @@
+import { colors, radii } from "./tokens";
+
+// Base objects for breakpoint-variant groups — spread into tablet/landscape overrides below
+const _root = {
+  fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif",
+  background: colors.bg,
+  minHeight: "100vh",
+  color: colors.fg,
+  maxWidth: 480,
+  margin: "0 auto",
+  position: "relative",
+};
+
+const _header = {
+  position: "sticky",
+  top: 0,
+  zIndex: 100,
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  padding: "18px 20px 12px",
+  background: colors.surface,
+};
+
+const _grid = {
+  display: "grid",
+  gridTemplateColumns: "repeat(3, 1fr)",
+  gap: 12,
+  padding: 16,
+};
+
+const _tableCard = {
+  position: "relative",
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "center",
+  justifyContent: "center",
+  gap: 4,
+  padding: "18px 8px",
+  borderRadius: 6,
+  cursor: "pointer",
+};
+
+const _grid4 = {
+  display: "grid",
+  gridTemplateColumns: "repeat(4, 1fr)",
+  gap: 0,
+  padding: 0,
+};
+
+const _totalTabSections = {
+  display: "flex",
+  flexDirection: "column",
+  gap: 16,
+};
+
+const _billActionsCard = {
+  background: colors.surface,
+  borderRadius: radii.lg,
+  border: `1px solid ${colors.border}`,
+  padding: "16px",
+  display: "flex",
+  flexDirection: "column",
+  gap: 12,
+};
+
+const _billsList = {
+  flex: 1,
+  overflowY: "auto",
+  padding: "0 16px 100px",
+};
+
 export const S = {
-  root: {
-    fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif",
-    background: "#f5f4f0",
-    minHeight: "100vh",
-    color: "#1a1a1a",
-    maxWidth: 480,
-    margin: "0 auto",
-    position: "relative"
-  },
+  // Root / page layout
+  root: _root,
+  rootTablet: { ..._root, maxWidth: 768 },
+  rootTabletLandscape: { ..._root, maxWidth: 1024 },
   page: {
     display: "flex",
     flexDirection: "column",
     minHeight: "100vh",
-    animation: "fadeIn 0.25s ease-out"
+    animation: "fadeIn 0.25s ease-out",
   },
+
+  // Toast
   toast: {
     position: "fixed",
     top: 16,
     left: "50%",
     transform: "translateX(-50%)",
-    background: "#1a1a1a",
-    color: "#fff",
+    background: colors.fg,
+    color: colors.surface,
     padding: "8px 18px",
-    borderRadius: 20,
+    borderRadius: radii.pill,
     fontSize: 13,
     zIndex: 999,
     pointerEvents: "none",
     whiteSpace: "nowrap",
-    animation: "fadeIn 0.2s ease-out"
+    animation: "fadeIn 0.2s ease-out",
   },
-  header: {
-    position: "sticky",
-    top: 0,
-    zIndex: 100,
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-    padding: "18px 20px 12px",
-    background: "#fff"
-  },
+
+  // Header
+  header: _header,
+  headerTablet: { ..._header, padding: "20px 24px 14px" },
   headerTitle: {
     fontWeight: 700,
     fontSize: 18,
-    letterSpacing: "-0.3px"
+    letterSpacing: "-0.3px",
+    position: "absolute",
+    left: "50%",
+    transform: "translateX(-50%)",
+    whiteSpace: "nowrap",
   },
   headerSub: {
     fontSize: 13,
-    color: "#888"
+    color: colors.muted,
   },
+
+  // Back / icon buttons in header
   back: {
     background: "none",
     border: "none",
     fontSize: 14,
-    color: "#555",
+    color: colors.subtle,
     cursor: "pointer",
-    padding: 0
+    padding: 0,
+    display: "flex",
+    alignItems: "center",
   },
   ticketBtn: {
     background: "none",
     border: "none",
     fontSize: 14,
-    color: "#555",
+    color: colors.subtle,
     cursor: "pointer",
-    padding: 0
+    padding: 0,
+    display: "flex",
+    alignItems: "center",
   },
   selectAllBtn: {
     background: "none",
     border: "none",
     fontSize: 14,
-    color: "#555",
+    color: colors.subtle,
     cursor: "pointer",
     padding: 0,
-    fontWeight: 700
+    fontWeight: 700,
   },
+
+  // Legend (table status)
   legend: {
     display: "flex",
     gap: 16,
     padding: "10px 20px",
-    background: "#fff",
-    borderBottom: "1px solid #ebe9e3"
+    background: colors.surface,
+    borderBottom: `1px solid ${colors.border}`,
   },
   legendItem: {
     display: "flex",
     alignItems: "center",
     gap: 6,
     fontSize: 12,
-    color: "#666"
+    color: colors.secondary,
   },
   dot: {
     width: 8,
     height: 8,
-    borderRadius: "50%",
-    flexShrink: 0
+    borderRadius: radii.round,
+    flexShrink: 0,
   },
-  grid: {
-    display: "grid",
-    gridTemplateColumns: "repeat(3, 1fr)",
-    gap: 12,
-    padding: 16
-  },
+
+  // Table grid
+  grid: _grid,
+  gridTablet: { ..._grid, gridTemplateColumns: "repeat(4, 1fr)", gap: 14, padding: 20 },
+  gridTabletLandscape: { ..._grid, gridTemplateColumns: "repeat(5, 1fr)", gap: 16, padding: 24 },
+
+  // Subcategory grid
   subcategoryGrid: {
     display: "grid",
     gridTemplateColumns: "repeat(2, 1fr)",
     gap: 10,
-    padding: 16
+    padding: 16,
   },
   subcategoryTile: {
-    background: "#fff",
-    border: "2px solid #ebe9e3",
-    borderRadius: 10,
+    background: colors.surface,
+    border: `2px solid ${colors.border}`,
+    borderRadius: radii.md,
     padding: "16px 12px",
     display: "flex",
     flexDirection: "column",
@@ -118,76 +194,75 @@ export const S = {
     cursor: "pointer",
     fontSize: 13,
     fontWeight: 600,
-    color: "#1a1a1a",
+    color: colors.fg,
     textAlign: "center",
     minHeight: 80,
-    transition: "all 0.2s ease"
+    transition: "all 0.2s ease",
   },
   subcategoryTileEmoji: {
     fontSize: 28,
-    lineHeight: 1
+    lineHeight: 1,
   },
-  tableCard: {
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 4,
-    padding: "18px 8px",
-    borderRadius: 12,
-    cursor: "pointer"
-  },
+
+  // Table card
+  tableCard: _tableCard,
+  tableCardTablet: { ..._tableCard, gap: 6, padding: "22px 10px" },
+  tableCardTabletLandscape: { ..._tableCard, gap: 8, padding: "26px 12px" },
   tableDot: {
     width: 8,
     height: 8,
-    borderRadius: "50%",
-    marginBottom: 2
+    borderRadius: radii.round,
+    marginBottom: 2,
   },
   tableNum: {
     fontWeight: 700,
     fontSize: 22,
-    lineHeight: 1
+    lineHeight: 1,
   },
   tableStatus: {
     fontSize: 11,
     fontWeight: 500,
     textTransform: "uppercase",
-    letterSpacing: "0.4px"
+    letterSpacing: "0.4px",
   },
+
+  // Category tabs
   cats: {
     display: "flex",
     gap: 8,
     padding: "12px 16px",
-    background: "#fff",
-    borderBottom: "1px solid #ebe9e3",
-    overflowX: "auto"
+    background: colors.surface,
+    borderBottom: `1px solid ${colors.border}`,
+    overflowX: "auto",
   },
   catBtn: {
     padding: "6px 14px",
-    borderRadius: 20,
+    borderRadius: radii.pill,
     border: "1.5px solid #ddd",
-    background: "#fff",
+    background: colors.surface,
     fontSize: 13,
     cursor: "pointer",
     whiteSpace: "nowrap",
-    color: "#555",
+    color: colors.subtle,
     fontWeight: 500,
-    animation: "fadeIn 0.2s ease-out"
+    animation: "fadeIn 0.2s ease-out",
   },
   catBtnActive: {
-    background: "#1a1a1a",
-    color: "#fff",
-    border: "1.5px solid #1a1a1a"
+    background: colors.fg,
+    color: colors.surface,
+    border: `1.5px solid ${colors.fg}`,
   },
+
+  // Order content
   orderContent: {
     flex: 1,
     overflowY: "auto",
     display: "flex",
-    flexDirection: "column"
+    flexDirection: "column",
   },
   menuList: {
     maxHeight: "300px",
-    overflowY: "auto"
+    overflowY: "auto",
   },
   subcategorySeparator: {
     padding: "12px 20px 8px",
@@ -198,89 +273,97 @@ export const S = {
     borderBottom: "1px solid #e8e8e6",
     position: "sticky",
     top: 0,
-    zIndex: 1
+    zIndex: 1,
   },
+
+  // Menu list item
   menuItem: {
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
     padding: "13px 20px",
-    borderBottom: "1px solid #ebe9e3",
-    background: "#fff",
-    marginBottom: 1
+    borderBottom: `1px solid ${colors.border}`,
+    background: colors.surface,
+    marginBottom: 1,
   },
   menuItemInfo: {
     display: "flex",
     flexDirection: "column",
-    gap: 2
+    gap: 2,
   },
   menuItemName: {
     fontSize: 15,
-    fontWeight: 500
+    fontWeight: 500,
   },
   menuItemPrice: {
     fontSize: 13,
-    color: "#888"
+    color: colors.muted,
   },
+
+  // Qty controls
   qtyControl: {
     display: "flex",
     alignItems: "center",
     gap: 10,
-    animation: "fadeIn 0.2s ease-out"
+    animation: "fadeIn 0.2s ease-out",
   },
   qtyBtn: {
     width: 30,
     height: 30,
-    borderRadius: "50%",
+    borderRadius: radii.round,
     border: "1.5px solid #ccc",
-    background: "#fff",
+    background: colors.surface,
     fontSize: 18,
     lineHeight: 1,
     cursor: "pointer",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    color: "#333",
-    transition: "all 0.15s ease-out"
+    color: colors.dark,
+    transition: "all 0.15s ease-out",
   },
   qtyNum: {
     fontSize: 15,
     fontWeight: 600,
     minWidth: 18,
     textAlign: "center",
-    animation: "fadeIn 0.2s ease-out"
+    animation: "fadeIn 0.2s ease-out",
   },
   addBtn: {
     padding: "6px 16px",
-    borderRadius: 20,
-    border: "1.5px solid #1a1a1a",
-    background: "#fff",
+    borderRadius: radii.pill,
+    border: `1.5px solid ${colors.fg}`,
+    background: colors.surface,
     fontSize: 13,
     fontWeight: 600,
-    cursor: "pointer"
+    cursor: "pointer",
   },
+
+  // Variant pill button — inline in MenuItemRow
   variantBtn: {
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
     gap: 2,
     padding: "6px 12px",
-    borderRadius: 8,
+    borderRadius: radii.sm,
     border: "1.5px solid #ddd",
-    background: "#fff",
+    background: colors.surface,
     cursor: "pointer",
-    minWidth: 54
+    minWidth: 54,
   },
   variantLabel: {
     fontSize: 12,
     fontWeight: 600,
-    lineHeight: 1
+    lineHeight: 1,
   },
   variantPrice: {
     fontSize: 11,
-    color: "#666",
-    fontWeight: 500
+    color: colors.secondary,
+    fontWeight: 500,
   },
+
+  // Order bar (bottom drawer)
   orderBar: {
     position: "fixed",
     bottom: 0,
@@ -288,16 +371,17 @@ export const S = {
     transform: "translateX(-50%)",
     width: "100%",
     maxWidth: 480,
-    background: "#fff",
-    borderTop: "1px solid #ebe9e3",
+    background: colors.surface,
+    borderTop: `1px solid ${colors.border}`,
     boxShadow: "0 -2px 12px rgba(0,0,0,0.15)",
     padding: "8px 16px 20px",
     display: "flex",
     flexDirection: "column",
     gap: 10,
     zIndex: 100,
-    maxHeight: "50vh",
-    overflowY: "auto"
+    maxHeight: "75vh",
+    overflowY: "auto",
+    animation: "slideUpFromBottom 0.35s ease-out",
   },
   orderBarHandle: {
     display: "flex",
@@ -306,136 +390,142 @@ export const S = {
     gap: 4,
     padding: "4px 0 8px",
     cursor: "pointer",
-    userSelect: "none"
+    userSelect: "none",
   },
   orderBarHandleLine: {
     width: 40,
     height: 4,
     borderRadius: 2,
-    background: "#d4d2ca"
+    background: colors.divider,
   },
   orderBarHandleText: {
     fontSize: 11,
-    color: "#999",
+    color: colors.faint,
     fontWeight: 600,
     textTransform: "uppercase",
-    letterSpacing: "0.5px"
+    letterSpacing: "0.5px",
   },
   orderBarList: {
     display: "flex",
     flexDirection: "column",
     gap: 8,
-    maxHeight: "200px",
+    maxHeight: "400px",
     overflowY: "auto",
-    marginBottom: 4
+    marginBottom: 4,
+    transition: "max-height 0.35s ease-out",
   },
   orderBarListCollapsed: {
     display: "flex",
     flexDirection: "column",
     gap: 8,
-    marginBottom: 4
+    maxHeight: "56px",
+    overflow: "hidden",
+    marginBottom: 4,
+    transition: "max-height 0.35s ease-out",
   },
   orderBarItemWrapper: {
     width: "100%",
     padding: "10px 12px",
-    borderRadius: 8,
-    border: "1px solid #ebe9e3",
-    animation: "itemAppear 1s ease-out"
+    borderRadius: radii.sm,
+    border: `1px solid ${colors.border}`,
+    animation: "itemAppear 1s ease-out",
   },
   orderBarItem: {
     display: "flex",
     alignItems: "center",
-    gap: 8
+    gap: 8,
   },
   orderBarItemInfo: {
     flex: 1,
     display: "flex",
     flexDirection: "column",
-    gap: 2
+    gap: 2,
   },
   orderBarItemName: {
     fontSize: 13,
     fontWeight: 500,
-    lineHeight: 1.3
+    lineHeight: 1.3,
   },
   orderBarItemPrice: {
     fontSize: 11,
-    color: "#888"
+    color: colors.muted,
   },
   orderBarItemControls: {
     display: "flex",
     alignItems: "center",
-    gap: 8
+    gap: 8,
   },
   orderBarQtyBtn: {
     width: 28,
     height: 28,
-    borderRadius: "50%",
+    borderRadius: radii.round,
     border: "1.5px solid #ccc",
-    background: "#fff",
+    background: colors.surface,
     fontSize: 16,
     lineHeight: 1,
     cursor: "pointer",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    color: "#333"
+    color: colors.dark,
   },
   orderBarQtyNum: {
     fontSize: 14,
     fontWeight: 600,
     minWidth: 20,
-    textAlign: "center"
+    textAlign: "center",
   },
   orderBarItems: {
     display: "flex",
     flexWrap: "wrap",
-    gap: 6
+    gap: 6,
   },
   orderBarChip: {
-    background: "#f0f0ee",
-    borderRadius: 12,
+    background: colors.chipBg,
+    borderRadius: radii.lg,
     padding: "3px 10px",
     fontSize: 12,
-    color: "#444"
+    color: "#444",
   },
   sendBtn: {
-    background: "#1a1a1a",
-    color: "#fff",
+    background: colors.fg,
+    color: colors.surface,
     border: "none",
-    borderRadius: 10,
+    borderRadius: radii.md,
     padding: "13px",
     fontSize: 15,
     fontWeight: 700,
     cursor: "pointer",
-    width: "100%"
+    width: "100%",
   },
+
+  // Sent sections
   sentSection: {
     margin: "8px 16px",
     padding: "12px 16px",
-    background: "#fff",
-    borderRadius: 10,
-    border: "1px solid #ebe9e3",
-    animation: "fadeIn 0.25s ease-out"
+    background: colors.surface,
+    borderRadius: radii.md,
+    border: `1px solid ${colors.border}`,
+    animation: "fadeIn 0.25s ease-out",
   },
   sentLabel: {
     fontSize: 11,
     fontWeight: 600,
-    color: "#aaa",
+    color: colors.dimmed,
     textTransform: "uppercase",
     letterSpacing: "0.5px",
     display: "block",
-    marginBottom: 8
+    marginBottom: 8,
   },
   sentItem: {
     display: "flex",
     justifyContent: "space-between",
     fontSize: 14,
-    color: "#666",
-    padding: "3px 0"
+    color: colors.secondary,
+    padding: "3px 0",
   },
   sentPrice: {
-    color: "#aaa"
+    color: colors.dimmed,
   },
   sentDivider: {
     display: "flex",
@@ -443,100 +533,111 @@ export const S = {
     gap: 12,
     margin: "16px 16px 8px",
     padding: "0",
-    animation: "fadeIn 0.25s ease-out"
+    animation: "fadeIn 0.25s ease-out",
   },
   sentDividerLine: {
     flex: 1,
     height: 1,
-    background: "#d4d2ca"
+    background: colors.divider,
   },
   sentDividerText: {
     fontSize: 11,
     fontWeight: 600,
-    color: "#999",
+    color: colors.faint,
     textTransform: "uppercase",
     letterSpacing: "0.5px",
-    whiteSpace: "nowrap"
+    whiteSpace: "nowrap",
   },
   sentSectionsContainer: {
     maxHeight: "300px",
     overflowY: "auto",
     marginBottom: 8,
     backgroundColor: "#f0f4f8",
-    borderTop: "1px solid #e2e8f0"
+    borderTop: "1px solid #e2e8f0",
   },
+
+  // Ticket / receipt
   ticket: {
     margin: "16px",
-    background: "#fff",
-    borderRadius: 12,
-    border: "1px solid #ebe9e3",
+    background: colors.surface,
+    borderRadius: radii.lg,
+    border: `1px solid ${colors.border}`,
     padding: "20px",
-    animation: "slideUpFade 0.3s ease-out"
+    animation: "slideUpFade 0.3s ease-out",
+  },
+  ticketTablet: {
+    margin: "20px auto",
+    maxWidth: 600,
+    background: colors.surface,
+    borderRadius: 14,
+    border: `1px solid ${colors.border}`,
+    padding: "28px",
+    animation: "slideUpFade 0.3s ease-out",
   },
   ticketHeader: {
     display: "flex",
     flexDirection: "column",
     gap: 2,
-    marginBottom: 14
+    marginBottom: 14,
   },
   ticketRestaurant: {
     fontWeight: 700,
-    fontSize: 18
+    fontSize: 18,
   },
   ticketDate: {
     fontSize: 12,
-    color: "#aaa"
+    color: colors.dimmed,
   },
   divider: {
     height: 1,
-    background: "#ebe9e3",
-    margin: "12px 0"
+    background: colors.border,
+    margin: "12px 0",
   },
   ticketRow: {
     display: "flex",
     alignItems: "baseline",
     gap: 8,
-    padding: "5px 0"
+    padding: "5px 0",
   },
   ticketRowEditable: {
     display: "flex",
     alignItems: "center",
     gap: 8,
-    padding: "5px 0"
+    padding: "5px 0",
   },
   ticketRemoveBtn: {
     width: 24,
     height: 24,
-    borderRadius: "50%",
+    borderRadius: radii.round,
     border: "1.5px solid #ddd",
-    background: "#fff",
+    background: colors.surface,
     fontSize: 16,
     lineHeight: 1,
     cursor: "pointer",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    color: "#999",
-    flexShrink: 0
+    color: colors.faint,
+    flexShrink: 0,
   },
   ticketQty: {
     fontSize: 13,
-    color: "#aaa",
-    minWidth: 24
+    color: colors.dimmed,
+    minWidth: 24,
   },
   ticketName: {
     flex: 1,
-    fontSize: 15
+    fontSize: 15,
   },
   ticketPrice: {
     fontSize: 15,
-    fontWeight: 500
+    fontWeight: 500,
   },
   ticketTotal: {
     display: "flex",
     justifyContent: "space-between",
     fontWeight: 700,
-    fontSize: 18
+    fontSize: 18,
   },
   ticketActions: {
     position: "fixed",
@@ -545,54 +646,67 @@ export const S = {
     transform: "translateX(-50%)",
     width: "100%",
     maxWidth: 480,
-    background: "#fff",
-    borderTop: "1px solid #ebe9e3",
+    background: colors.surface,
+    borderTop: `1px solid ${colors.border}`,
     padding: "16px",
     display: "flex",
     flexDirection: "column",
-    gap: 10
+    gap: 10,
   },
   copyBtn: {
     flex: 1,
     padding: "13px",
-    borderRadius: 10,
-    border: "1.5px solid #1a1a1a",
-    background: "#fff",
+    borderRadius: radii.md,
+    border: `1.5px solid ${colors.fg}`,
+    background: colors.surface,
     fontSize: 15,
     fontWeight: 600,
-    cursor: "pointer"
+    cursor: "pointer",
   },
   closeBtn: {
     flex: 1,
     padding: "13px",
-    borderRadius: 10,
+    borderRadius: radii.md,
     border: "none",
-    background: "#1a1a1a",
-    color: "#fff",
+    background: colors.fg,
+    color: colors.surface,
     fontSize: 15,
     fontWeight: 600,
     cursor: "pointer",
-    animation: "fadeIn 0.25s ease-out"
+    animation: "fadeIn 0.25s ease-out",
+  },
+  continueBtn: {
+    flex: 1,
+    padding: "13px",
+    borderRadius: radii.md,
+    border: "none",
+    background: colors.info,
+    color: colors.surface,
+    fontSize: 15,
+    fontWeight: 600,
+    cursor: "pointer",
+    animation: "fadeIn 0.25s ease-out",
   },
 
+  // Split options
   splitOptions: {
     margin: "0 16px 100px",
     padding: "16px",
-    background: "#fff",
-    borderRadius: 12,
-    border: "1px solid #ebe9e3"
+    background: colors.surface,
+    borderRadius: radii.lg,
+    border: `1px solid ${colors.border}`,
   },
   splitOptionsLabel: {
     fontSize: 11,
     fontWeight: 600,
-    color: "#aaa",
+    color: colors.dimmed,
     textTransform: "uppercase",
     letterSpacing: "0.5px",
-    marginBottom: 10
+    marginBottom: 10,
   },
   splitBtns: {
     display: "flex",
-    gap: 10
+    gap: 10,
   },
   splitOptionBtn: {
     flex: 1,
@@ -601,134 +715,137 @@ export const S = {
     alignItems: "center",
     gap: 4,
     padding: "14px 8px",
-    borderRadius: 10,
+    borderRadius: radii.md,
     border: "1.5px solid #ddd",
-    background: "#fafaf8",
-    cursor: "pointer"
+    background: colors.inputBg,
+    cursor: "pointer",
   },
   splitOptionIcon: {
-    fontSize: 20
+    fontSize: 20,
   },
   splitOptionTitle: {
     fontWeight: 700,
-    fontSize: 13
+    fontSize: 13,
   },
   splitOptionSub: {
     fontSize: 11,
-    color: "#999",
-    textAlign: "center"
+    color: colors.faint,
+    textAlign: "center",
   },
 
+  // Equal split
   equalCard: {
     margin: "16px 16px 100px 16px",
-    background: "#fff",
-    borderRadius: 12,
-    border: "1px solid #ebe9e3",
-    padding: "20px"
+    background: colors.surface,
+    borderRadius: radii.lg,
+    border: `1px solid ${colors.border}`,
+    padding: "20px",
   },
   equalTotalLine: {
     display: "flex",
     justifyContent: "space-between",
-    alignItems: "baseline"
+    alignItems: "baseline",
   },
   equalTotalLabel: {
     fontSize: 14,
-    color: "#888"
+    color: colors.muted,
   },
   equalTotalAmt: {
     fontSize: 22,
-    fontWeight: 700
+    fontWeight: 700,
   },
   guestCountRow: {
     display: "flex",
     justifyContent: "space-between",
-    alignItems: "center"
+    alignItems: "center",
   },
   guestCountLabel: {
-    fontSize: 15
+    fontSize: 15,
   },
   guestCounter: {
     display: "flex",
     alignItems: "center",
-    gap: 14
+    gap: 14,
   },
   guestCountBtn: {
     width: 34,
     height: 34,
-    borderRadius: "50%",
+    borderRadius: radii.round,
     border: "1.5px solid #ccc",
-    background: "#fff",
+    background: colors.surface,
     fontSize: 20,
     cursor: "pointer",
     display: "flex",
     alignItems: "center",
-    justifyContent: "center"
+    justifyContent: "center",
   },
   guestCountNum: {
     fontSize: 22,
     fontWeight: 700,
     minWidth: 28,
-    textAlign: "center"
+    textAlign: "center",
   },
   equalShareRow: {
     display: "flex",
     justifyContent: "space-between",
-    alignItems: "baseline"
+    alignItems: "baseline",
   },
   equalShareLabel: {
     fontSize: 15,
-    fontWeight: 500
+    fontWeight: 500,
   },
   equalShareAmt: {
     fontSize: 28,
-    fontWeight: 800
+    fontWeight: 800,
   },
   equalBreakdown: {
     marginTop: 12,
     display: "flex",
     flexDirection: "column",
-    gap: 6
+    gap: 6,
   },
   equalGuestRow: {
     display: "flex",
     justifyContent: "space-between",
-    alignItems: "center"
+    alignItems: "center",
   },
   equalGuestChip: {
-    background: "#f0f0ee",
-    borderRadius: 10,
+    background: colors.chipBg,
+    borderRadius: radii.md,
     padding: "3px 10px",
     fontSize: 13,
-    color: "#555"
+    color: colors.subtle,
   },
   equalGuestAmt: {
     fontSize: 14,
-    fontWeight: 600
+    fontWeight: 600,
   },
 
+  // Split progress
   splitProgress: {
     display: "flex",
     flexWrap: "wrap",
     gap: 6,
     padding: "10px 16px",
-    background: "#fff",
-    borderBottom: "1px solid #ebe9e3",
-    alignItems: "center"
+    background: colors.surface,
+    borderBottom: `1px solid ${colors.border}`,
+    alignItems: "center",
   },
   splitProgressChip: {
-    background: "#e8f3e9",
-    borderRadius: 10,
+    background: colors.successBg,
+    borderRadius: radii.md,
     padding: "3px 10px",
     fontSize: 12,
-    color: "#2d5a35",
-    fontWeight: 600
+    color: colors.success,
+    fontWeight: 600,
   },
   splitProgressRemaining: {
     marginLeft: "auto",
     fontSize: 12,
-    color: "#888"
+    color: colors.muted,
   },
 
+  // Split item list
   splitItemList: {
     flex: 1,
     overflowY: "auto",
@@ -736,269 +853,273 @@ export const S = {
     paddingBottom: 130,
     display: "flex",
     flexDirection: "column",
-    gap: 8
+    gap: 8,
   },
   splitItem: {
     display: "flex",
     alignItems: "center",
     gap: 12,
     padding: "13px 16px",
-    borderRadius: 10,
+    borderRadius: radii.md,
     cursor: "pointer",
     width: "100%",
-    textAlign: "left"
+    textAlign: "left",
   },
   splitItemCheck: {
     width: 22,
     height: 22,
-    borderRadius: "50%",
+    borderRadius: radii.round,
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
     fontSize: 12,
     fontWeight: 700,
     flexShrink: 0,
-    transition: "background 0.15s"
+    transition: "background 0.15s",
   },
   splitItemName: {
     flex: 1,
     fontSize: 15,
-    fontWeight: 500
+    fontWeight: 500,
   },
   splitItemPrice: {
     fontSize: 15,
-    fontWeight: 600
+    fontWeight: 600,
   },
 
+  // Split confirm
   splitConfirmCard: {
     margin: 16,
-    background: "#fff",
-    borderRadius: 12,
-    border: "1px solid #ebe9e3",
+    background: colors.surface,
+    borderRadius: radii.lg,
+    border: `1px solid ${colors.border}`,
     padding: "28px 20px",
     display: "flex",
     flexDirection: "column",
-    alignItems: "center"
+    alignItems: "center",
   },
   splitConfirmBadge: {
     width: 52,
     height: 52,
-    borderRadius: "50%",
-    background: "#e8f3e9",
+    borderRadius: radii.round,
+    background: colors.successBg,
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
     fontSize: 22,
-    color: "#2d5a35",
-    marginBottom: 10
+    color: colors.success,
+    marginBottom: 10,
   },
   splitConfirmAmt: {
     fontSize: 36,
     fontWeight: 800,
-    marginBottom: 2
+    marginBottom: 2,
   },
   splitConfirmSub: {
     fontSize: 14,
-    color: "#888",
-    marginBottom: 4
+    color: colors.muted,
+    marginBottom: 4,
   },
   splitConfirmRow: {
     display: "flex",
     justifyContent: "space-between",
     width: "100%",
     padding: "4px 0",
-    fontSize: 14
+    fontSize: 14,
   },
   splitConfirmName: {
-    color: "#555"
+    color: colors.subtle,
   },
   splitConfirmPrice: {
-    fontWeight: 600
+    fontWeight: 600,
   },
 
+  // Split remaining banner
   splitRemainingBanner: {
     marginBottom: "10px",
     padding: "14px 16px",
-    background: "#fff8ed",
-    border: "1px solid #f0d9a0",
-    borderRadius: 10,
+    background: colors.warningBg,
+    border: `1px solid ${colors.warningBorder}`,
+    borderRadius: radii.md,
     display: "flex",
     justifyContent: "space-between",
-    alignItems: "center"
+    alignItems: "center",
   },
   splitRemainingLabel: {
     fontSize: 13,
-    color: "#7a5500",
-    fontWeight: 600
+    color: colors.warningText,
+    fontWeight: 600,
   },
   splitRemainingItems: {
     fontSize: 12,
     color: "#b07800",
-    marginTop: 2
+    marginTop: 2,
   },
   splitRemainingAmt: {
     fontSize: 22,
     fontWeight: 800,
-    color: "#7a5500"
+    color: colors.warningText,
   },
 
+  // Split done
   splitDoneCard: {
     margin: 16,
-    background: "#fff",
-    borderRadius: 12,
-    border: "1px solid #ebe9e3",
-    padding: "24px 20px"
+    background: colors.surface,
+    borderRadius: radii.lg,
+    border: `1px solid ${colors.border}`,
+    padding: "24px 20px",
   },
   splitDoneBadge: {
     width: 52,
     height: 52,
-    borderRadius: "50%",
-    background: "#e8f3e9",
+    borderRadius: radii.round,
+    background: colors.successBg,
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
     fontSize: 22,
-    color: "#2d5a35",
-    margin: "0 auto 10px"
+    color: colors.success,
+    margin: "0 auto 10px",
   },
   splitDoneTitle: {
     fontWeight: 800,
     fontSize: 24,
-    textAlign: "center"
+    textAlign: "center",
   },
   splitDoneSub: {
     fontSize: 13,
-    color: "#888",
+    color: colors.muted,
     textAlign: "center",
-    marginBottom: 4
+    marginBottom: 4,
   },
   splitDoneRow: {
     display: "flex",
     alignItems: "flex-start",
     gap: 10,
     padding: "8px 0",
-    borderBottom: "1px solid #f0f0ee"
+    borderBottom: `1px solid ${colors.chipBg}`,
   },
   splitDoneGuest: {
     fontSize: 13,
     fontWeight: 700,
     minWidth: 56,
-    paddingTop: 2
+    paddingTop: 2,
   },
   splitDoneItems: {
     flex: 1,
     display: "flex",
     flexWrap: "wrap",
-    gap: 4
+    gap: 4,
   },
   splitDoneItemChip: {
-    background: "#f0f0ee",
-    borderRadius: 8,
+    background: colors.chipBg,
+    borderRadius: radii.sm,
     padding: "2px 8px",
     fontSize: 11,
-    color: "#555"
+    color: colors.subtle,
   },
   splitDoneAmt: {
     fontSize: 14,
     fontWeight: 700,
     minWidth: 52,
     textAlign: "right",
-    paddingTop: 2
+    paddingTop: 2,
   },
   splitDoneTotal: {
     display: "flex",
     justifyContent: "space-between",
     fontWeight: 700,
     fontSize: 17,
-    marginTop: 4
+    marginTop: 4,
   },
 
+  // Close receipt
   closeReceipt: {
     margin: 16,
-    background: "#fff",
-    borderRadius: 12,
-    border: "1px solid #ebe9e3",
-    padding: "20px"
+    background: colors.surface,
+    borderRadius: radii.lg,
+    border: `1px solid ${colors.border}`,
+    padding: "20px",
   },
   closeReceiptBrand: {
     fontWeight: 800,
     fontSize: 22,
     marginBottom: 6,
     textAlign: "center",
-    letterSpacing: "-0.5px"
+    letterSpacing: "-0.5px",
   },
   closeReceiptTitle: {
     fontWeight: 700,
     fontSize: 17,
-    marginBottom: 2
+    marginBottom: 2,
   },
   closeReceiptMeta: {
     fontSize: 12,
-    color: "#999",
+    color: colors.faint,
     marginBottom: 4,
-    textAlign: "center"
+    textAlign: "center",
   },
   closeRow: {
     display: "flex",
     alignItems: "baseline",
     gap: 8,
-    padding: "5px 0"
+    padding: "5px 0",
   },
   closeRowEditable: {
     display: "flex",
     alignItems: "center",
     gap: 8,
-    padding: "5px 0"
+    padding: "5px 0",
   },
   closeRemoveBtn: {
     width: 24,
     height: 24,
-    borderRadius: "50%",
+    borderRadius: radii.round,
     border: "1.5px solid #ddd",
-    background: "#fff",
+    background: colors.surface,
     fontSize: 16,
     lineHeight: 1,
     cursor: "pointer",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    color: "#999",
-    flexShrink: 0
+    color: colors.faint,
+    flexShrink: 0,
   },
   closeQty: {
     fontSize: 15,
     fontWeight: 700,
-    color: "#333",
-    minWidth: 28
+    color: colors.dark,
+    minWidth: 28,
   },
   perforationDivider: {
     height: 0,
-    borderTop: "2px dashed #d4d2ca",
-    margin: "16px 0 14px"
+    borderTop: `2px dashed ${colors.divider}`,
+    margin: "16px 0 14px",
   },
   closeName: {
     flex: 1,
-    fontSize: 15
+    fontSize: 15,
   },
   closeLinePrice: {
     fontSize: 15,
-    fontWeight: 500
+    fontWeight: 500,
   },
   subtotalRow: {
     display: "flex",
     justifyContent: "space-between",
     fontSize: 12,
-    color: "#999",
-    padding: "2px 0"
+    color: colors.faint,
+    padding: "2px 0",
   },
   subtotalLabel: {
-    fontWeight: 500
+    fontWeight: 500,
   },
   closeTotalRow: {
     display: "flex",
     justifyContent: "space-between",
     fontWeight: 700,
-    fontSize: 20
+    fontSize: 20,
   },
   closeWarning: {
     display: "flex",
@@ -1006,42 +1127,42 @@ export const S = {
     gap: 8,
     margin: "0 16px 16px",
     padding: "12px 14px",
-    background: "#fff8ed",
-    border: "1px solid #f0d9a0",
-    borderRadius: 10,
+    background: colors.warningBg,
+    border: `1px solid ${colors.warningBorder}`,
+    borderRadius: radii.md,
     fontSize: 13,
-    color: "#7a5500",
-    lineHeight: 1.4
+    color: colors.warningText,
+    lineHeight: 1.4,
   },
   closeWarningIcon: {
     fontSize: 15,
     flexShrink: 0,
-    marginTop: 1
+    marginTop: 1,
   },
   confirmCloseBtn: {
     flex: 1,
     padding: "13px",
-    borderRadius: 10,
+    borderRadius: radii.md,
     border: "none",
-    background: "#c0392b",
-    color: "#fff",
+    background: colors.danger,
+    color: colors.surface,
     fontSize: 15,
     fontWeight: 700,
     cursor: "pointer",
-    animation: "fadeIn 0.25s ease-out"
+    animation: "fadeIn 0.25s ease-out",
   },
 
-  // Tab styles
+  // Tabs
   tabs: {
     position: "sticky",
-    top: 54,
+    top: 48,
     zIndex: 99,
-    background: "#fff",
-    borderBottom: "1px solid #ebe9e3"
+    background: colors.surface,
+    borderBottom: `1px solid ${colors.border}`,
   },
   tabsContainer: {
     display: "flex",
-    position: "relative"
+    position: "relative",
   },
   tab: {
     flex: 1,
@@ -1050,12 +1171,12 @@ export const S = {
     border: "none",
     fontSize: 15,
     fontWeight: 600,
-    color: "#888",
+    color: colors.muted,
     cursor: "pointer",
-    transition: "color 0.25s ease-out"
+    transition: "color 0.25s ease-out",
   },
   tabActive: {
-    color: "#1a1a1a"
+    color: colors.fg,
   },
   tabIndicator: {
     position: "absolute",
@@ -1063,27 +1184,27 @@ export const S = {
     left: 0,
     width: "50%",
     height: 2,
-    background: "#1a1a1a",
-    transition: "transform 0.25s ease-out"
+    background: colors.fg,
+    transition: "transform 0.25s ease-out",
   },
 
-  // Search styles
+  // Search bar
   searchBar: {
     position: "relative",
     padding: "12px 16px",
-    background: "#fff",
-    borderBottom: "1px solid #ebe9e3",
+    background: colors.surface,
+    borderBottom: `1px solid ${colors.border}`,
     display: "flex",
     gap: 8,
-    alignItems: "center"
+    alignItems: "center",
   },
   customAddBtn: {
     width: 40,
     height: 40,
-    borderRadius: 10,
-    border: "1.5px solid #1a1a1a",
-    background: "#1a1a1a",
-    color: "#fff",
+    borderRadius: radii.md,
+    border: `1.5px solid ${colors.fg}`,
+    background: colors.fg,
+    color: colors.surface,
     fontSize: 22,
     fontWeight: 400,
     cursor: "pointer",
@@ -1091,27 +1212,27 @@ export const S = {
     alignItems: "center",
     justifyContent: "center",
     flexShrink: 0,
-    lineHeight: 1
+    lineHeight: 1,
   },
   searchInput: {
     width: "100%",
     padding: "10px 38px 10px 14px",
     fontSize: 15,
     border: "1.5px solid #ddd",
-    borderRadius: 10,
-    background: "#fafaf8",
+    borderRadius: radii.md,
+    background: colors.inputBg,
     outline: "none",
-    fontFamily: "inherit"
+    fontFamily: "inherit",
   },
   searchInputWithBtn: {
     flex: 1,
     padding: "10px 38px 10px 14px",
     fontSize: 15,
     border: "1.5px solid #ddd",
-    borderRadius: 10,
-    background: "#fafaf8",
+    borderRadius: radii.md,
+    background: colors.inputBg,
     outline: "none",
-    fontFamily: "inherit"
+    fontFamily: "inherit",
   },
   searchClear: {
     position: "absolute",
@@ -1121,105 +1242,105 @@ export const S = {
     background: "none",
     border: "none",
     fontSize: 16,
-    color: "#999",
+    color: colors.faint,
     cursor: "pointer",
     padding: 6,
     display: "flex",
     alignItems: "center",
-    justifyContent: "center"
+    justifyContent: "center",
   },
   menuItemCategory: {
     fontSize: 12,
-    color: "#999",
-    fontWeight: 400
+    color: colors.faint,
+    fontWeight: 400,
   },
   noResults: {
     padding: "40px 20px",
-    textAlign: "center"
+    textAlign: "center",
   },
   noResultsText: {
     fontSize: 14,
-    color: "#999"
+    color: colors.faint,
   },
 
-  // Modal styles
+  // Modal
   modalOverlay: {
     position: "fixed",
     top: 0,
     left: 0,
     right: 0,
     bottom: 0,
-    background: "rgba(0, 0, 0, 0.5)",
+    background: colors.overlay,
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
     zIndex: 1000,
-    animation: "fadeIn 0.2s ease-out"
+    animation: "fadeIn 0.2s ease-out",
   },
   modalCard: {
-    background: "#fff",
-    borderRadius: 16,
+    background: colors.surface,
+    borderRadius: radii.xl,
     padding: "24px",
     maxWidth: 360,
     width: "90%",
-    boxShadow: "0 8px 24px rgba(0, 0, 0, 0.15)",
-    animation: "scaleIn 0.25s ease-out"
+    boxShadow: "0 8px 24px rgba(0,0,0,0.15)",
+    animation: "scaleIn 0.25s ease-out",
   },
   modalTitle: {
     fontSize: 20,
     fontWeight: 700,
     marginBottom: 8,
-    color: "#1a1a1a"
+    color: colors.fg,
   },
   modalMessage: {
     fontSize: 15,
-    color: "#666",
+    color: colors.secondary,
     lineHeight: 1.5,
-    marginBottom: 24
+    marginBottom: 24,
   },
   modalActions: {
     display: "flex",
-    gap: 10
+    gap: 10,
   },
   modalCancelBtn: {
     flex: 1,
     padding: "12px",
-    borderRadius: 10,
+    borderRadius: radii.md,
     border: "1.5px solid #ddd",
-    background: "#fff",
+    background: colors.surface,
     fontSize: 15,
     fontWeight: 600,
     cursor: "pointer",
-    color: "#555"
+    color: colors.subtle,
   },
   modalConfirmBtn: {
     flex: 1,
     padding: "12px",
-    borderRadius: 10,
+    borderRadius: radii.md,
     border: "none",
-    background: "#1a1a1a",
-    color: "#fff",
+    background: colors.fg,
+    color: colors.surface,
     fontSize: 15,
     fontWeight: 600,
-    cursor: "pointer"
+    cursor: "pointer",
   },
   modalDeleteBtn: {
     flex: 1,
     padding: "12px",
-    borderRadius: 10,
+    borderRadius: radii.md,
     border: "none",
-    background: "#c0392b",
-    color: "#fff",
+    background: colors.danger,
+    color: colors.surface,
     fontSize: 15,
     fontWeight: 600,
-    cursor: "pointer"
+    cursor: "pointer",
   },
 
-  // Daily Sales styles
+  // Daily Sales
   salesBtn: {
-    background: "#fff",
-    border: "1.5px solid #1a1a1a",
-    borderRadius: 10,
+    background: colors.surface,
+    border: `1.5px solid ${colors.fg}`,
+    borderRadius: radii.md,
     padding: "10px 16px",
     fontSize: 14,
     fontWeight: 600,
@@ -1229,181 +1350,214 @@ export const S = {
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    gap: 6
+    gap: 6,
   },
   salesIcon: {
-    fontSize: 16
+    fontSize: 16,
   },
   salesSummary: {
     margin: 16,
-    background: "#fff",
-    borderRadius: 12,
-    border: "1px solid #ebe9e3",
-    padding: "20px"
+    background: colors.surface,
+    borderRadius: radii.lg,
+    border: `1px solid ${colors.border}`,
+    padding: "20px",
   },
   salesSummaryRow: {
     display: "flex",
     justifyContent: "space-between",
-    padding: "8px 0"
+    padding: "8px 0",
   },
   salesLabel: {
     fontSize: 14,
-    color: "#888"
+    color: colors.muted,
   },
   salesValue: {
     fontSize: 14,
-    fontWeight: 600
+    fontWeight: 600,
   },
   salesTotalRow: {
     display: "flex",
     justifyContent: "space-between",
     alignItems: "baseline",
     paddingTop: 12,
-    borderTop: "1px solid #ebe9e3",
-    marginTop: 12
+    borderTop: `1px solid ${colors.border}`,
+    marginTop: 12,
   },
   salesTotalLabel: {
     fontSize: 15,
-    fontWeight: 600
+    fontWeight: 600,
   },
   salesTotalAmt: {
     fontSize: 32,
     fontWeight: 800,
-    color: "#2d5a35"
+    color: colors.success,
   },
-  billsList: {
-    flex: 1,
-    overflowY: "auto",
-    padding: "0 16px 100px"
+
+  // Bills list
+  billsList: _billsList,
+  billsListTablet: {
+    ..._billsList,
+    padding: "0 20px 100px",
+    display: "grid",
+    gridTemplateColumns: "repeat(2, 1fr)",
+    gap: 12,
+    alignContent: "start",
   },
+  billsListTabletLandscape: {
+    ..._billsList,
+    padding: "0 24px 100px",
+    display: "grid",
+    gridTemplateColumns: "repeat(3, 1fr)",
+    gap: 16,
+    alignContent: "start",
+  },
+
+  // Total tab sections
+  totalTabSections: _totalTabSections,
+  totalTabSectionsTablet: { ..._totalTabSections, flexDirection: "row", alignItems: "start" },
+
+  // Bill card
   billCard: {
-    background: "#fff",
-    borderRadius: 12,
-    border: "1px solid #ebe9e3",
+    background: colors.surface,
+    borderRadius: radii.lg,
+    border: `1px solid ${colors.border}`,
     padding: "14px 16px",
-    marginBottom: 10
+    marginBottom: 10,
   },
   billCardHeader: {
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 6
+    marginBottom: 6,
   },
   billTableNum: {
     fontSize: 15,
-    fontWeight: 700
+    fontWeight: 700,
   },
   billTotal: {
     fontSize: 17,
     fontWeight: 700,
-    color: "#2d5a35"
+    color: colors.success,
   },
   billMeta: {
     fontSize: 12,
-    color: "#999",
-    marginBottom: 8
+    color: colors.faint,
+    marginBottom: 8,
   },
   billItemsList: {
     display: "flex",
     flexDirection: "column",
-    gap: 3
+    gap: 3,
   },
   billItem: {
     fontSize: 13,
-    color: "#666",
+    color: colors.secondary,
     display: "flex",
-    justifyContent: "space-between"
+    justifyContent: "space-between",
   },
   billItemQty: {
-    color: "#aaa",
-    marginRight: 4
+    color: colors.dimmed,
+    marginRight: 4,
   },
   billItemName: {
-    flex: 1
+    flex: 1,
   },
   billItemPrice: {
     fontWeight: 500,
-    color: "#555"
+    color: colors.subtle,
+  },
+  billItemCrossed: {
+    textDecoration: "line-through",
+    color: "#bbb",
+  },
+  addedToPOSLabel: {
+    fontSize: 11,
+    fontWeight: 700,
+    color: colors.info,
+    background: colors.infoBg,
+    borderRadius: 4,
+    padding: "2px 6px",
+    letterSpacing: 0.3,
   },
   billItemEditable: {
     fontSize: 13,
-    color: "#666",
+    color: colors.secondary,
     display: "flex",
     alignItems: "center",
     gap: 8,
-    padding: "3px 0"
+    padding: "3px 0",
   },
   billItemRemoveBtn: {
     width: 20,
     height: 20,
-    borderRadius: "50%",
+    borderRadius: radii.round,
     border: "1.5px solid #ddd",
-    background: "#fff",
+    background: colors.surface,
     fontSize: 14,
     lineHeight: 1,
     cursor: "pointer",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    color: "#999",
-    flexShrink: 0
+    color: colors.faint,
+    flexShrink: 0,
   },
   editBillBtn: {
     padding: "5px 12px",
-    borderRadius: 8,
+    borderRadius: radii.sm,
     border: "1.5px solid #ddd",
-    background: "#fff",
+    background: colors.surface,
     fontSize: 13,
     fontWeight: 600,
     cursor: "pointer",
-    color: "#555"
+    color: colors.subtle,
   },
   doneEditBtn: {
     flex: 1,
     padding: "6px 12px",
-    borderRadius: 8,
+    borderRadius: radii.sm,
     border: "none",
-    background: "#2d5a35",
-    color: "#fff",
+    background: colors.success,
+    color: colors.surface,
     fontSize: 13,
     fontWeight: 600,
-    cursor: "pointer"
+    cursor: "pointer",
   },
   cancelEditBtn: {
     flex: 1,
     padding: "6px 12px",
-    borderRadius: 8,
+    borderRadius: radii.sm,
     border: "1.5px solid #ddd",
-    background: "#fff",
+    background: colors.surface,
     fontSize: 13,
     fontWeight: 600,
     cursor: "pointer",
-    color: "#555"
+    color: colors.subtle,
   },
   deleteBillBtnIcon: {
     width: 32,
     height: 32,
-    borderRadius: 8,
+    borderRadius: radii.sm,
     border: "1.5px solid #e0a0a0",
-    background: "#fff",
+    background: colors.surface,
     fontSize: 16,
     cursor: "pointer",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    flexShrink: 0
+    flexShrink: 0,
   },
   clearDayBtn: {
-    background: "#c0392b",
-    color: "#fff",
+    background: colors.danger,
+    color: colors.surface,
     border: "none",
-    borderRadius: 10,
+    borderRadius: radii.md,
     padding: "13px",
     fontSize: 15,
     fontWeight: 700,
     cursor: "pointer",
     width: "calc(100% - 32px)",
-    margin: "0 16px 24px"
+    margin: "0 16px 24px",
   },
   emptyState: {
     display: "flex",
@@ -1411,89 +1565,75 @@ export const S = {
     alignItems: "center",
     justifyContent: "center",
     padding: "60px 40px",
-    textAlign: "center"
+    textAlign: "center",
   },
   emptyStateIcon: {
     fontSize: 48,
     marginBottom: 12,
-    opacity: 0.3
+    opacity: 0.3,
   },
   emptyStateText: {
     fontSize: 15,
-    color: "#999",
-    lineHeight: 1.5
+    color: colors.faint,
+    lineHeight: 1.5,
   },
 
-  // Custom item modal styles
+  // Custom item modal
   customModalForm: {
     display: "flex",
     flexDirection: "column",
     gap: 14,
-    marginBottom: 20
+    marginBottom: 20,
   },
   customModalField: {
     display: "flex",
     flexDirection: "column",
     gap: 6,
-    flex: 1
+    flex: 1,
   },
   customModalFieldSmall: {
     display: "flex",
     flexDirection: "column",
     gap: 6,
-    width: 90
+    width: 90,
   },
   customModalRow: {
     display: "flex",
-    gap: 10
+    gap: 10,
   },
   customModalLabel: {
     fontSize: 13,
     fontWeight: 600,
-    color: "#555"
+    color: colors.subtle,
   },
   customModalInput: {
     padding: "10px 12px",
     fontSize: 15,
     border: "1.5px solid #ddd",
-    borderRadius: 8,
-    background: "#fafaf8",
+    borderRadius: radii.sm,
+    background: colors.inputBg,
     outline: "none",
-    fontFamily: "inherit"
+    fontFamily: "inherit",
   },
 
-  // Bill header styles
+  // Bill header
   billHeader: {
     display: "flex",
     justifyContent: "space-between",
     alignItems: "flex-start",
-    marginBottom: 8
+    marginBottom: 8,
   },
   billHeaderActions: {
     display: "flex",
     gap: 6,
-    marginTop: -4
+    marginTop: -4,
   },
   billIconBtn: {
     width: 32,
     height: 32,
-    borderRadius: 8,
+    borderRadius: radii.sm,
     border: "1.5px solid #ddd",
-    background: "#fff",
-    fontSize: 16,
-    lineHeight: 1,
-    cursor: "pointer",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    flexShrink: 0
-  },
-  billIconBtnActive: {
-    width: 32,
-    height: 32,
-    borderRadius: 8,
-    border: "1.5px solid #2d5a35",
-    background: "#2d5a35",
+    background: colors.surface,
     fontSize: 16,
     lineHeight: 1,
     cursor: "pointer",
@@ -1501,24 +1641,38 @@ export const S = {
     alignItems: "center",
     justifyContent: "center",
     flexShrink: 0,
-    color: "#fff"
   },
-
-  // Bill item add button
-  closeAddBtn: {
-    width: 24,
-    height: 24,
-    borderRadius: "50%",
-    border: "1.5px solid #ddd",
-    background: "#fff",
+  billIconBtnActive: {
+    width: 32,
+    height: 32,
+    borderRadius: radii.sm,
+    border: `1.5px solid ${colors.success}`,
+    background: colors.success,
     fontSize: 16,
     lineHeight: 1,
     cursor: "pointer",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    color: "#999",
-    flexShrink: 0
+    flexShrink: 0,
+    color: colors.surface,
+  },
+
+  // Bill item add button
+  closeAddBtn: {
+    width: 24,
+    height: 24,
+    borderRadius: radii.round,
+    border: "1.5px solid #ddd",
+    background: colors.surface,
+    fontSize: 16,
+    lineHeight: 1,
+    cursor: "pointer",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    color: colors.faint,
+    flexShrink: 0,
   },
 
   // Gutschein and subtotal rows
@@ -1526,110 +1680,425 @@ export const S = {
     display: "flex",
     justifyContent: "space-between",
     fontSize: 15,
-    color: "#666",
-    marginBottom: 4
+    color: colors.secondary,
+    marginBottom: 4,
   },
   closeGutscheinRow: {
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
     fontSize: 15,
-    color: "#c0392b",
-    marginBottom: 8
+    color: colors.danger,
+    marginBottom: 8,
   },
   removeGutscheinBtn: {
     width: 18,
     height: 18,
-    borderRadius: "50%",
+    borderRadius: radii.round,
     border: "1px solid #e0a0a0",
-    background: "#fff",
+    background: colors.surface,
     fontSize: 12,
     lineHeight: 1,
     cursor: "pointer",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    color: "#c0392b",
-    flexShrink: 0
+    color: colors.danger,
+    flexShrink: 0,
   },
 
-  // Payment/Tip section styles
+  // Bill view responsive layout
+  billContainerTablet: {
+    display: "flex",
+    gap: 24,
+    padding: "20px",
+    alignItems: "flex-start",
+    flex: 1,
+  },
+  billContainerTabletLandscape: {
+    display: "flex",
+    gap: 32,
+    padding: "24px",
+    alignItems: "flex-start",
+    flex: 1,
+  },
+  billReceiptColumn: {
+    flex: "1 1 60%",
+    minWidth: 0,
+  },
+  billActionsColumn: {
+    flex: "0 0 320px",
+    display: "flex",
+    flexDirection: "column",
+    gap: 16,
+    position: "sticky",
+    top: 80,
+  },
+  billActionsColumnLandscape: {
+    flex: "0 0 360px",
+    display: "flex",
+    flexDirection: "column",
+    gap: 20,
+    position: "sticky",
+    top: 80,
+  },
+  billActionsCard: _billActionsCard,
+  billActionsCardLandscape: { ..._billActionsCard, borderRadius: 14, padding: "20px", gap: 14 },
+  billActionsLabel: {
+    fontSize: 11,
+    fontWeight: 600,
+    color: colors.dimmed,
+    textTransform: "uppercase",
+    letterSpacing: "0.5px",
+    marginBottom: 4,
+  },
+  billActionsButtons: {
+    display: "flex",
+    gap: 8,
+  },
+  billPrimaryAction: {
+    padding: "14px",
+    borderRadius: radii.md,
+    border: "none",
+    background: colors.fg,
+    color: colors.surface,
+    fontSize: 15,
+    fontWeight: 700,
+    cursor: "pointer",
+    width: "100%",
+    transition: "background 0.2s ease-out",
+  },
+  billPrimaryActionConfirm: {
+    padding: "14px",
+    borderRadius: radii.md,
+    border: "none",
+    background: colors.danger,
+    color: colors.surface,
+    fontSize: 15,
+    fontWeight: 700,
+    cursor: "pointer",
+    width: "100%",
+    transition: "background 0.2s ease-out",
+  },
+
+  // Payment / tip section
   paymentSplitContainer: {
     marginBottom: "100px",
-    animation: "slideDown 0.3s ease-out"
+    animation: "slideDown 0.3s ease-out",
   },
   paymentSection: {
     marginBottom: "10px",
     padding: "16px",
     background: "#f0f7f1",
-    borderRadius: 12,
-    border: "1px solid #d0e5d3"
+    borderRadius: radii.lg,
+    border: "1px solid #d0e5d3",
   },
   paymentLabel: {
     fontSize: 13,
     fontWeight: 600,
-    color: "#2d5a35",
-    marginBottom: 10
+    color: colors.success,
+    marginBottom: 10,
   },
   paymentInputRow: {
     display: "flex",
     gap: 8,
-    alignItems: "center"
+    alignItems: "center",
   },
   paymentInput: {
     flex: 1,
     padding: "10px 12px",
     fontSize: 15,
     border: "1.5px solid #a3c4a8",
-    borderRadius: 8,
-    background: "#fff",
+    borderRadius: radii.sm,
+    background: colors.surface,
     outline: "none",
-    fontFamily: "inherit"
+    fontFamily: "inherit",
   },
   paymentCheck: {
     width: 40,
     height: 40,
-    borderRadius: 8,
+    borderRadius: radii.sm,
     border: "1.5px solid #a3c4a8",
-    background: "#fff",
+    background: colors.surface,
     fontSize: 18,
     lineHeight: 1,
     cursor: "pointer",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    color: "#2d5a35",
+    color: colors.success,
     flexShrink: 0,
-    fontWeight: 700
+    fontWeight: 700,
   },
   paymentCheckConfirmed: {
     width: 40,
     height: 40,
-    borderRadius: 8,
-    border: "1.5px solid #2d5a35",
-    background: "#2d5a35",
+    borderRadius: radii.sm,
+    border: `1.5px solid ${colors.success}`,
+    background: colors.success,
     fontSize: 18,
     lineHeight: 1,
     cursor: "not-allowed",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    color: "#fff",
+    color: colors.surface,
     flexShrink: 0,
     fontWeight: 700,
-    opacity: 0.7
+    opacity: 0.7,
   },
   paymentTip: {
     marginTop: 10,
     fontSize: 14,
     fontWeight: 600,
-    color: "#2d5a35",
-    textAlign: "center"
+    color: colors.success,
+    textAlign: "center",
   },
   paymentItem: {
-    marginBottom: 12
+    marginBottom: 12,
   },
   paymentItemLast: {
-    marginBottom: 0
-  }
+    marginBottom: 0,
+  },
+
+  // Grid 4 (menu cards)
+  grid4: _grid4,
+  grid4Tablet: { ..._grid4, gridTemplateColumns: "repeat(5, 1fr)" },
+  grid4TabletLandscape: { ..._grid4, gridTemplateColumns: "repeat(6, 1fr)" },
+
+  // Menu card
+  menuCard: {
+    background: colors.surface,
+    border: `1px solid ${colors.border}`,
+    borderRadius: 0,
+    padding: 8,
+    textAlign: "center",
+    cursor: "pointer",
+    minHeight: 60,
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "center",
+    alignItems: "center",
+    position: "relative",
+  },
+  menuCardEmoji: {
+    fontSize: 32,
+    marginBottom: 6,
+  },
+  menuCardName: {
+    fontSize: 11,
+    lineHeight: 1.3,
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+    display: "-webkit-box",
+    WebkitLineClamp: 3,
+    WebkitBoxOrient: "vertical",
+    wordBreak: "break-word",
+  },
+  menuCardPrice: {
+    fontSize: 12,
+    fontWeight: 600,
+    marginTop: 4,
+  },
+  menuCardBadge: {
+    position: "absolute",
+    top: 4,
+    right: 4,
+    background: colors.success,
+    color: colors.surface,
+    fontSize: 10,
+    fontWeight: 600,
+    padding: "2px 6px",
+    borderRadius: radii.md,
+  },
+
+  // Subcategory divider (in grid)
+  subcategoryDivider: {
+    gridColumn: "1 / -1",
+    borderTop: `1px solid ${colors.border}`,
+    paddingTop: 12,
+    paddingBottom: 8,
+    fontSize: 14,
+    fontWeight: 600,
+    color: colors.subtle,
+    textAlign: "center",
+  },
+
+  // Variant bottom sheet
+  variantSheetOverlay: {
+    position: "fixed",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    background: colors.overlay,
+    zIndex: 200,
+    animation: "fadeIn 0.3s ease-out",
+  },
+  variantSheet: {
+    position: "fixed",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    maxWidth: 480,
+    margin: "0 auto",
+    background: colors.surface,
+    borderTopLeftRadius: radii.xl,
+    borderTopRightRadius: radii.xl,
+    padding: 20,
+    zIndex: 201,
+    animation: "slideUp 0.3s ease-out",
+  },
+  variantSheetHeader: {
+    fontSize: 18,
+    fontWeight: 700,
+    marginBottom: 16,
+    textAlign: "center",
+  },
+  // Full-width button inside VariantBottomSheet
+  variantSheetBtn: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    background: colors.bg,
+    border: `1px solid ${colors.border}`,
+    borderRadius: radii.sm,
+    padding: 16,
+    marginBottom: 10,
+    cursor: "pointer",
+    fontSize: 14,
+    fontWeight: 600,
+    minHeight: 60,
+    position: "relative",
+  },
+  variantBtnLabel: {
+    fontSize: 14,
+    fontWeight: 600,
+  },
+  variantBtnPrice: {
+    fontSize: 14,
+    fontWeight: 600,
+    color: colors.subtle,
+  },
+
+  // Bill view header
+  billViewHeader: {
+    position: "sticky",
+    top: 0,
+    zIndex: 100,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    padding: "18px 20px 12px",
+    background: colors.surface,
+    borderBottom: `1px solid ${colors.border}`,
+  },
+
+  // Mark button for sent batches
+  markBtn: {
+    background: "none",
+    border: "1px solid #ccc",
+    borderRadius: 4,
+    padding: "4px 10px",
+    fontSize: 12,
+    fontWeight: 600,
+    cursor: "pointer",
+    marginLeft: 8,
+  },
+  sentSectionPending: {
+    background: "#fdf5f5",
+    border: `1px solid ${colors.border}`,
+    borderLeft: "3px solid #e05252",
+  },
+  sentSectionMarked: {
+    background: "#f4fbf6",
+    border: `1px solid ${colors.border}`,
+    borderLeft: "3px solid #52b87a",
+  },
+
+  // Login
+  loginContainer: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    minHeight: "100vh",
+    background: colors.bg,
+    padding: 20,
+  },
+  loginCard: {
+    background: colors.surface,
+    borderRadius: radii.xl,
+    padding: "32px 24px",
+    maxWidth: 360,
+    width: "100%",
+    boxShadow: "0 4px 16px rgba(0,0,0,0.08)",
+  },
+  loginTitle: {
+    fontSize: 24,
+    fontWeight: 800,
+    textAlign: "center",
+    marginBottom: 8,
+    letterSpacing: "-0.5px",
+  },
+  loginSubtitle: {
+    fontSize: 14,
+    color: colors.muted,
+    textAlign: "center",
+    marginBottom: 28,
+  },
+  loginForm: {
+    display: "flex",
+    flexDirection: "column",
+    gap: 16,
+  },
+  loginLabel: {
+    fontSize: 13,
+    fontWeight: 600,
+    color: colors.subtle,
+    marginBottom: 6,
+  },
+  loginInput: {
+    width: "100%",
+    padding: "12px 14px",
+    fontSize: 15,
+    border: "1.5px solid #ddd",
+    borderRadius: radii.md,
+    background: colors.inputBg,
+    outline: "none",
+    fontFamily: "inherit",
+    boxSizing: "border-box",
+  },
+  loginButton: {
+    width: "100%",
+    padding: "14px",
+    borderRadius: radii.md,
+    border: "none",
+    background: colors.fg,
+    color: colors.surface,
+    fontSize: 15,
+    fontWeight: 700,
+    cursor: "pointer",
+    marginTop: 8,
+    transition: "background 0.2s ease-out",
+  },
+  loginError: {
+    fontSize: 13,
+    color: colors.danger,
+    textAlign: "center",
+    marginTop: -8,
+    marginBottom: 4,
+  },
+
+  // Logout
+  logoutButton: {
+    background: "none",
+    border: "1.5px solid #ccc",
+    borderRadius: radii.sm,
+    padding: "6px 12px",
+    fontSize: 13,
+    fontWeight: 600,
+    color: colors.subtle,
+    cursor: "pointer",
+    transition: "all 0.2s ease-out",
+  },
 };
